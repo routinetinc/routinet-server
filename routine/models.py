@@ -42,24 +42,13 @@ class NoSQL():
         table_name = 'test'
 
 
-class RDBBase(models.Model):
-    class Meta:
-        abstract = True
-
-class InterestCluster(RDBBase):
-    table_name = 'interest_cluster'
-    detail = models.CharField(max_length=90)  # 根拠なし
-
-class Interest(RDBBase):
-    table_name = 'interest'
-    interest_cluster_id = models.ForeignKey(InterestCluster, on_delete=models.PROTECT)
-    detail = models.CharField(max_length=90)  # 根拠なし
-
 class Routine(RDBBase):
     table_name = 'routine'
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     interest_id = models.OneToOneField(Interest, on_delete=models.PROTECT)
     title = models.CharField(max_length=15)  # 10 文字に余裕を持たせて 15 文字
+    def __str__(self):
+        return self.title
     
 
 class Task(RDBBase):
@@ -69,3 +58,5 @@ class Task(RDBBase):
     detail = models.CharField(max_length=60, blank=True)  # 60 文字に仮置き. あまり情報を詰め込みすぎないことを目標に.
     icon = models.CharField(max_length=1, blank=True)
     required_time = models.IntegerField()
+    def __str__(self):
+        return self.title
