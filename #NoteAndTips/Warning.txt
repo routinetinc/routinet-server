@@ -1,0 +1,13 @@
+//* Django's program
+
+// WARNING: assertQuerySetEqual
+    - Django 3.2.19 では `assertQuerySetEqual` メソッドは使用できないため、 `assertSequenceEqual` を使用すること。
+    - 他のバージョンでもこのようなことがあるかもしれないことに留意
+
+//* Test
+// WARNING: @shogo, Subject
+    ``` 
+    何をしたらエラーになったかなど詳細を記述
+    Option: 01.png (エラー画像) or 01.txt (エラー文)
+    (01.png, 01.txt は ./#Docs/notice に存在) 
+    ```

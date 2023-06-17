@@ -1,0 +1,12 @@
+仮想環境 6env ファイルの作成
+$ python -m venv env
+
+仮想環境を有効に
+$ ./env/Scripts/activate
+($ ./bin/activate)
+
+pipで依存ライブラリをインストール
+$ pip install -r requirements.txt
+
+仮想環境の終了
+$ deactivate
