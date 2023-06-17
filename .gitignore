@@ -5,6 +5,9 @@ secret.py
 \#Note/
 \#Test/
 \#Command/
+\#NoteAndTips/plusAlpha.txt
+\#NoteAndTips/Todo.txt
+\#NoteAndTips/Waring.txt
 
 # Created by https://www.toptal.com/developers/gitignore/api/django
 # Edit at https://www.toptal.com/developers/gitignore?templates=django

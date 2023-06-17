@@ -3,7 +3,7 @@ from rest_framework import routers
 from routine import views
 
 urlpatterns = [
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+    path('auth/', include('rest_framework.urls', namespace='rest_framework_auth'))
 ]
 
 urlpatterns += [
