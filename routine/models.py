@@ -1,6 +1,7 @@
 from django.db import models
 import boto3
 import json
+from supplyAuth.models import User
 
 class NoSQLBase(models.Model):
     table_name = ''
@@ -44,10 +45,8 @@ class NoSQL():
 class RDBBase(models.Model):
     class Meta:
         abstract = True
-class User(models.Model):
-    pass
 
-class InterestCluster:
+class InterestCluster(RDBBase):
     table_name = 'interest_cluster'
     detail = models.CharField(max_length=90)  # 根拠なし
 
