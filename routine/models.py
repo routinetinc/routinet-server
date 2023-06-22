@@ -38,7 +38,7 @@ class NoSQLBase(models.Model):
         table.delete_item(Key={'id': id})
         
 class NoSQL():
-    class User(NoSQLBase):
+    class test(NoSQLBase):
         table_name = 'test'
 
 class Interest(models.Model): # 仮置き
