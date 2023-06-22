@@ -41,8 +41,10 @@ class NoSQL():
     class User(NoSQLBase):
         table_name = 'test'
 
+class Interest(models.Model): # 仮置き
+    table_name = 'interest'
 
-class Routine(RDBBase):
+class Routine(models.Model):
     table_name = 'routine'
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     interest_id = models.OneToOneField(Interest, on_delete=models.PROTECT)
@@ -51,7 +53,7 @@ class Routine(RDBBase):
         return self.title
     
 
-class Task(RDBBase):
+class Task(models.Model):
     table_name = 'task'
     routine_id = models.ForeignKey(Routine, on_delete=models.CASCADE)
     title = models.CharField(max_length=20)  # ルーティンタイトルの限度より少し長い程度
