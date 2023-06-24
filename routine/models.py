@@ -41,7 +41,7 @@ class NoSQL():
     class test(NoSQLBase):
         table_name = 'test'
 
-class Interest(models.Model): # 仮置き
+class Interest(models.Model): # 外部キーのため依存解消のために仮置き
     table_name = 'interest'
 
 class Routine(models.Model):
@@ -49,6 +49,12 @@ class Routine(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     interest_id = models.OneToOneField(Interest, on_delete=models.PROTECT)
     title = models.CharField(max_length=15)  # 10 文字に余裕を持たせて 15 文字
+    subtitle = models.CharField(max_length=40, blank=True)  # 簡易的な補足説明
+    icon = models.CharField(max_length=1, blank=True)
+    goal_id = models.IntegerField()
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    dow = models.IntegerField()  # 型は仮置き
     def __str__(self):
         return self.title
     
