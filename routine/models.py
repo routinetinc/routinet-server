@@ -2,6 +2,7 @@ from django.db import models
 import boto3
 import json
 from supplyAuth.models import User
+from datetime import datetime
 
 class NoSQLBase(models.Model):
     table_name = ''
@@ -41,6 +42,27 @@ class NoSQL():
     class test(NoSQLBase):
         table_name = 'test'
 
+class TimeField(models.DateTimeField):
+    def __init__(self, *args, **kwargs):
+        kwargs['default'] = '00:00:00'
+        super().__init__(*args, **kwargs)
+    def from_db_value(self, value: datetime, expression, connection):
+        if value is None:
+            return value
+        return value.strftime('%H:%M:%S')
+    def to_python(self, value: datetime):
+        if isinstance(value, str):
+            return value
+        if value is None:
+            return value
+        return value.strftime('%H:%M:%S')
+    def get_prep_value(self, value: datetime):
+        if isinstance(value, str):
+            return value
+        if value is None:
+            return value
+        return value.strftime('%H:%M:%S')
+    
 class Interest(models.Model): # 外部キーのため依存解消のために仮置き
     table_name = 'interest'
 
@@ -52,8 +74,8 @@ class Routine(models.Model):
     subtitle = models.CharField(max_length=40, blank=True)  # 簡易的な補足説明
     icon = models.CharField(max_length=1, blank=True)
     goal_id = models.IntegerField()
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()  # 時間未設定タスクを含んだ幅を持たせる
     dow = models.IntegerField()  # 型は仮置き
     def __str__(self):
         return self.title
