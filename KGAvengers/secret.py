@@ -2,9 +2,9 @@ class LocalDB:
   DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'HOST': 'localhost',
-        'USER': '####',
-        'PASSWORD': '####',
+        'HOST': '127.0.0.1',
+        'USER': 'postgres',
+        'PASSWORD': '****',
         'NAME': 'KGAvengers',
     }   
   } 
