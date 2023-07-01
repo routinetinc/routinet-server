@@ -1,7 +1,7 @@
 import psycopg2
 from pathlib import Path
 import os
-#from KGAvengers import secret
+from KGAvengers import secret
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -99,17 +99,17 @@ WSGI_APPLICATION = 'KGAvengers.wsgi.application'
     }   
 }  -> secret.RemoteDB.DATABASES に移動 """
 
-#DATABASES = secret.LocalDB.DATABASES
+DATABASES = secret.LocalDB.DATABASES
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'HOST': 'localhost',
-        'USER': '####',
-        'PASSWORD': '####',
-        'NAME': 'KGAvengers',
-    }   
-} 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'HOST': 'localhost',
+#         'USER': '####',
+#         'PASSWORD': '####',
+#         'NAME': 'KGAvengers',
+#     }   
+# } 
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

@@ -23,13 +23,13 @@ $ py manage.py createsuperuser
 // Migrations
     // 1. model.py上のクラス定義を変更する
     // 2. マイグレーションファイルの作成
-    $ manage.py makemigrations
+    $ py manage.py makemigrations
     // 3. プロジェクトに問題が起きないか確認
-    $ python manage.py check
+    $ py manage.py check
     // 4. マイグレーションで実行されるSQLの確認
-    $ manage.py sqlmigrations マイグレーションID
+    $ py manage.py sqlmigrations マイグレーションID
     // 5. マイグレーションの実行 (DB 構造の反映)
-    $ manage.py migrate
+    $ py manage.py migrate
     // 6. データベースクライアント等で適用結果を確認
 
 // テストの実行 
