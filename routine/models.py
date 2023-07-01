@@ -68,15 +68,17 @@ class Interest(models.Model): # 外部キーのため依存解消のために仮
 
 class Routine(models.Model):
     table_name = 'routine'
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    interest_id = models.OneToOneField(Interest, on_delete=models.PROTECT)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE) # user_idはバックエンドで取得します。現段階では仮の数字を代入してください
+    interest_id = models.OneToOneField(Interest, on_delete=models.PROTECT)# interest_idはバックエンドで取得します。現段階では仮の数字を代入してください
+    goal_id = models.IntegerField()# interest_idはバックエンドで取得します。現段階では仮の数字を代入してください
+    dow = models.IntegerField()  # 型は仮置き # day_of_week(曜日のこと)
+    start_time = models.TimeField()
+    end_time = models.TimeField()  # 時間未設定タスクを含んだ幅を持たせる
     title = models.CharField(max_length=15)  # 10 文字に余裕を持たせて 15 文字
     subtitle = models.CharField(max_length=40, blank=True)  # 簡易的な補足説明
     icon = models.CharField(max_length=1, blank=True)
-    goal_id = models.IntegerField()
-    start_time = models.TimeField()
-    end_time = models.TimeField()  # 時間未設定タスクを含んだ幅を持たせる
-    dow = models.IntegerField()  # 型は仮置き
+    public = models.BooleanField(help_text='公開RoutineならTrue', default=False)
+    notification = models.BooleanField(help_text='通知onならTrue', default=False)
     def __str__(self):
         return self.title
     
@@ -88,5 +90,6 @@ class Task(models.Model):
     detail = models.CharField(max_length=60, blank=True)  # 60 文字に仮置き. あまり情報を詰め込みすぎないことを目標に.
     icon = models.CharField(max_length=1, blank=True)
     required_time = models.IntegerField()
+    notification = models.BooleanField(help_text='通知onならTrue', default=False)
     def __str__(self):
         return self.title
