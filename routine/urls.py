@@ -10,4 +10,5 @@ urlpatterns += [
     path('hello/', views.Hello.as_view()),
     path('read/', views.Read.as_view()),
     path('delete/', views.Delete.as_view()),
+    path('post/', views.POST.as_view()),
 ]
