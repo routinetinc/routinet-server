@@ -22,11 +22,38 @@ class Delete(APIView):
         NoSQL.User.delete(id=1)
         return Response("hello")
 
-class POST(APIView):
+class Routine(APIView):
+    def get(self, request, format=None):
+        pass
+    
     def post(self, request, format=None):
         try:
-            datas = get_json(request,serializers.Task_create)
+            datas = get_json(request,serializers.Routine_create)
         except RequestInvalid:
             return make_response(status_code=400)
         print(datas)
         return make_response(data = datas)
+    
+    def patch(self, request, format=None):
+        pass
+    
+    def delete(self, request, format=None):
+        pass
+    
+class Task(APIView):
+    def get(self, request, format=None):
+        pass
+    
+    def post(self, request, format=None):
+        try:
+            datas = get_json(request,serializers.Routine_create)
+        except RequestInvalid:
+            return make_response(status_code=400)
+        print(datas)
+        return make_response(data = datas)
+    
+    def patch(self, request, format=None):
+        pass
+    
+    def delete(self, request, format=None):
+        pass

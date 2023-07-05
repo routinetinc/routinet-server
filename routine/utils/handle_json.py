@@ -10,6 +10,7 @@ def get_json(request,serializer_type):
     if serializer.is_valid():
         return serializer.validated_data  
     else:
+        print(f'requestの内容が適切でありません\n詳細：{serializer.errors}')
         raise RequestInvalid(f'requestの内容が適切でありません\n詳細：{serializer.errors}')
 
 def make_response(status_code:int = 1, data:dict ={}):
