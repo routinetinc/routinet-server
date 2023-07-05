@@ -1,0 +1,205 @@
+{
+	"info": {
+		"_postman_id": "5798d1a9-8472-43d2-a6db-d8e5b07be4c2",
+		"name": "Routine - task",
+		"description": "Routine機能の中でtaskを扱うAPI群",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "27638456-5798d1a9-8472-43d2-a6db-d8e5b07be4c2"
+	},
+	"item": [
+		{
+			"name": "/routine/task/",
+			"id": "6bdc35a3-1c36-48c6-976a-99019373dd29",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"data\": {\r\n\t\t\"routine_id\":1,\r\n\t\t\"title\":\"foo\",\r\n\t\t\"detail\":\"baa\",\r\n\t\t\"icon\":\"a\",\r\n\t\t\"required_time\":5,//(単位は分)\r\n\t\t\"notification\":true\r\n\t}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}routine/task/",
+					"host": [
+						"{{host}}routine"
+					],
+					"path": [
+						"task",
+						""
+					]
+				},
+				"description": "新規のタスクを作成する。返り値としてタスクIDを返す。"
+			},
+			"response": []
+		},
+		{
+			"name": "/routine/task/",
+			"id": "948b2a5d-f66d-4fb4-b717-e787ae0c33c1",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"data\": {\r\n\t\t\"task_id\":\"1\",//(この項目以外の属性はオプションとし、編集するところだけ指定する)\r\n\t\t\"title\":\"foo\",\r\n\t\t\"detail\":\"baa\",\r\n\t\t\"icon\":\"a\",\r\n\t\t\"required_time\":5,//(単位は分)\r\n\t\t\"notification\":true\r\n\t}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}routine/task",
+					"host": [
+						"{{host}}routine"
+					],
+					"path": [
+						"task"
+					]
+				},
+				"description": "新規のタスクを作成する。返り値としてタスクIDを返す。"
+			},
+			"response": []
+		},
+		{
+			"name": "/routine/task/",
+			"id": "5f53a99f-1d69-4c78-8725-205121b2b2e0",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"data\": {\r\n\t\t\"task_id\":\"1\"\r\n\t}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}routine/task/",
+					"host": [
+						"{{host}}routine"
+					],
+					"path": [
+						"task",
+						""
+					]
+				},
+				"description": "既存のタスクを削除する。返り値としてルーティンIDを返す。"
+			},
+			"response": []
+		},
+		{
+			"name": "/routine/task/minicomment/",
+			"id": "895ef252-f263-4cf6-a155-32e5a01f83e7",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"data\": {\r\n\t\t\"task_recode_id\":\"1\",\r\n\t\t\"comment\":\"foo\"\r\n\t}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}routine/task/minicomment/",
+					"host": [
+						"{{host}}routine"
+					],
+					"path": [
+						"task",
+						"minicomment",
+						""
+					]
+				},
+				"description": "ある完了タスクに紐づいた一言コメントを作成する。返り値としてタスクレコードIDを返す。"
+			},
+			"response": []
+		},
+		{
+			"name": "/routine/task/minicomment/",
+			"id": "0260fcfb-32a9-4bb2-8828-51773364c672",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"data\": {\r\n\t\t\"task_recode_id\":\"1\",\r\n\t\t\"comment\":\"foo\"\r\n\t}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}routine/task/minicomment/",
+					"host": [
+						"{{host}}routine"
+					],
+					"path": [
+						"task",
+						"minicomment",
+						""
+					]
+				},
+				"description": "ある完了タスクに紐づいた一言コメントを編集する。返り値としてタスクレコードIDを返す。"
+			},
+			"response": []
+		},
+		{
+			"name": "/routine/task/finish/",
+			"id": "6b113707-680e-46fa-867e-f7196c8bfa58",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"data\": {\r\n\t\t\"task_id\":\"1\",\r\n\t\t\"doing_time\":5//(数字またはnullが入る。nullの時、普通のタスク。数字が入っているときはリアルタイムタスクの所要時間とする)（秒単位）\r\n\t}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}routine/task/finish/",
+					"host": [
+						"{{host}}routine"
+					],
+					"path": [
+						"task",
+						"finish",
+						""
+					]
+				},
+				"description": "タスクの完了を登録する。返り値としてタスクIDを返す。"
+			},
+			"response": []
+		}
+	]
+}

@@ -1,0 +1,130 @@
+{
+	"info": {
+		"_postman_id": "d96e9069-be0c-463e-b4e0-8e140b196d60",
+		"name": "Routine - routine",
+		"description": "Routine機能の中でroutineを扱うAPI群",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "27638456-d96e9069-be0c-463e-b4e0-8e140b196d60"
+	},
+	"item": [
+		{
+			"name": "/routine/routine/",
+			"id": "30f6645c-13f8-49dd-a99a-638eaa57d61f",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"data\": {\r\n\t\t\"dow\": [\"0\", \"1\", \"2\"],// 月曜を　\"0\"　とし連番で定義。\r\n\t\t\"start_time\": \"000000+0900\",// iso基本形式をもじった hh, mm, ss, tz のみの情報をもつ\r\n\t\t\"end_time\": \"000000+0900\",// iso基本形式をもじった hh, mm, ss, tz のみの情報をもつ\r\n\t\t\"title\": \"foo\", \r\n\t\t\"subtitle\": \"baa\",  \r\n\t\t\"public\": true,\r\n\t\t\"notification\": true,\r\n\t\t\"icon\": \"a\"\r\n\t}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}routine/routine/",
+					"host": [
+						"{{host}}routine"
+					],
+					"path": [
+						"routine",
+						""
+					]
+				},
+				"description": "新規のルーティンを作成する。返り値としてルーティンIDを返す(∵キャッシュ)。"
+			},
+			"response": []
+		},
+		{
+			"name": "/routine/routine/",
+			"id": "98db46fc-1f60-4bce-81dc-0d160cc247e4",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"data\": {\r\n\t\t\"routine_id\":\"1\",//(この項目以外の属性はオプションとし、編集するところだけ指定する)\r\n\t\t\"dow\": [\"0\",\"1\",\"2\"],//(月を0とし連番で定義。)\r\n\t\t\"start_time\": \"000000+0900\",//(iso形式)\r\n\t\t\"end_time\": \"000000+0900\",//(iso形式)\r\n\t\t\"title\":\"foo\",\r\n\t\t\"subtitle\":\"baa\",\r\n\t\t\"icon\":\"a\",\r\n\t\t\"puglic\":true,\r\n\t\t\"notification\":true\r\n\t}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}routine/routine/",
+					"host": [
+						"{{host}}routine"
+					],
+					"path": [
+						"routine",
+						""
+					]
+				},
+				"description": "既存のルーティンを編集する。返り値としてルーティンIDを返す。"
+			},
+			"response": []
+		},
+		{
+			"name": "/routine/routine/",
+			"id": "a653e72e-0800-4917-8060-4b3c2c9aa272",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"data\": {\r\n\t\t\"routine_id\":\"1\"\r\n\t}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}routine/routine/",
+					"host": [
+						"{{host}}routine"
+					],
+					"path": [
+						"routine",
+						""
+					]
+				},
+				"description": "既存のルーティンを削除する。返り値としてルーティンIDを返す。"
+			},
+			"response": []
+		},
+		{
+			"name": "/routine/routine_task/",
+			"id": "734aa8af-8f46-4667-b976-19d57e994e50",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}routine/routine_task/",
+					"host": [
+						"{{host}}routine"
+					],
+					"path": [
+						"routine_task",
+						""
+					]
+				},
+				"description": "その時の一週間かつログインユーザのルーティンとタスクを取得する。"
+			},
+			"response": []
+		}
+	]
+}

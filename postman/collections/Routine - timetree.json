@@ -1,0 +1,113 @@
+{
+	"info": {
+		"_postman_id": "35db6748-11fe-4dd9-9e8b-6b6f97915cf4",
+		"name": "Routine - timetree",
+		"description": "Routine機能の中でtimetreeを扱うAPI群",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "27638456-35db6748-11fe-4dd9-9e8b-6b6f97915cf4"
+	},
+	"item": [
+		{
+			"name": "/routine/timetree/before/get/",
+			"id": "adae1221-abd6-4a0b-9217-532bc7b2a43f",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"data\": {\r\n\t\t\"day\":\"20230314T000000+0900\",//(iso形式),\r\n\t\t\"routine_id\":\"1\"\r\n\t}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}routine/timetree/before/get/",
+					"host": [
+						"{{host}}routine"
+					],
+					"path": [
+						"timetree",
+						"before",
+						"get",
+						""
+					]
+				},
+				"description": "ある日の前7日間のTimeTreeを取得する。"
+			},
+			"response": []
+		},
+		{
+			"name": "routine/timetree/after/get/",
+			"id": "25fccf62-b5d2-48d1-b47a-970b67be1c13",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"data\": {\r\n\t\t\"day\":\"20230314T000000+0900\",//(iso形式),\r\n\t\t\"routine_id\":\"1\"\r\n\t}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}routine/timetree/after/get/",
+					"host": [
+						"{{host}}routine"
+					],
+					"path": [
+						"timetree",
+						"after",
+						"get",
+						""
+					]
+				},
+				"description": "ある日の後7日間のTimeTreeを取得する。"
+			},
+			"response": []
+		},
+		{
+			"name": "/routine/timetree/before_after/get/",
+			"id": "8b4ace1c-56ba-40b4-a62a-8ea3f80ba9a7",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"data\": {\r\n\t\t\"day\":\"20230314T000000+0900\",//(iso形式),\r\n\t\t\"routine_id\":\"1\"\r\n\t}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}routine/timetree/before_after/get/",
+					"host": [
+						"{{host}}routine"
+					],
+					"path": [
+						"timetree",
+						"before_after",
+						"get",
+						""
+					]
+				},
+				"description": "ある日の前後７日間のTimeTreeを取得する。"
+			},
+			"response": []
+		}
+	]
+}
