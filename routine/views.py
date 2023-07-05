@@ -1,8 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from routine.models import NoSQL
-import json
-from routine.utils import handle_json
+from routine.utils.handle_json import get_json, make_response, RequestInvalid
 from routine import serializers
 
 class Hello(APIView):
@@ -25,6 +24,9 @@ class Delete(APIView):
 
 class POST(APIView):
     def post(self, request, format=None):
-        datas = handle_json.get_json(request,serializers.Task_create)
+        try:
+            datas = get_json(request,serializers.Task_create)
+        except RequestInvalid:
+            return make_response(status_code=400)
         print(datas)
-        return handle_json.make_response(data = datas)
+        return make_response(data = datas)
