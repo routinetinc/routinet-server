@@ -1,7 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from routine.models import NoSQL
+from routine.models import NoSQL, Task, Routine
 from routine.utils.handle_json import get_json, make_response, RequestInvalid
+import json
 from routine import serializers
 
 class Hello(APIView):
@@ -57,3 +58,35 @@ class Task(APIView):
     
     def delete(self, request, format=None):
         pass
+
+class Create_task(APIView):
+    def post(self, request, format=None):
+        json_data = request.body.decode("utf-8")
+        datas = json.loads(json_data)
+        data = datas["data"]
+        q = Task(title = data["title"],
+                 detail = data["detail"],
+                 required_time = data["required_time"],
+                 notification = data["notification"])
+        q.save()
+        response_data = {"message": 1,
+                         "data": {"task_id": "1"}}
+        return JsonResponse(response_data)
+    
+class Create_routine(APIView):
+    def post(self, request, format=None):
+        json_data = request.body.decode("utf-8")
+        datas = json.loads(json_data)
+        data = datas["data"]
+        q = Routine(dow = data["dow"],
+                    start_time = data["start_time"],
+                    end_time = data["end_time"],
+                    title = data["title"],
+                    subtitle = data["subtitle"],
+                    public = data["public"],
+                    notification = data["notification"],
+                    icon = data["icon"])
+        q.save()
+        response_data = {"message": 1,
+                         "data": {"routine_id": "1"}}
+        return JsonResponse(response_data)
