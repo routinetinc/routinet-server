@@ -29,7 +29,10 @@ class Routine(APIView):
     
     def post(self, request, format=None):
         try:
-            datas = get_json(request,serializers.Routine_create)
+            datas = get_json(request, serializers.Routine_create)
+        except RequestInvalid:
+            return make_response(status_code=400)
+        try: 
             r = Routine(dow = datas["dow"],
                     start_time = datas["start_time"],
                     end_time = datas["end_time"],
@@ -39,8 +42,8 @@ class Routine(APIView):
                     notification = datas["notification"],
                     icon = datas["icon"])
             r.save()
-        except RequestInvalid:
-            return make_response(status_code=400)
+        except:
+            pass
         datas = {"routine_id": r.id}
         print(datas)
         return make_response(data = datas)
@@ -58,13 +61,17 @@ class Task(APIView):
     def post(self, request, format=None):
         try:
             datas = get_json(request, serializers.Routine_create)
+        except RequestInvalid:
+            return make_response(status_code=400)
+        try:
             t = Task(title = datas["title"],
                  detail = datas["detail"],
                  required_time = datas["required_time"],
                  notification = datas["notification"])
             t.save()
-        except RequestInvalid:
-            return make_response(status_code=400)
+        except:
+            pass
+        
         datas = {"task_id": t.id}
         print(datas)
         return make_response(data = datas)
