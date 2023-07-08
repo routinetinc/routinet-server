@@ -99,7 +99,7 @@ WSGI_APPLICATION = 'KGAvengers.wsgi.application'
     }   
 }  -> secret.RemoteDB.DATABASES に移動 """
 
-DATABASES = secret.LocalDB.DATABASES
+DATABASES = secret.RemoteDB.DATABASES
 
 # DATABASES = {
 #     'default': {
