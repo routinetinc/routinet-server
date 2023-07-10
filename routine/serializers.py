@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-class Task_create(serializers.Serializer):# /api/routine/create(POST)
+class Task_create(serializers.Serializer):  # /api/routine/create(POST)
     routine_id    = serializers.IntegerField(max_value=None, min_value=None)
     title         = serializers.CharField(max_length=20, min_length=None, allow_blank=False, trim_whitespace=True)
     detail        = serializers.CharField(max_length=60, min_length=None, allow_blank=True, trim_whitespace=True)
@@ -8,7 +8,7 @@ class Task_create(serializers.Serializer):# /api/routine/create(POST)
     required_time = serializers.IntegerField(max_value=None, min_value=None)
     notification  = serializers.BooleanField()
     
-class Routine_create(serializers.Serializer):# /api/task/create(POST)
+class Routine_create(serializers.Serializer):  # /api/task/create(POST)
     dow           = serializers.ListField(child=serializers.IntegerField(min_value=0, max_value=6))
     start_time    = serializers.TimeField()
     end_time      = serializers.TimeField()  # 時間未設定タスクを含んだ幅を持たせる
@@ -18,7 +18,7 @@ class Routine_create(serializers.Serializer):# /api/task/create(POST)
     public        = serializers.BooleanField()
     notification  = serializers.BooleanField()
     
-class Task_fix(serializers.Serializer):# /api/routine(PATCH):
+class Task_update(serializers.Serializer):  # /api/routine(PATCH)
     task_id       = serializers.IntegerField(max_value=None, min_value=None)
     title         = serializers.CharField(max_length=20, min_length=None, allow_blank=False, trim_whitespace=True)
     detail        = serializers.CharField(max_length=60, min_length=None, allow_blank=True, trim_whitespace=True)
@@ -26,7 +26,7 @@ class Task_fix(serializers.Serializer):# /api/routine(PATCH):
     required_time = serializers.IntegerField(max_value=None, min_value=None)
     notification  = serializers.BooleanField()
     
-class Routine_fix(serializers.Serializer):# /api/task(PATCH):
+class Routine_update(serializers.Serializer):  # /api/task(PATCH)
     routine_id    = serializers.IntegerField(max_value=None, min_value=None)
     dow           = serializers.ListField(child=serializers.IntegerField(min_value=0, max_value=6))
     start_time    = serializers.TimeField()
@@ -37,8 +37,8 @@ class Routine_fix(serializers.Serializer):# /api/task(PATCH):
     public        = serializers.BooleanField()
     notification  = serializers.BooleanField()
     
-class Task_delete(serializers.Serializer):# /api/routine(DELETE):
+class Task_delete(serializers.Serializer):  # /api/routine(DELETE)
     task_id       = serializers.IntegerField(max_value=None, min_value=None)
     
-class Routine_delete(serializers.Serializer):# /api/task(DELETE):
+class Routine_delete(serializers.Serializer):  # /api/task(DELETE)
     routine_id    = serializers.IntegerField(max_value=None, min_value=None)
