@@ -4,6 +4,12 @@ from routine.models import NoSQL
 from routine.utils.handle_json import get_json, make_response, RequestInvalid
 from routine import serializers
 
+from collections import defaultdict
+
+
+from .models import TaskRecord
+
+
 class Hello(APIView):
     def get(self, request, format=None):
         Item = {'id': 1, 'name': "MO"}
@@ -146,3 +152,117 @@ class Task(APIView):
         except:
             return make_response(status_code=400)
         return make_response(status_code=200, data={'message': 'Task deleted successfully'})
+    
+class Routine_task(APIView):
+    def get(self, request, format=None):
+        user_id = 1  # Set a temporary user id
+        routines = Routine.get(user_id)
+        week_routines = defaultdict(list)
+        routines_data = {}
+
+        # Gather all routine and task data
+        for routine in routines:
+            tasks = Task.get(routine['id'])
+            task_data = []
+            for task in tasks:
+                task_data.append({
+                    "task_id": task['id'],
+                    "title": task['title'],
+                    "detail": task['detail'],
+                    "required_time": task['required_time'],
+                    "notification": task['notification'],
+                    "is_finish": task['is_finish']
+                })
+            routines_data[str(routine['id'])] = {
+                "start_time": routine['start_time'],
+                "end_time": routine['end_time'],
+                "title": routine['title'],
+                "subtitle": routine['subtitle'],
+                "public": routine['public'],
+                "notification": routine['notification'],
+                "tasks": task_data
+            }
+            week_routines[routine['dow']].append(str(routine['id']))
+
+        # Build response data
+        response_data = {
+            "status_code": 1,  # This could be replaced with an actual status code
+            "data": {
+                "mon": week_routines["mon"],
+                "tue": week_routines["tue"],
+                "wed": week_routines["wed"],
+                "thu": week_routines["thu"],
+                "fri": week_routines["fri"],
+                "sat": week_routines["sat"],
+                "sun": week_routines["sun"],
+                "routines": routines_data
+            }
+        }
+
+        return make_response(status_code=200, data=response_data)
+    
+
+# TskRecordモデルは以下のようなものを仮定。
+# class TaskRecord(models.Model):
+#     task_id = models.ForeignKey(Task, on_delete=models.CASCADE)
+#     doing_time = models.IntegerField(null=True)
+#     comment = models.CharField(max_length=255, blank=True)
+#     completed_at = models.DateTimeField(auto_now_add=True)
+
+#     def __str__(self):
+#         return f"Record for task {self.task_id}"
+
+class Finish(APIView):
+    def get(self, request, format=None):
+        pass
+
+    def post(self, request, format=None):
+        try:
+            data = get_json(request, serializers.TaskRecord_create)  # Assuming TaskRecord_create is a valid serializer
+        except RequestInvalid:
+            return make_response(status_code=400)
+
+        try:
+            task_record = TaskRecord(task_id=data["task_id"], doing_time=data.get("doing_time"))
+            task_record.save()
+        except:
+            pass  # You may want to handle exceptions properly here
+
+        data = {"task_record_id": task_record.id}
+        return make_response(status_code=1, data=data)
+
+class Minicomment(APIView):
+    def get(self, request, format=None):
+        pass
+
+    def post(self, request, format=None):
+        try:
+            data = get_json(request, serializers.TaskRecord_create)  # Assuming TaskRecord_create is a valid serializer
+        except RequestInvalid:
+            return make_response(status_code=400)
+
+        try:
+            task_record = TaskRecord.objects.get(id=data["task_record_id"])
+            task_record.comment = data["comment"]
+            task_record.save()
+        except TaskRecord.DoesNotExist:
+            return make_response(status_code=400, data={"message": "TaskRecord not found."})
+
+        data = {"task_id": task_record.task_id.id}
+        return make_response(status_code=1, data=data)
+
+    def patch(self, request, format=None):
+        try:
+            data = get_json(request, serializers.TaskRecord_create)  # Assuming TaskRecord_create is a valid serializer
+        except RequestInvalid:
+            return make_response(status_code=400)
+
+        try:
+            task_record = TaskRecord.objects.get(id=data["task_record_id"])
+            task_record.comment = data["comment"]
+            task_record.save()
+        except TaskRecord.DoesNotExist:
+            return make_response(status_code=400, data={"message": "TaskRecord not found."})
+
+        data = {"task_id": task_record.task_id.id}
+        return make_response(status_code=1, data=data)
