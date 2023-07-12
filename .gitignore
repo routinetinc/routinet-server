@@ -1,6 +1,8 @@
 # Original dir and files for the our project.
 secret.py
 .vscode
+*.pgpass
+*.psql_cnf
 
 # Original dir and files for shogo07xx.
 \#Note/
