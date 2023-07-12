@@ -9,9 +9,6 @@ from . import models
 from collections import defaultdict
 
 
-from .models import TaskRecord
-
-
 class Hello(APIView):
     def get(self, request, format=None):
         Item = {'id': 1, 'name': 'MO'}
@@ -161,14 +158,15 @@ class Task(APIView):
             return make_response(status_code=400)
         return make_response(status_code=200, data={'message': 'Task deleted successfully'})
     
-class Routine_task(APIView):
+class RoutineTask(APIView):                 #? このクラスの意味は?
     def get(self, request, format=None):
-        user_id = 1  # Set a temporary user id
+        user_id = 1                         # Set a temporary user id
         routines = Routine.get(user_id)
-        week_routines = defaultdict(list)
+        week_routines = defaultdict(list)   #? なぜ defaultdict?
         routines_data = {}
 
         # Gather all routine and task data
+        #? 何をしているの？なぜこの動作なの？
         for routine in routines:
             tasks = Task.get(routine['id'])
             task_data = []
@@ -220,18 +218,18 @@ class Routine_task(APIView):
 #     def __str__(self):
 #         return f"Record for task {self.task_id}"
 
-class Finish(APIView):
+class NoAvailableTask(APIView):
     def get(self, request, format=None):
         pass
 
     def post(self, request, format=None):
         try:
-            data = get_json(request, serializers.TaskRecord_create)  # Assuming TaskRecord_create is a valid serializer
+            data = get_json(request, serializers.TaskRecord_create)  # Assuming TaskRecord_create is a valid serializer -> ok by shogo
         except RequestInvalid:
             return make_response(status_code=400)
 
         try:
-            task_record = TaskRecord(task_id=data["task_id"], doing_time=data.get("doing_time"))
+            task_record = models.TaskRecord(task_id=data["task_id"], doing_time=data.get("doing_time"))
             task_record.save()
         except:
             pass  # You may want to handle exceptions properly here
@@ -239,21 +237,21 @@ class Finish(APIView):
         data = {"task_record_id": task_record.id}
         return make_response(status_code=1, data=data)
 
-class Minicomment(APIView):
+class MiniComment(APIView):
     def get(self, request, format=None):
         pass
 
     def post(self, request, format=None):
         try:
-            data = get_json(request, serializers.TaskRecord_create)  # Assuming TaskRecord_create is a valid serializer
+            data = get_json(request, serializers.TaskRecord_create)  # Assuming TaskRecord_create is a valid serializer -> ok by shogo
         except RequestInvalid:
             return make_response(status_code=400)
 
         try:
-            task_record = TaskRecord.objects.get(id=data["task_record_id"])
+            task_record = models.TaskRecord.objects.get(id=data["task_record_id"])
             task_record.comment = data["comment"]
             task_record.save()
-        except TaskRecord.DoesNotExist:
+        except models.TaskRecord.DoesNotExist:
             return make_response(status_code=400, data={"message": "TaskRecord not found."})
 
         data = {"task_id": task_record.task_id.id}
@@ -266,10 +264,10 @@ class Minicomment(APIView):
             return make_response(status_code=400)
 
         try:
-            task_record = TaskRecord.objects.get(id=data["task_record_id"])
+            task_record = models.TaskRecord.objects.get(id=data["task_record_id"])
             task_record.comment = data["comment"]
             task_record.save()
-        except TaskRecord.DoesNotExist:
+        except models.TaskRecord.DoesNotExist:
             return make_response(status_code=400, data={"message": "TaskRecord not found."})
 
         data = {"task_id": task_record.task_id.id}
