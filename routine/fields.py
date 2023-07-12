@@ -7,6 +7,8 @@ class TimeField(models.DateTimeField):
         super().__init__(*args, **kwargs)
     def from_db_value(self, value: datetime, expression=None, connection=None):
         """ value: (e.g.) datetime.now(jst_tz), localtime(timezone.now()) """
+        if isinstance(value, str):
+            return value        
         if value is None:
             return value
         return value.strftime('%H%M%S%z')
