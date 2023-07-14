@@ -6,10 +6,7 @@ from routine import serializers
 from supplyAuth.models import User as UserModel
 from . import models
 
-from collections import defaultdict
-
-
-from .models import TaskRecord
+from datetime import datetime, timedelta
 
 
 class Hello(APIView):
@@ -161,77 +158,64 @@ class Task(APIView):
             return make_response(status_code=400)
         return make_response(status_code=200, data={'message': 'Task deleted successfully'})
     
-class Routine_task(APIView):
+#ログインユーザーの、一週間分のルーティーンとタスクを取得する。
+class RoutineTask(APIView):                 
     def get(self, request, format=None):
-        user_id = 1  # Set a temporary user id
-        routines = Routine.get(user_id)
-        week_routines = defaultdict(list)
-        routines_data = {}
+        user_id = 1
+        user = UserModel.objects.get(id=user_id)
 
-        # Gather all routine and task data
+        #その日から一週間の時間幅を計算
+        now = datetime.now()
+        week_later = now + timedelta(days=7)
+
+        # Routineを今日から一週間後の分までフィルタリング
+        routines = models.Routine.objects.filter(user_id=user, start_time__range=(now, week_later))
+
+        #Routineの中にTaskなどを格納
+        routines_data = {}
         for routine in routines:
-            tasks = Task.get(routine['id'])
+            tasks = models.Task.objects.filter(routine_id=routine)
             task_data = []
             for task in tasks:
                 task_data.append({
-                    "task_id": task['id'],
-                    "title": task['title'],
-                    "detail": task['detail'],
-                    "required_time": task['required_time'],
-                    "notification": task['notification'],
-                    "is_finish": task['is_finish']
+                    "task_id": task.id,
+                    "title": task.title,
+                    "detail": task.detail,
+                    "required_time": task.required_time,
+                    "notification": task.is_notified,
+                    "is_finish": task.is_finish
                 })
-            routines_data[str(routine['id'])] = {
-                "start_time": routine['start_time'],
-                "end_time": routine['end_time'],
-                "title": routine['title'],
-                "subtitle": routine['subtitle'],
-                "public": routine['public'],
-                "notification": routine['notification'],
+            routines_data[str(routine.id)] = {
+                "start_time": routine.start_time,
+                "end_time": routine.end_time,
+                "title": routine.title,
+                "subtitle": routine.subtitle,
+                "public": routine.is_published,
+                "notification": routine.is_notified,
                 "tasks": task_data
             }
-            week_routines[routine['dow']].append(str(routine['id']))
 
-        # Build response data
         response_data = {
-            "status_code": 1,  # This could be replaced with an actual status code
+            "status_code": 200,  # This could be replaced with an actual status code
             "data": {
-                "mon": week_routines["mon"],
-                "tue": week_routines["tue"],
-                "wed": week_routines["wed"],
-                "thu": week_routines["thu"],
-                "fri": week_routines["fri"],
-                "sat": week_routines["sat"],
-                "sun": week_routines["sun"],
                 "routines": routines_data
             }
         }
 
         return make_response(status_code=200, data=response_data)
-    
 
-# TskRecordモデルは以下のようなものを仮定。
-# class TaskRecord(models.Model):
-#     task_id = models.ForeignKey(Task, on_delete=models.CASCADE)
-#     doing_time = models.IntegerField(null=True)
-#     comment = models.CharField(max_length=255, blank=True)
-#     completed_at = models.DateTimeField(auto_now_add=True)
-
-#     def __str__(self):
-#         return f"Record for task {self.task_id}"
-
-class Finish(APIView):
+class NoAvailableTask(APIView):
     def get(self, request, format=None):
         pass
 
     def post(self, request, format=None):
         try:
-            data = get_json(request, serializers.TaskRecord_create)  # Assuming TaskRecord_create is a valid serializer
+            data = get_json(request, serializers.TaskRecord_create)  # Assuming TaskRecord_create is a valid serializer -> ok by shogo
         except RequestInvalid:
             return make_response(status_code=400)
 
         try:
-            task_record = TaskRecord(task_id=data["task_id"], doing_time=data.get("doing_time"))
+            task_record = models.TaskRecord(task_id=data["task_id"], doing_time=data.get("doing_time"))
             task_record.save()
         except:
             pass  # You may want to handle exceptions properly here
@@ -239,21 +223,21 @@ class Finish(APIView):
         data = {"task_record_id": task_record.id}
         return make_response(status_code=1, data=data)
 
-class Minicomment(APIView):
+class MiniComment(APIView):
     def get(self, request, format=None):
         pass
 
     def post(self, request, format=None):
         try:
-            data = get_json(request, serializers.TaskRecord_create)  # Assuming TaskRecord_create is a valid serializer
+            data = get_json(request, serializers.TaskRecord_create)  # Assuming TaskRecord_create is a valid serializer -> ok by shogo
         except RequestInvalid:
             return make_response(status_code=400)
 
         try:
-            task_record = TaskRecord.objects.get(id=data["task_record_id"])
+            task_record = models.TaskRecord.objects.get(id=data["task_record_id"])
             task_record.comment = data["comment"]
             task_record.save()
-        except TaskRecord.DoesNotExist:
+        except models.TaskRecord.DoesNotExist:
             return make_response(status_code=400, data={"message": "TaskRecord not found."})
 
         data = {"task_id": task_record.task_id.id}
@@ -266,10 +250,10 @@ class Minicomment(APIView):
             return make_response(status_code=400)
 
         try:
-            task_record = TaskRecord.objects.get(id=data["task_record_id"])
+            task_record = models.TaskRecord.objects.get(id=data["task_record_id"])
             task_record.comment = data["comment"]
             task_record.save()
-        except TaskRecord.DoesNotExist:
+        except models.TaskRecord.DoesNotExist:
             return make_response(status_code=400, data={"message": "TaskRecord not found."})
 
         data = {"task_id": task_record.task_id.id}
