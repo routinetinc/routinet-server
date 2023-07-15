@@ -1,5 +1,8 @@
 from datetime import datetime
 from django.db import models
+from rest_framework import serializers
+
+#* ------------------------ models ------------------------------*#
 
 class TimeField(models.DateTimeField):
     def __init__(self, *args, **kwargs):
@@ -55,5 +58,22 @@ class DOWField(models.IntegerField):
             return value
         return self.dow_from_list_to_int(value)
 
-    
-    
+
+#* ----------------------- serializers -------------------------------------*#
+
+class TimeStringField(serializers.Field):
+    def to_internal_value(self, value: str):
+        if len(value) != 13:
+            raise serializers.ValidationError("Invalid time format. Expected format: 'HHMMSS+TZ'")
+        try:
+            time_str = value[:6]
+            tz_str = value[6:]
+            hours = int(time_str[:2])
+            minutes = int(time_str[2:4])
+            seconds = int(time_str[4:])
+        except ValueError:
+            raise serializers.ValidationError("Invalid time format. Expected format: 'HHMMSS+TZ'")
+        datetime_obj = datetime(1900, 1, 1, hours, minutes, seconds, 0, tz_str)
+        return datetime_obj.strftime("%H%M%S%z")
+    def to_representation(self, value: datetime):
+        return value.strftime("%H%M%S%z")
