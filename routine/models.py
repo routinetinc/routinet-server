@@ -1,7 +1,6 @@
 from django.db import models
-from routine.fields import DOWField, TimeField
+from routine.fields import CustomModels
 import boto3
-import json
 from supplyAuth.models import User
 
 
@@ -45,18 +44,19 @@ class NoSQL():
 
     
 class Interest(models.Model): # 外部キーのため依存解消のために仮置き
-    table_name = 'interest'
+    table_name  = 'interest'
+    name        = models.CharField(max_length=20) 
 
 class Routine(models.Model):
     table_name   = 'routine'
-    user_id      = models.ForeignKey(User, on_delete=models.CASCADE)                    # user_id はバックエンドで取得      # 仮の数字を代入して対処
-    interest_id  = models.OneToOneField(Interest, default=0, on_delete=models.PROTECT)  # interest_id はバックエンドで取得  # 仮の数字を代入して対処
-    goal_id      = models.IntegerField(blank=True, default=0)                           # goal_id はバックエンドで取得      # 仮の数字を代入して対処
-    dow          = DOWField()                                                           # 型は仮置き  # day_of_week (曜日のこと)
-    start_time   = TimeField()
-    end_time     = TimeField()                                                          # 時間未設定タスクを含んだ幅を持たせる
-    title        = models.CharField(max_length=15)                                      # 10 文字に余裕を持たせて 15 文字
-    subtitle     = models.CharField(max_length=40, blank=True)                          # 簡易的な補足説明
+    user_id      = models.ForeignKey(User, on_delete=models.CASCADE)        # user_id はバックエンドで取得      # 仮の数字を代入して対処
+    interest_id  = models.ManyToManyField(Interest, default=1)              # interest_id はバックエンドで取得  # 複数のラベルが付く可能性を加味
+    goal_id      = models.IntegerField(blank=True, default=0)               # goal_id はバックエンドで取得      # 仮の数字を代入して対処
+    dow          = CustomModels.DOWField()                                  # 型は仮置き  # day_of_week (曜日のこと)
+    start_time   = CustomModels.TimeStringField()
+    end_time     = CustomModels.TimeStringField()                           # 時間未設定タスクを含んだ幅を持たせる
+    title        = models.CharField(max_length=15)                          # 10 文字に余裕を持たせて 15 文字
+    subtitle     = models.CharField(max_length=40, blank=True)              # 簡易的な補足説明
     icon         = models.CharField(max_length=1, blank=True)
     is_published = models.BooleanField(help_text='公開設定', default=False)
     is_notified  = models.BooleanField(help_text='通知設定', default=False)

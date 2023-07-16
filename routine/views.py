@@ -5,7 +5,6 @@ from routine.utils.handle_json import get_json, make_response, RequestInvalid
 from routine import serializers
 from supplyAuth.models import User as UserModel
 from . import models
-
 from datetime import datetime, timedelta
 
 
@@ -34,8 +33,9 @@ class Routine(APIView):
     def post(self, request, format=None):
         user_id = 1 if(request.user.id is None) else request.user.id
         user = UserModel.objects.get(id=user_id)
+        datas: dict = get_json(request, serializers.Routine_create)
         try:
-            datas: dict = get_json(request, serializers.Routine_create)
+            pass
         except RequestInvalid:
             return make_response(status_code=400)
         try: 
@@ -46,15 +46,14 @@ class Routine(APIView):
                     end_time = datas['end_time'],
                     title = datas['title'],
                     subtitle = datas['subtitle'],
-                    public = datas['public'],
-                    notification = datas['notification'],
+                    is_published = datas['is_published'],
+                    is_notified = datas['is_notified'],
                     icon = datas['icon']
                 )
             r.save()
             datas = {'routine_id': r.id}
         except Exception as e:
             datas = {}
-            print(f'{e}')
             raise e
         return make_response(data = datas)
     
