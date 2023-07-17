@@ -26,6 +26,7 @@ json_data = {
 	}
 }
 
+
 # アクセス
 headers = {'Content-Type': 'application/json'}
 if(request_method == request_methods[0]):

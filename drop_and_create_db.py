@@ -48,7 +48,7 @@ interests = [
 ]
 
 if __name__ == '__main__':
-    drop_all_tables()
+    drop_all_tables()                   #! 取扱注意
     create_all_tables()
     insert_supplyAuth_users(users)
     insert_routine_interests(interests)
