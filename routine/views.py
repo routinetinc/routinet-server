@@ -58,8 +58,9 @@ class Routine(APIView):
         return make_response(data = datas)
     
     def patch(self, request, format=None):
+        datas: dict = get_json(request, serializers.Routine_update)
         try:
-            datas: dict = get_json(request, serializers.Routine_update)
+            pass
         except RequestInvalid:
             return make_response(status_code=400)
         try: 

@@ -10,7 +10,7 @@ django.setup()
 
 #*----------------------- (以下の部分にテストを記述) ---------------------------------*#
 
-from routine.fields import TimeField, DOWField
+from routine.fields import CustomModels
 from datetime import datetime
 import pytz
 from django.utils import timezone
@@ -23,7 +23,7 @@ jst_tz = pytz.timezone('Asia/Tokyo')
 if __name__ == '__main__':
     # routine.fields.TimeField に関するテスト
     try:
-        time_f: TimeField = TimeField()
+        time_f: CustomModels.TimeStringField = CustomModels.TimeStringField()
         # hhmmss+tz の形式で現在時刻が表示されるかを timezone 型経由でテスト
         print(time_f.from_db_value(localtime(timezone.now())))
         # datetime 型経由で from_db_value, to_python, get_prep_value をテスト
@@ -36,7 +36,7 @@ if __name__ == '__main__':
         print()
     # routine.fields.DOWField に関するテスト
     try:
-        dow_f: DOWField = DOWField()
+        dow_f: CustomModels.DOWField = CustomModels.DOWField()
         # 引数 b1000101 -> ['0', '2', '6'] となるかをテスト
         print(dow_f.dow_from_int_to_list(int('1000101', 2)))
         # 引数 ['0', '2', '6'] -> b1000101 となるかをテスト
