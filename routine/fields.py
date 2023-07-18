@@ -40,7 +40,7 @@ class CustomModels:
             i = 0
             while dow_int > 0:
                 if(dow_int % 2 != 0):
-                    dow_list.append(f"{i}") 
+                    dow_list.append(f'{i}') 
                 i += 1
                 dow_int >>= 1
             return dow_list
@@ -71,8 +71,8 @@ class CustomSerializers:
             except ValueError:
                 raise serializers.ValidationError("Expected format: 'HHMMSS+TZ'")
             datetime_obj = datetime(1900, 1, 1, hours, minutes, seconds, 0)
-            return datetime_obj.strftime("%H%M%S") + tz_str
+            return datetime_obj.strftime('%H%M%S') + tz_str
         def to_representation(self, value: datetime):
-            time_str = value.strftime("%H%M%S")
-            tz_str = value.strftime("%z")
+            time_str = value.strftime('%H%M%S')
+            tz_str = value.strftime('%z')
             return time_str + tz_str
