@@ -33,20 +33,42 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "routine.apps.RoutineConfig",
     "supplyAuth.apps.SupplyauthConfig",
+    'social_django',
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'social_core.backends.google.GoogleOAuth2',
+]
+
+SOCIAL_AUTH_PIPELINE = [
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+]
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = secret.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = secret.SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET
+LOGIN_URL = 'auth/login/'
+LOGIN_REDIRECT_URL = 'home'
+
 
 AUTH_USER_MODEL = "supplyAuth.User" # accountアプリのUserモデルをデフォルトで使用する認証ユーザーモデルとして設定する
 
 # APIにアクセス制限を適用する
 # 認証方式はアクセストークン
-""" REST_FRAMEWORK = {
+REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication'
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated'
     ]
-} """
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -56,7 +78,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'KGAvengers.middleware_myself.MyCustomMiddleware'
+    'KGAvengers.middleware_myself.MyCustomMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware', 
 ]
 
 ROOT_URLCONF = 'KGAvengers.urls'
@@ -72,6 +95,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends', 
+                'social_django.context_processors.login_redirect',
             ],
         },
     },

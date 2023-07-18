@@ -10,8 +10,8 @@ from datetime import datetime, timedelta
 
 class Hello(APIView):
     def get(self, request, format=None):
-        Item = {'id': 1, 'name': 'MO'}
-        NoSQL.User.create(Item)
+        #Item = {'id': 1, 'name': 'MO'}
+        #NoSQL.User.create(Item)
         return Response('hello')
     
 class Read(APIView):
