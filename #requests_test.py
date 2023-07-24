@@ -16,11 +16,11 @@ request_method  = request_methods[1]
 json_data = {
 	'data': {
 		'dow': ['0', '1', '4'],  # // 月曜を　'0'　とし連番で定義。
-		'start_time': '090000+0900',  # // iso基本形式をもじった hh, mm, ss, tz のみの情報をもつ
-		'end_time': '090000+0900',  # // iso基本形式をもじった hh, mm, ss, tz のみの情報をもつ
+		'start_time': '090000+0900',  # // HHMMSSTZ の形式
+		'end_time': '090000+0900',
 		'title': 'foo', 
-		'subtitle': 'foo',  
-		'icon': 'a',
+		'subtitle': 'bar',  
+		'icon': '👍',
 		'is_published': True,
 		'is_notified': True
 	}
