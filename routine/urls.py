@@ -7,7 +7,7 @@ urlpatterns = [
 ]
 
 urlpatterns = [
-    path('hello/', views.Hello.as_view()),
+    path('hello/', views.Hello.as_view(), name='hello'),
     path('read/', views.Read.as_view()),
     path('delete/', views.Delete.as_view()),
     path('routine/', views.Routine.as_view()),

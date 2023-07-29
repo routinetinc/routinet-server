@@ -3,10 +3,12 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from social_django.utils import psa
 
 from requests.exceptions import HTTPError
+import requests
 
 
 @api_view(['POST'])
@@ -44,3 +46,20 @@ def authentication_test(request):
         },
         status=status.HTTP_200_OK,
     )
+    
+class Getemail(APIView):
+    def get(self, request, format=None):
+        #Item = {'id': 1, 'name': 'MO'}
+        #NoSQL.User.create(Item)
+        return Response('hello')
+    def post(self, request):
+        """ parms = {
+            'code':<コード>
+            'client_id':<クライアントID>
+            'client_secret':<クライアントシークレット>
+            'redirect_uri':'http://127.0.0.1:8000/auth/login/'
+            'grant_type':'authorization_code'
+            'access_type':'offline'
+        } """
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        response = requests.post('https://www.googleapis.com/oauth2/v4/token', data=parms, headers=headers)
