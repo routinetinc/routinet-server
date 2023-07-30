@@ -8,7 +8,7 @@ class Task_create(serializers.Serializer):  # /api/routine/create(POST)
     detail        = serializers.CharField(max_length=60, min_length=None, allow_blank=True, trim_whitespace=True)
     icon          = serializers.CharField(max_length=1, min_length=None, allow_blank=True, trim_whitespace=True)
     required_time = serializers.IntegerField(max_value=None, min_value=None)
-    notification  = serializers.BooleanField()
+    is_notified   = serializers.BooleanField()
     
 class Routine_create(serializers.Serializer):  # /api/task/create(POST)
     dow           = serializers.ListField(child=serializers.CharField(max_length=1))
