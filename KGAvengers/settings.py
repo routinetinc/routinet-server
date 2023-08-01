@@ -49,6 +49,7 @@ SOCIAL_AUTH_PIPELINE = [
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
+    'supplyAuth.views.save_profile'
 ]
 
 SOCIAL_AUTH_JSONFIELD_ENABLED = True

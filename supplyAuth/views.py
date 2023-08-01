@@ -11,7 +11,7 @@ from requests.exceptions import HTTPError
 import requests
 
 
-@api_view(['POST'])
+""" @api_view(['POST'])
 @permission_classes([AllowAny])
 @psa()
 def register_by_access_token(request, backend):
@@ -34,8 +34,20 @@ def register_by_access_token(request, backend):
                     }
             },
             status=status.HTTP_400_BAD_REQUEST,
-        )
+        ) """
 
+@psa('social:complete')
+def register_by_access_token(request, backend):
+    # This view expects an access_token GET parameter, if it's needed,
+    # request.backend and request.strategy will be loaded with the current
+    # backend and strategy.
+    token = request.GET.get('access_token')
+    user = request.backend.do_auth(token)
+    if user:
+        #login(request, user)
+        return 'OK'
+    else:
+        return 'ERROR'
 
 @api_view(['GET', 'POST'])
 def authentication_test(request):
@@ -63,3 +75,13 @@ class Getemail(APIView):
         } """
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         response = requests.post('https://www.googleapis.com/oauth2/v4/token', data=parms, headers=headers)
+        
+def save_profile(backend, user, response, *args, **kwargs):
+    if backend.name == 'google-oauth2':
+        """ # Googleから取得した情報を使ってユーザーのプロフィールを更新します
+        user.details.photo_url = response.get('picture')
+        user.profile.locale = response.get('locale')
+        user.profile.save() """
+        if not user:
+            # 新規ユーザ作成
+            print(kwargs['details'])
