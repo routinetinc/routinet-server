@@ -45,4 +45,6 @@ print(f'{BLUE}headers  ={END} {response.request.headers}')
 print(f'{BLUE}body     ={END} {response.request.body}')
 print(f'{BLUE}method   ={END} {response.request.method}')
 res_data = response.json()
-print(f'{BLUE}responce ={END} {res_data}')
+print(f'{BLUE}status   ={END} {res_data["status_code"]}')
+print(f'{BLUE}data     ={END} {res_data["data"]}')
+
