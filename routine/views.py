@@ -229,15 +229,15 @@ class MiniComment(APIView):
 
     def post(self, request, format=None):
         try:
-            data = get_json(request, serializers.TaskRecord_create)  # Assuming TaskRecord_create is a valid serializer -> ok by shogo
+            data = get_json(request, serializers.TaskComment_create)  # Assuming TaskRecord_create is a valid serializer -> ok by shogo
         except RequestInvalid:
             return make_response(status_code=400)
 
         try:
-            task_record = models.TaskRecord.objects.get(id=data["task_record_id"])
+            task_record = models.TaskComment.objects.get(id=data["task_record_id"])
             task_record.comment = data["comment"]
             task_record.save()
-        except models.TaskRecord.DoesNotExist:
+        except models.TaskComment.DoesNotExist:
             return make_response(status_code=400, data={"message": "TaskRecord not found."})
 
         data = {"task_id": task_record.task_id.id}
@@ -245,15 +245,15 @@ class MiniComment(APIView):
 
     def patch(self, request, format=None):
         try:
-            data = get_json(request, serializers.TaskRecord_create)  # Assuming TaskRecord_create is a valid serializer
+            data = get_json(request, serializers.TaskComment_create)  # Assuming TaskRecord_create is a valid serializer -> ok by manato
         except RequestInvalid:
             return make_response(status_code=400)
 
         try:
-            task_record = models.TaskRecord.objects.get(id=data["task_record_id"])
+            task_record = models.TaskComment.objects.get(id=data["task_record_id"])
             task_record.comment = data["comment"]
             task_record.save()
-        except models.TaskRecord.DoesNotExist:
+        except models.TaskComment.DoesNotExist:
             return make_response(status_code=400, data={"message": "TaskRecord not found."})
 
         data = {"task_id": task_record.task_id.id}
