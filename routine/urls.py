@@ -12,4 +12,5 @@ urlpatterns = [
     path('delete/', views.Delete.as_view()),
     path('routine/', views.Routine.as_view()),
     path('task/', views.Task.as_view()),
+    path("taskcomment/",views.MiniComment.as_view(),)
 ]

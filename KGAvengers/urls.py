@@ -5,4 +5,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("auth/", include("supplyAuth.urls")),
     path("routine/", include("routine.urls")),
+    path("taskcomment/",include("routine.urls"))
 ]
