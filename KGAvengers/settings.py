@@ -42,14 +42,16 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 SOCIAL_AUTH_PIPELINE = [
-    'social_core.pipeline.social_auth.social_details',
-    'social_core.pipeline.social_auth.social_uid',
-    'social_core.pipeline.social_auth.auth_allowed',
-    'social_core.pipeline.social_auth.social_user',
-    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.social_details',# ユーザ名、メールアドレスなど詳細情報をkwargsにdetailsとして格納
+    'social_core.pipeline.social_auth.social_uid',# 一意識別子のuidをkwargsにuidとして格納
+    'supplyAuth.views.get_user',# uidからユーザを取得
+    'social_core.pipeline.social_auth.auth_allowed',# 特定のソーシャルプロバイダを通じたユーザーの認証が許可されているかどうかをチェック
+    'social_core.pipeline.social_auth.social_user',# 既存のソーシャルユーザーの存在をチェック
+    'social_core.pipeline.social_auth.associate_user',# ソーシャルアカウントとDjangoのユーザーアカウントを関連付ける
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
-    'supplyAuth.views.save_profile'
+    'supplyAuth.views.save_profile',# ユーザの新規作成
+    'supplyAuth.views.get_user',# uidからユーザを取得
 ]
 
 SOCIAL_AUTH_JSONFIELD_ENABLED = True

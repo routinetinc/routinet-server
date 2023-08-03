@@ -9,6 +9,7 @@ from social_django.utils import psa
 
 from requests.exceptions import HTTPError
 import requests
+from supplyAuth.models import User
 
 
 """ @api_view(['POST'])
@@ -48,40 +49,35 @@ def register_by_access_token(request, backend):
         return 'OK'
     else:
         return 'ERROR'
-
-@api_view(['GET', 'POST'])
-def authentication_test(request):
-    print(request.user)
-    return Response(
-        {
-            'message': "User successfully authenticated"
-        },
-        status=status.HTTP_200_OK,
-    )
-    
+ 
 class Getemail(APIView):
-    def get(self, request, format=None):
-        #Item = {'id': 1, 'name': 'MO'}
-        #NoSQL.User.create(Item)
+    def get(self, request, format=None, **kwargs):
+        print("ここ")
+        print(kwargs)
         return Response('hello')
-    def post(self, request):
-        """ parms = {
-            'code':<コード>
-            'client_id':<クライアントID>
-            'client_secret':<クライアントシークレット>
-            'redirect_uri':'http://127.0.0.1:8000/auth/login/'
-            'grant_type':'authorization_code'
-            'access_type':'offline'
-        } """
-        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-        response = requests.post('https://www.googleapis.com/oauth2/v4/token', data=parms, headers=headers)
+
+def get_user(backend, user, response, *args, **kwargs):
+    if user:
+        return
+    if backend.name == 'google-oauth2':
+        if kwargs['uid']:
+            try:
+                user = User.objects.get(email = kwargs['uid']) 
+            except User.DoesNotExist:
+                user = None
+        return {'user':user}
+            
         
 def save_profile(backend, user, response, *args, **kwargs):
     if backend.name == 'google-oauth2':
-        """ # Googleから取得した情報を使ってユーザーのプロフィールを更新します
-        user.details.photo_url = response.get('picture')
-        user.profile.locale = response.get('locale')
-        user.profile.save() """
         if not user:
+            print(f"ユーザ：{user}")
             # 新規ユーザ作成
-            print(kwargs['details'])
+            print(kwargs['uid'])
+            print(kwargs)
+            user = User.objects.create_user(email=kwargs['details']['email'],username=kwargs['details']['fullname'],password="a")
+            return {'is_new': False,'user':user}
+        else:
+            print(f"ユーザ：{user}")
+            """ social = user.social_auth.get(provider='google-oauth2')
+            social.extra_data['access_token'] """
