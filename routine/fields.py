@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from django.db import models
 from rest_framework import serializers
 
@@ -58,6 +58,29 @@ class CustomModels:
             return self.dow_from_list_to_int(value)
 
 class CustomSerializers:
+    class ISOTimeField(serializers.Field):
+        def to_internal_value(self, value: str):
+            if not (len(value) == 20 and value[8] == 'T'):
+                raise serializers.ValidationError("Expected format: 'YYYYMMDDThhmmss+TZ'")
+            try:
+                year = int(value[:4])
+                month = int(value[4:6])
+                day = int(value[6:8])
+                hours = int(value[9:11])
+                minutes = int(value[11:13])
+                seconds = int(value[13:15])
+                tz_hours = int(value[15:18])
+                tz_minutes = int(value[18:20])
+                tz_info = timezone(timedelta(hours=tz_hours, minutes=tz_minutes))
+            except ValueError:
+                raise serializers.ValidationError("Expected format: 'YYYYMMDDThhmmss+TZ'")
+            datetime_obj = datetime(year, month, day, hours, minutes, seconds, tzinfo=tz_info)
+            return datetime_obj
+        def to_representation(self, value: datetime):
+            time_str = value.strftime('%Y%m%dT%H%M%S')
+            tz_str = value.strftime('%z')
+            return time_str + tz_str
+           
     class TimeStringField(serializers.Field):
         def to_internal_value(self, value: str):
             if len(value) != 11:

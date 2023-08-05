@@ -1,11 +1,14 @@
+from typing import Any
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from routine.models import NoSQL
 from routine.utils.handle_json import get_json, make_response, RequestInvalid
+from routine.utils.time_format_conversion import trans_datetime_iso
 from routine import serializers
 from supplyAuth.models import User as UserModel
 from . import models
 from datetime import datetime, timedelta
+from django.db.models import Q
 
 
 class Hello(APIView):
@@ -255,6 +258,3 @@ class MiniComment(APIView):
             task_record.save()
         except models.TaskRecord.DoesNotExist:
             return make_response(status_code=400, data={"message": "TaskRecord not found."})
-
-        data = {"task_id": task_record.task_id.id}
-        return make_response(status_code=1, data=data)

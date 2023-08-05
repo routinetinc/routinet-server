@@ -8,21 +8,15 @@ END = '\033[0m'
 
 
 # リクエスト先 URL
-url = 'http://127.0.0.1:8000/routine/routine/'
+url = 'http://127.0.0.1:8000/routine/timetree/before_after/get/'
 request_methods = {0: 'get', 1: 'post', 2: 'patch', 3: 'delete'} 
 request_method  = request_methods[1]
 
 # JSON 形式のデータ(リクエスト用). 変数 json_data の格納値にドキュメントの {'data': data_value } 全体をコピペする.
 json_data = {
-	'data': {
-		'dow': ['0', '1', '4'],  # // 月曜を　'0'　とし連番で定義。
-		'start_time': '090000+0900',  # // HHMMSSTZ の形式
-		'end_time': '090000+0900',
-		'title': 'foo', 
-		'subtitle': 'bar',  
-		'icon': '👍',
-		'is_published': True,
-		'is_notified': True
+	"data": {
+		"day": "20230805T200000+0900",
+		"routine_id": "1"
 	}
 }
 
@@ -36,15 +30,15 @@ elif(request_method == request_methods[1]):
 elif(request_method == request_methods[2]):
   	response = requests.patch(url, json=json_data, headers=headers)
 elif(request_method == request_methods[3]):
-		response = requests.delete(url)
+		response = requests.delete(url, json=json_data, headers=headers)
 else:
   	pass
 
-print(f'{BLUE}url      ={END} {url}')
-print(f'{BLUE}headers  ={END} {response.request.headers}')
-print(f'{BLUE}body     ={END} {response.request.body}')
-print(f'{BLUE}method   ={END} {response.request.method}')
+print(f'{BLUE}url         ={END} {url}')
+print(f'{BLUE}headers     ={END} {response.request.headers}')
+print(f'{BLUE}body        ={END} {response.request.body}')
+print(f'{BLUE}method      ={END} {response.request.method}')
 res_data = response.json()
-print(f'{BLUE}status   ={END} {res_data["status_code"]}')
-print(f'{BLUE}data     ={END} {res_data["data"]}')
+print(f'{BLUE}status_code ={END} {res_data["status_code"]}')
+print(f'{BLUE}res_data    ={END} {res_data["data"]}')
 

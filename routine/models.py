@@ -74,13 +74,6 @@ class Task(models.Model):
     def __str__(self):
         return self.title
 
-class TaskComment(models.Model):
-    table_name  = 'task_comment'
-    task_id     = models.ForeignKey(Task, on_delete=models.PROTECT)
-    comment     = models.CharField(max_length=120)
-    def __str__(self):
-        return f'{self.task_id}'
-
 class TaskRecord(models.Model):
     table_name  = 'task_record'
     task_id     = models.ForeignKey(Task, on_delete=models.PROTECT)
@@ -89,3 +82,10 @@ class TaskRecord(models.Model):
     when        = models.DateTimeField()
     def __str__(self):
         return f'{self.task_id}'
+    
+class TaskComment(models.Model):
+    table_name  = 'task_comment'
+    task_record_id     = models.ForeignKey(TaskRecord, on_delete=models.PROTECT)
+    comment     = models.CharField(max_length=120)
+    def __str__(self):
+        return f'{self.task_record_id}'
