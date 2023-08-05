@@ -35,7 +35,7 @@ def _timetree(request, acquisition_range):
                 comment = task_comment.comment if task_comment else None
                 day_tasks.append({
                     'task_recode_id': str(task_record.id),
-                    'finish_time': task_record.when.strftime('%Y%m%dT%H%M%S%z'),
+                    'finish_time': trans_datetime_iso(task_record.when),
                     'done_time': task_record.done_time,
                     'comment': comment
                 })
