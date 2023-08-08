@@ -13,7 +13,6 @@ from django.core.management import call_command
 from django.db import connection
 from supplyAuth.models import User
 from routine.models import *
-from routine.utils.time_format_conversion import trans_datetime_iso
 import random
 from datetime import timedelta
 from django.utils import timezone
