@@ -29,10 +29,10 @@ def create_all_tables():
     call_command('makemigrations')
     call_command('migrate')
 
-#* 恣意的な数にならないように調整するための関数
+# 乱数
 def random_dow():
     original_list = [f'{i}' for i in range(6)]
-    num_elements_to_pick = random.randint(1, 6)  # 修正
+    num_elements_to_pick = random.randint(1, 6)
     random_elements = random.sample(original_list, num_elements_to_pick)
     return random_elements
 def random_dt():
