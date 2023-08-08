@@ -3,7 +3,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from routine.models import NoSQL
 from routine.utils.handle_json import get_json, make_response, RequestInvalid
-from routine.utils.time_format_conversion import trans_datetime_iso
 from routine import serializers
 from supplyAuth.models import User as UserModel
 from . import models

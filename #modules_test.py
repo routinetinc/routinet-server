@@ -15,10 +15,10 @@ from datetime import datetime
 import pytz
 from django.utils import timezone
 from django.utils.timezone import localtime
+from routine.utils.conv_time_fmt import *
 RED = '\033[91m'
 END = '\033[0m'
 jst_tz = pytz.timezone('Asia/Tokyo')
-
 
 if __name__ == '__main__':
     # routine.fields.TimeField に関するテスト
@@ -49,6 +49,15 @@ if __name__ == '__main__':
         print(f'{RED}{e}{END}; generated during routin.fields.DOWField test')  
     finally:
         print()
-    
+    # routine.utils.conv_time_fmt に関するテスト
+    try:
+        dt  = timezone.now()
+        dt_jst = jst_tz.normalize(dt.astimezone(jst_tz))  # 日本標準時に変換した後、日本標準日時を正規化(TZ変更に伴う日時のズレの修正など)
+        dt_jst = round_datetime_ut(dt_jst)
+        print(f'dt <--> iso | {dt_jst} <--> {conv_datetime_iso(dt_jst)}')
+    except Exception as e:
+        print(f'{RED}{e}{END}; generated during routine.utils.conv_time_fmt test')  
+    finally:
+        print()
 
 

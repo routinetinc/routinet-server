@@ -2,8 +2,9 @@ from rest_framework.views import APIView
 from datetime import datetime, timedelta
 from routine import models, serializers
 from routine.utils.handle_json import RequestInvalid, get_json, make_response
-from routine.utils.time_format_conversion import trans_datetime_iso
+from routine.utils.conv_time_fmt import conv_datetime_iso
 from routine import serializers
+from django.db.models import Exists, OuterRef
 
 def _timetree(request, acquisition_range):
     ''' one week before ~ specified date: -1, one week before ~ one week after: 0, specified date ~ one week after: 1 '''
@@ -23,7 +24,11 @@ def _timetree(request, acquisition_range):
     start_day: datetime = data['day'] + timedelta(days=n)
     end_day: datetime = start_day + timedelta(days=m)
     tasks = models.Task.objects.filter(routine_id=routine_id).order_by('-id')
-    task_records = models.TaskRecord.objects.filter(task_id__in=tasks, when__range=[end_day, start_day]).order_by('-when')
+
+    subquery = models.TaskRecord.objects.filter(task_id=OuterRef('task_id'), when__range=[end_day, start_day])
+    task_records = models.TaskRecord.objects.filter(task_id__in=tasks)\
+                                            .annotate(matching_task=Exists(subquery))\
+                                            .filter(matching_task=True).order_by('-when')
     days = []
     for i in range(end):
         day = start_day - timedelta(days=i)
@@ -35,12 +40,12 @@ def _timetree(request, acquisition_range):
                 comment = task_comment.comment if task_comment else None
                 day_tasks.append({
                     'task_recode_id': str(task_record.id),
-                    'finish_time': trans_datetime_iso(task_record.when),
+                    'finish_time': conv_datetime_iso(task_record.when),
                     'done_time': task_record.done_time,
                     'comment': comment
                 })
         days.append({
-            'day': trans_datetime_iso(day_str),
+            'day': conv_datetime_iso(day_str),
             'tasks': day_tasks
         })
     data = {

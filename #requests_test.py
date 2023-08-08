@@ -8,7 +8,7 @@ END = '\033[0m'
 
 
 # リクエスト先 URL
-url = 'http://127.0.0.1:8000/routine/timetree/before_after/get/'
+url = 'http://127.0.0.1:8000/routine/timetree/before/get/'
 request_methods = {0: 'get', 1: 'post', 2: 'patch', 3: 'delete'} 
 request_method  = request_methods[1]
 
