@@ -5,11 +5,10 @@ class MyCustomMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        # Middlewareの処理をここに記述する
-        # ...
-        print("Hellow PreProcessor")
+        # Middlewareの前処理をここに記述する
+        # print('Hellow PreProcessor')
         #time.sleep(10)
-        print("Hellow World!")
+        # print('Hellow World!')
 
         response = self.get_response(request)
 

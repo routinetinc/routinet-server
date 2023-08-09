@@ -54,21 +54,21 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
 
     username = models.CharField(
-        verbose_name=_("username"),
+        verbose_name=_('username'),
         unique=True,
         max_length=150
     )
     email = models.EmailField(
-        verbose_name=_("Email Address"),
+        verbose_name=_('Email Address'),
         unique=True
     )
     age = models.IntegerField(
-        verbose_name=_("age"),
+        verbose_name=_('age'),
         null=True,
         blank=True
     )
     is_superuser = models.BooleanField(
-        verbose_name=_("is_superuer"),
+        verbose_name=_('is_superuer'),
         default=False
     )
     is_staff = models.BooleanField(
