@@ -12,4 +12,7 @@ urlpatterns = [
     path('delete/', views.Delete.as_view()),
     path('routine/', views.Routine.as_view()),
     path('task/', views.Task.as_view()),
+    path('routines_tasks/', views.RoutineTask.as_view()),
+    path('task/minicomment/', views.MiniComment.as_view()),
+    path('task/finish/', views.TaskFinish.as_view()),
 ]

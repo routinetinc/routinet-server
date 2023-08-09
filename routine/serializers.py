@@ -8,7 +8,7 @@ class Task_create(serializers.Serializer):  # /api/routine/create(POST)
     detail        = serializers.CharField(max_length=60, min_length=None, allow_blank=True, trim_whitespace=True)
     icon          = serializers.CharField(max_length=1, min_length=None, allow_blank=True, trim_whitespace=True)
     required_time = serializers.IntegerField(max_value=None, min_value=None)
-    notification  = serializers.BooleanField()
+    is_notified  = serializers.BooleanField()
     
 class Routine_create(serializers.Serializer):  # /api/task/create(POST)
     dow           = serializers.ListField(child=serializers.CharField(max_length=1))
@@ -44,3 +44,11 @@ class Task_delete(serializers.Serializer):  # /api/routine(DELETE)
     
 class Routine_delete(serializers.Serializer):  # /api/task(DELETE)
     routine_id    = serializers.IntegerField(max_value=None, min_value=None)
+
+class TaskRecord_create(serializers.Serializer):  # /api/task/finish(POST)
+    task_id    = serializers.IntegerField(max_value=None, min_value=None)  
+    done_time = serializers.IntegerField(max_value=None, min_value=None)  
+
+class MiniComment(serializers.Serializer): #/api/task/minicomment(POST, PATCH)
+    task_record_id = serializers.IntegerField() 
+    comment = serializers.CharField(max_length=255) 
