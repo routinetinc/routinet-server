@@ -2,6 +2,7 @@ from django.db import models
 from routine.fields import CustomModels
 import boto3
 from supplyAuth.models import User
+from django.utils import timezone
 
 
 class NoSQLBase(models.Model):
@@ -74,18 +75,23 @@ class Task(models.Model):
     def __str__(self):
         return self.title
 
-class TaskComment(models.Model):
-    table_name  = 'task_comment'
-    task_id     = models.ForeignKey(Task, on_delete=models.PROTECT)
-    comment     = models.CharField(max_length=120)
-    def __str__(self):
-        return f'{self.task_id}'
-
 class TaskRecord(models.Model):
     table_name  = 'task_record'
     task_id     = models.ForeignKey(Task, on_delete=models.PROTECT)
-    is_achieved = models.BooleanField(help_text='完了したか', default=False) 
+    is_achieved = models.BooleanField(help_text='完了したか', default=True) 
     done_time   = models.IntegerField()
-    when        = models.DateTimeField()
+    when        = models.DateTimeField(help_text='完了日時')
+    
+    def save(self, *args, **kwargs):
+        self.when = timezone.now()  # 保存されるたびに更新
+        return super(TaskRecord, self).save(*args, **kwargs)
+    
     def __str__(self):
         return f'{self.task_id}'
+    
+class Minicomment(models.Model):
+    table_name  = 'minicomment'
+    task_record_id     = models.ForeignKey(TaskRecord, on_delete=models.PROTECT)
+    comment     = models.CharField(max_length=120)
+    def __str__(self):
+        return f'{self.task_record_id}'
