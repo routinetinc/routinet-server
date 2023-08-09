@@ -234,7 +234,7 @@ class MiniComment(APIView):
             return make_response(status_code=400)
 
         try:
-            task_record = models.TaskComment.objects.get(id=data["task_record_id"])
+            task_record = models.TaskComment.objects.get(id=data["task_comment_id"])
             task_record.comment = data["comment"]
             task_record.save()
         except models.TaskComment.DoesNotExist:

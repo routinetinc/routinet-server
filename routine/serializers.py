@@ -20,7 +20,7 @@ class Routine_create(serializers.Serializer):# /api/task/create(POST)
     is_notified   = serializers.BooleanField()
 
 class TaskComment_create(serializers.Serializer):# /api/comment(POST&PATCH)　<-同じクラスでどちらも動作可能と思われる
-    task_record_id = serializers.IntegerField(max_value=None, min_value=None)
+    task_comment_id = serializers.IntegerField(max_value=None, min_value=None)
     comment = serializers.CharField(max_length=120, min_length=None, allow_blank=True, trim_whitespace=True)
 
 class Task_update(serializers.Serializer):# /api/routine(PATCH)

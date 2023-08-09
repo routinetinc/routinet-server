@@ -76,7 +76,7 @@ class Task(models.Model):
 
 class TaskComment(models.Model):
     table_name  = 'task_comment'
-    task_id     = models.ForeignKey(Task, on_delete=models.PROTECT)
+    task_id     = models.ForeignKey('Task', on_delete=models.PROTECT)
     comment     = models.CharField(max_length=120)
     def __str__(self):
         return f'{self.task_id}'
