@@ -25,6 +25,7 @@ def get_json(request: HttpRequest, serializer_type: serializers.Serializer):
         for field, errors in error_messages.items():
             field_errors = [f'{TwoSpaces}{field}: {error}' for error in errors]
             error_message += '\n'.join(field_errors) + '\n'
+        print(error_messages)
         raise RequestInvalid(f'{error_message}')
 
 def make_response(status_code:int = 1, data:dict = {}):

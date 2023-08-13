@@ -35,9 +35,8 @@ class Routine(APIView):
     def post(self, request, format=None):
         user_id = 1 if(request.user.id is None) else request.user.id
         user = UserModel.objects.get(id=user_id)
-        datas: dict = get_json(request, serializers.Routine_create)
         try:
-            pass
+            datas: dict = get_json(request, serializers.Routine_create)
         except RequestInvalid:
             return make_response(status_code=400)
         try: 
@@ -60,9 +59,8 @@ class Routine(APIView):
         return make_response(data = datas)
     
     def patch(self, request, format=None):
-        datas: dict = get_json(request, serializers.Routine_update)
         try:
-            pass
+            datas: dict = get_json(request, serializers.Routine_update)
         except RequestInvalid:
             return make_response(status_code=400)
         try: 
@@ -106,12 +104,18 @@ class Task(APIView):
     
     def post(self, request, format=None):
         try:
-            datas: dict = get_json(request, serializers.Routine_create)
+            datas: dict = get_json(request, serializers.Task_create)
         except RequestInvalid:
             return make_response(status_code=400)
         try: 
+            
+            try:
+                routine_instance = models.Routine.objects.get(id=datas['routine_id'])
+            except models.Routine.DoesNotExist:
+                return make_response(status_code=404, data={'message': 'Routine not found'})
+            
             t = models.Task(
-                    routine_id = datas['routine_id'],
+                    routine_id = routine_instance,
                     title = datas['title'],
                     detail = datas['detail'],  
                     icon = datas['icon'],  
@@ -119,10 +123,9 @@ class Task(APIView):
                     is_notified = datas['is_notified']
                 )
             t.save()
-        except:
-            pass
+        except Exception as e:
+            print(e)
         datas = {'task_id': t.id}
-        print(datas)
         return make_response(data = datas)
     
     def patch(self, request, format=None):
@@ -163,48 +166,79 @@ class Task(APIView):
 #ログインユーザーの、一週間分のルーティーンとタスクを取得する。
 class RoutineTask(APIView):                 
     def get(self, request, format=None):
-        user_id = 1
+        user_id = 1 if(request.user.id is None) else request.user.id
         user = UserModel.objects.get(id=user_id)
 
-        #その日から一週間の時間幅を計算
+        #dowのリストを、[0, 1, 2, 3, 4, 5, 6]の形式で、その日から順番に用意
         now = datetime.now()
-        week_later = now + timedelta(days=7)
-
-        # Routineを今日から一週間後の分までフィルタリング
-        routines = models.Routine.objects.filter(user_id=user, start_time__range=(now, week_later))
-
-        #Routineの中にTaskなどを格納
+        dow_list = [(now + timedelta(days=i)).weekday() for i in range(7)]
+        
         routines_data = {}
-        for routine in routines:
-            tasks = models.Task.objects.filter(routine_id=routine)
-            task_data = []
-            for task in tasks:
-                task_data.append({
-                    "task_id": task.id,
-                    "title": task.title,
-                    "detail": task.detail,
-                    "required_time": task.required_time,
-                    "notification": task.is_notified,
-                    "is_finish": task.is_finish
-                })
-            routines_data[str(routine.id)] = {
-                "start_time": routine.start_time,
-                "end_time": routine.end_time,
-                "title": routine.title,
-                "subtitle": routine.subtitle,
-                "public": routine.is_published,
-                "notification": routine.is_notified,
-                "tasks": task_data
-            }
-
-        response_data = {
-            "status_code": 200,  # This could be replaced with an actual status code
-            "data": {
-                "routines": routines_data
-            }
+        routines_by_day = {
+            "mon": [],
+            "tue": [],
+            "wed": [],
+            "thu": [],
+            "fri": [],
+            "sat": [],
+            "sun": []
         }
+        day_of_week = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 
-        return make_response(status_code=200, data=response_data)
+        for dow in dow_list:
+            #SQL文の実行結果をDjangoのインスタンスとして返す
+            routines = models.Routine.objects.raw(
+
+                #models.Routine.objects.raw(): Djangoで生のSQLクエリを実行。
+                # SELECT * FROM routine_routine: ルーティンテーブルから全カラムを取得。
+                # WHERE user_id_id = %s: ユーザーIDに基づくレコードのフィルタリング。
+                # AND (dow & %s) != 0: 曜日情報（dow）をビット単位で解析し、該当するレコードをフィルタリング。
+                # ORDER BY start_time: 結果をルーティンの開始時間順にソート。
+                
+                "SELECT * FROM routine_routine WHERE user_id_id = %s AND (dow & %s) != 0 ORDER BY start_time",
+
+                # [user.id, 2**dow]: フィルタリングと解析のためのパラメータを渡す。
+                [user.id, 2**dow])
+                
+            for routine in routines:
+                if str(routine.id) not in routines_data:
+                    tasks = models.Task.objects.filter(routine_id=routine).order_by('id')
+                    task_data = []
+                    for task in tasks:
+                        latest_task_record = models.TaskRecord.objects.filter(task_id=task.id).order_by('-when').first()
+                        is_achieved = latest_task_record.is_achieved if latest_task_record else False
+                        task_data.append({
+                            "task_id": task.id,
+                            "title": task.title,
+                            "detail": task.detail,
+                            "required_time": task.required_time,
+                            "is_notified": task.is_notified,
+                            "is_achieved": is_achieved,
+                        })
+                    routines_data[str(routine.id)] = {
+                        "start_time": routine.start_time,
+                        "end_time": routine.end_time,
+                        "title": routine.title,
+                        "subtitle": routine.subtitle,
+                        "is_published": routine.is_published,
+                        "is_notified": routine.is_notified,
+                        "tasks": task_data
+                    }
+                routines_by_day[day_of_week[dow]].append(str(routine.id))
+
+        
+        data = {
+            "mon": routines_by_day["mon"],
+            "tue": routines_by_day["tue"],
+            "wed": routines_by_day["wed"],
+            "thu": routines_by_day["thu"],
+            "fri": routines_by_day["fri"],
+            "sat": routines_by_day["sat"],
+            "sun": routines_by_day["sun"],
+            "routines": routines_data
+        }
+        return make_response(status_code=200, data=data)
+
 
 class NoAvailableTask(APIView):
     def get(self, request, format=None):
@@ -217,7 +251,12 @@ class NoAvailableTask(APIView):
             return make_response(status_code=400)
 
         try:
-            task_record = models.TaskRecord(task_id=data["task_id"], doing_time=data.get("doing_time"))
+            task = models.Task.objects.get(id=data["task_id"])
+        except models.Task.DoesNotExist:
+            return make_response(status_code=404, data={'message': 'Task not found'})
+            
+        try:
+            task_record = models.TaskRecord(task_id=task, done_time=data.get("done_time"))
             task_record.save()
         except:
             pass  # You may want to handle exceptions properly here
@@ -231,29 +270,36 @@ class MiniComment(APIView):
 
     def post(self, request, format=None):
         try:
-            data = get_json(request, serializers.TaskRecord_create)  # Assuming TaskRecord_create is a valid serializer -> ok by shogo
+            data = get_json(request, serializers.MiniComment_create)
         except RequestInvalid:
             return make_response(status_code=400)
 
         try:
             task_record = models.TaskRecord.objects.get(id=data["task_record_id"])
-            task_record.comment = data["comment"]
-            task_record.save()
         except models.TaskRecord.DoesNotExist:
-            return make_response(status_code=400, data={"message": "TaskRecord not found."})
+            return make_response(status_code=404, data={'message': 'Task_record not found'})
 
-        data = {"task_id": task_record.task_id.id}
-        return make_response(status_code=1, data=data)
+        try:
+            minicomment = models.Minicomment(task_record_id=task_record, comment=data["comment"])
+            minicomment.save()
+        except models.TaskRecord.DoesNotExist:
+            pass
+
+        data = {"task_record_id": str(minicomment.task_record_id)}
+        return make_response(status_code=200, data=data)
 
     def patch(self, request, format=None):
         try:
-            data = get_json(request, serializers.TaskRecord_create)  # Assuming TaskRecord_create is a valid serializer
+            data = get_json(request, serializers.MiniComment_update)
         except RequestInvalid:
             return make_response(status_code=400)
 
         try:
-            task_record = models.TaskRecord.objects.get(id=data["task_record_id"])
-            task_record.comment = data["comment"]
-            task_record.save()
+            minicomment = models.Minicomment.objects.get(id=data["minicomment_id"])
+            minicomment.comment = data["comment"]
+            minicomment.save()
         except models.TaskRecord.DoesNotExist:
-            return make_response(status_code=400, data={"message": "TaskRecord not found."})
+            return make_response(status_code=400, data={"message": "Minicomment not found."})
+
+        data = {"task_record_id": str(minicomment.task_record_id)}
+        return make_response(status_code=200, data=data)
