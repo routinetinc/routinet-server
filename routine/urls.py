@@ -15,7 +15,7 @@ urlpatterns += [
     path('task/', views.Task.as_view()),
     path('timetree/before/get/', TimeTreeBefore.as_view()),
     path('timetree/after/get/', TimeTreeAfter.as_view()),
-    path('timetree/before_after/get/', TimeTreeAfterToBefore.as_view())
+    path('timetree/before_after/get/', TimeTreeAfterToBefore.as_view()),
     path('task/finish/', views.NoAvailableTask.as_view()),
     path('task/minicomment/', views.MiniComment.as_view()),
     path('routine_task/', views.RoutineTask.as_view()),
