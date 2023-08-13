@@ -4,6 +4,7 @@ secret.py
 *.pgpass
 *.psql_cnf
 bin/
+tempCodeRunnerFile.*
 
 # Original dir and files for shogo07xx.
 \#Note/

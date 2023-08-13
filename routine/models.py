@@ -90,8 +90,8 @@ class TaskRecord(models.Model):
         return f'{self.task_id}'
     
 class Minicomment(models.Model):
-    table_name  = 'minicomment'
-    task_record_id     = models.ForeignKey(TaskRecord, on_delete=models.PROTECT)
-    comment     = models.CharField(max_length=120)
+    table_name     = 'minicomment'
+    task_record_id = models.ForeignKey(TaskRecord, on_delete=models.PROTECT)
+    comment        = models.CharField(max_length=120)
     def __str__(self):
         return f'{self.task_record_id}'
