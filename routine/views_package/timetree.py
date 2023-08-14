@@ -12,25 +12,29 @@ def _timetree(request, acquisition_range):
         data = get_json(request, serializers.TimeTree)
     except RequestInvalid:
         return make_response(status_code=400)
-    routine_id = data['routine_id']
+    
     if(acquisition_range == -1):
-        n, m, end = 0, -7, 7
+        delta_start_day, delta_end_day, loop_end = 0, -7, 7
     elif(acquisition_range == 0):
-        n, m, end = 7, -7, 14
+        delta_start_day, delta_end_day, loop_end = 7, -7, 14
     elif(acquisition_range == 1):
-        n, m, end = 7, 0, 7
+        delta_start_day, delta_end_day, loop_end = 7, 0, 7
     else:
-        n, m, end = 0, 0, 0
-    start_day: datetime = data['day'] + timedelta(days=n)
-    end_day: datetime = start_day + timedelta(days=m)
+        delta_start_day, delta_end_day, loop_end = 0, 0, 0
+
+    routine_id = data['routine_id']
     tasks = models.Task.objects.filter(routine_id=routine_id).order_by('-id')
 
-    subquery = models.TaskRecord.objects.filter(task_id=OuterRef('task_id'), when__range=[end_day, start_day])
-    task_records = models.TaskRecord.objects.filter(task_id__in=tasks)\
-                                            .annotate(matching_task=Exists(subquery))\
-                                            .filter(matching_task=True).order_by('-when')
+    start_day: datetime = data['day'] + timedelta(days=delta_start_day)
+    end_day:   datetime = start_day   + timedelta(days=delta_end_day)
+    
+    subquery     = models.TaskRecord.objects.filter(task_id=OuterRef('task_id'), when__range=[end_day, start_day])
+    task_records = models.TaskRecord.objects.filter(task_id__in=tasks) \
+                                            .annotate(matching_task=Exists(subquery)) \
+                                            .filter(matching_task=True) \
+                                            .order_by('-when')
     days = []
-    for i in range(end):
+    for i in range(loop_end):
         day = start_day - timedelta(days=i)
         day_str = day
         day_tasks = []
