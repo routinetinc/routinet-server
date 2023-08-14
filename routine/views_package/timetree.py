@@ -36,7 +36,7 @@ def _timetree(request, acquisition_range):
         day_tasks = []
         for task_record in task_records:
             if task_record.when.date() == day.date():
-                task_comment = models.MiniComment.objects.filter(task_record_id=task_record.id).first()
+                task_comment = models.Minicomment.objects.filter(task_record_id=task_record.id).first()
                 comment = task_comment.comment if task_comment else None
                 day_tasks.append({
                     'task_recode_id': str(task_record.id),
