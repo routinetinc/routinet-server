@@ -87,10 +87,10 @@ def insert_routine_task_records(task_records: list[dict]):
     TaskRecord.objects.bulk_create(instance)
     return
 def insert_routine_task_comments(task_comments: list[dict]):
-    instance = [TaskComment(task_record_id=TaskRecord.objects.get(id=tc['task_record_id']),
+    instance = [Minicomment(task_record_id=TaskRecord.objects.get(id=tc['task_record_id']),
                             comment='a')
                 for tc in task_comments]
-    TaskComment.objects.bulk_create(instance)
+    Minicomment.objects.bulk_create(instance)
     return
 
 #* インサートするインスタンスのパラメータを設定
