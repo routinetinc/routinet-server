@@ -1,3 +1,4 @@
+from typing import Any
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from routine.models import NoSQL
@@ -6,6 +7,7 @@ from routine import serializers
 from supplyAuth.models import User as UserModel
 from . import models
 from datetime import datetime, timedelta
+from django.db.models import Q
 
 
 class Hello(APIView):

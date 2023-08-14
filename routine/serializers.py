@@ -7,7 +7,7 @@ class Task_create(serializers.Serializer):  # /routine/task/(POST)
     title         = serializers.CharField(max_length=20, min_length=None, allow_blank=False, trim_whitespace=True)
     detail        = serializers.CharField(max_length=60, min_length=None, allow_blank=True, trim_whitespace=True)
     icon          = serializers.CharField(max_length=1, min_length=None, allow_blank=True, trim_whitespace=True)
-    required_time = serializers.IntegerField(max_value=None, min_value=None)
+    required_time = serializers.IntegerField(max_value=None, min_value=0)
     is_notified   = serializers.BooleanField()
     
 class Routine_create(serializers.Serializer):  # /routine/routine/(POST)
@@ -25,7 +25,7 @@ class Task_update(serializers.Serializer):  # /routine/task/(PATCH)
     title         = serializers.CharField(max_length=20, min_length=None, allow_blank=False, trim_whitespace=True)
     detail        = serializers.CharField(max_length=60, min_length=None, allow_blank=True, trim_whitespace=True)
     icon          = serializers.CharField(max_length=1, min_length=None, allow_blank=True, trim_whitespace=True)
-    required_time = serializers.IntegerField(max_value=None, min_value=None)
+    required_time = serializers.IntegerField(max_value=None, min_value=0)
     is_notified   = serializers.BooleanField()
     
 class Routine_update(serializers.Serializer):  # /routine/routine(PATCH)
@@ -56,3 +56,7 @@ class MiniComment_create(serializers.Serializer): # /routine/task/minicomment/(P
 class MiniComment_update(serializers.Serializer): # /routine/task/minicomment/(PATCH)
     minicomment_id= serializers.IntegerField(max_value=None, min_value=None)
     comment       = serializers.CharField(max_length=50, min_length=None, allow_blank=False, trim_whitespace=False)
+    
+class TimeTree(serializers.Serializer):
+    day           = CustomSerializers.ISOTimeField()
+    routine_id    = serializers.IntegerField(max_value=None, min_value=1)
