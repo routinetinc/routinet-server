@@ -11,9 +11,9 @@ class NoAvailableTask(APIView):
     def post(self, request, format=None):
         try:
             data = get_json(request, serializers.TaskRecord_create)  # Assuming TaskRecord_create is a valid serializer -> ok by shogo
-        except RequestInvalid:
+        except RequestInvalid as e:
+            return make_response(550, data={'error': str(e)})
             return make_response(status_code=400)
-
         try:
             task = models.Task.objects.get(id=data["task_id"])
         except models.Task.DoesNotExist:
@@ -22,8 +22,8 @@ class NoAvailableTask(APIView):
         try:
             task_record = models.TaskRecord(task_id=task, done_time=data.get("done_time"))
             task_record.save()
-        except:
-            pass  # You may want to handle exceptions properly here
+        except Exception as e:
+            return make_response(550, data={'error': str(e)})
 
         data = {"task_record_id": task_record.id}
         return make_response(status_code=1, data=data)

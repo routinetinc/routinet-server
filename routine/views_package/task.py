@@ -10,10 +10,10 @@ class Task(APIView):
     def post(self, request, format=None):
         try:
             datas: dict = get_json(request, serializers.Task_create)
-        except RequestInvalid:
+        except RequestInvalid as e:
+            return make_response(550, data={'error': str(e)})
             return make_response(status_code=400)
         try: 
-            
             try:
                 routine_instance = models.Routine.objects.get(id=datas['routine_id'])
             except models.Routine.DoesNotExist:
@@ -29,7 +29,7 @@ class Task(APIView):
                 )
             t.save()
         except Exception as e:
-            print(e)
+            return make_response(550, data={'error': str(e)})
         datas = {'task_id': t.id}
         return make_response(data = datas)
     
@@ -49,7 +49,8 @@ class Task(APIView):
             t.save()
         except models.Task.DoesNotExist:
             return make_response(status_code=404, data={'message': 'Task not found'})
-        except:
+        except Exception as e:
+            return make_response(550, data={'error': str(e)})       
             return make_response(status_code=400)
         datas = {'task_id': t.id}
         return make_response(data = datas)
@@ -57,13 +58,15 @@ class Task(APIView):
     def delete(self, request, format=None):
         try:
             datas = get_json(request, serializers.Task_delete)
-        except RequestInvalid:
+        except RequestInvalid as e:
+            return make_response(550, data={'error': str(e)})
             return make_response(status_code=400)
         try:
             t = models.Task.objects.get(id=datas['task_id'])
             t.delete()
         except models.Task.DoesNotExist:
             return make_response(status_code=404, data={'message': 'Task not found'})
-        except:
+        except Exception as e:
+            return make_response(550, data={'error': str(e)})
             return make_response(status_code=400)
         return make_response(status_code=200, data={'message': 'Task deleted successfully'})
