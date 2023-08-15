@@ -15,18 +15,22 @@ class RequestInvalid(Exception):
         return f'\n{RED}{formatted_messages}{END}'    
 
 def get_json(request: HttpRequest, serializer_type: serializers.Serializer):
-    datas = json.loads(request.body)
-    serializer: serializers.Serializer = serializer_type(data=datas['data'])
-    if serializer.is_valid():
-        return serializer.validated_data  
-    else:
-        error_messages = serializer.errors
-        error_message = ''
-        for field, errors in error_messages.items():
-            field_errors = [f'{TwoSpaces}{field}: {error}' for error in errors]
-            error_message += '\n'.join(field_errors) + '\n'
-        print(error_messages)
-        raise RequestInvalid(f'{error_message}')
+    try: 
+        datas = json.loads(request.body)
+        serializer: serializers.Serializer = serializer_type(data=datas['data'])
+        if serializer.is_valid():
+            return serializer.validated_data  
+        else:
+            error_messages = serializer.errors
+            error_message = ''
+            for field, errors in error_messages.items():
+                field_errors = [f'{TwoSpaces}{field}: {error}' for error in errors]
+                error_message += '\n'.join(field_errors) + '\n'
+            print(error_messages)
+            raise RequestInvalid(f'{error_message}')
+    except Exception as e:
+        return make_response(550, data={'error': str(e)})
+
 
 def make_response(status_code:int = 1, data:dict = {}):
     response_dic = {} 
