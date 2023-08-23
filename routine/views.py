@@ -8,6 +8,8 @@ from supplyAuth.models import User as UserModel
 from . import models
 from datetime import datetime, timedelta
 from django.db.models import Q
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 
 class Hello(APIView):
@@ -29,6 +31,9 @@ class Delete(APIView):
         return Response('hello')
 
 class Routine(APIView):
+    # authentication_classes = [SessionAuthentication, BasicAuthentication]
+    # permission_classes = [IsAuthenticated]
+
     def get(self, request, format=None):
         pass
     
@@ -99,6 +104,9 @@ class Routine(APIView):
     
 
 class Task(APIView):
+    # authentication_classes = [SessionAuthentication, BasicAuthentication]
+    # permission_classes = [IsAuthenticated]
+
     def get(self, request, format=None):
         pass
     
@@ -241,6 +249,8 @@ class RoutineTask(APIView):
 
 
 class NoAvailableTask(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated]
     def get(self, request, format=None):
         pass
 
@@ -265,6 +275,8 @@ class NoAvailableTask(APIView):
         return make_response(status_code=1, data=data)
 
 class MiniComment(APIView):
+    # authentication_classes = [SessionAuthentication, BasicAuthentication]
+    # permission_classes = [IsAuthenticated]
     def get(self, request, format=None):
         pass
 
