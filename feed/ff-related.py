@@ -111,16 +111,16 @@ def get_follower_ids(user_id: int):
 n = 15
 if __name__ == "__main__":
     def _create_node_and_set_edge(n: int):
-        txs  = [(tx_create_userff, i, 0, 0) for i in range(n + 1)]
-        txs += [(tx_set_follows, *random.sample(tuple(range(1, n)), 2)) for _ in range(1, 5 + 1)]
+        txs  = [(tx_create_userff, i, 0, 0) for i in range(1, n + 1)]
+        txs += [(tx_set_follows, *random.sample(tuple(range(1, n - 5)), 2)) for _ in range(1, 5 + 1)]
         with driver.session() as session:
             for tx in txs:
                 session.execute_write(*tx)
     def _read_edge(n: int):
-        for i in range(1, n):
-            print(str(i) + " -> " + str(get_following_ids(i)))
-        for i in range(1, n):
-            print(str(i) + " <- " + str(get_follower_ids(i)))
+        for user_id in range(1, n):
+            print(str(user_id) + " -> " + str(get_following_ids(user_id)))
+        for user_id in range(1, n):
+            print(str(user_id) + " <- " + str(get_follower_ids(user_id)))
 
     # _delete_all_nodes()
     # _create_node_and_set_edge(n)
