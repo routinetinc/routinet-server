@@ -118,6 +118,7 @@ if __name__ == "__main__":
                 session.execute_write(*tx)
     def _read_edge(n: int):
         for user_id in range(1, n):
+            # 毎回 driver.session() しているので低速であるが、検索自体は比較的高速であると見ている
             print(str(user_id) + " -> " + str(get_following_ids(user_id)))
         for user_id in range(1, n):
             print(str(user_id) + " <- " + str(get_follower_ids(user_id)))
