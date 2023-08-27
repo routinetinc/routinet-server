@@ -38,35 +38,51 @@ def tx_create_userff(tx: Transaction, user_id: int, following: int, followers: i
 
 #* FOLLOWS 関係付け関数
 def tx_set_follows(tx: Transaction, from_user_id: int, to_user_id: int):
-    query = (
-        "MATCH (x:UserFF {user_id: $from_user_id}), (y:UserFF {user_id: $to_user_id}) "
-        "CREATE (x) -[:FOLLOWS]-> (y) "
+    # フォロー関係の存在を確認するクエリ
+    check_query = (
+        "MATCH (x:UserFF {user_id: $from_user_id})-[:FOLLOWS]->(y:UserFF {user_id: $to_user_id}) "
+        "RETURN COUNT(*) AS follow_count"
     )
-
-    def _query_for_update_userff_node():
-        query = (
-            "WITH x, y "  # 上記の Cypher と結合させるため
+    check_result = tx.run(check_query, from_user_id=from_user_id, to_user_id=to_user_id).single()
+    follow_count = check_result["follow_count"]
+    # フォローしていなかった場合
+    if follow_count == 0:
+        # フォローする
+        create_query = (
+            "MATCH (x:UserFF {user_id: $from_user_id}), (y:UserFF {user_id: $to_user_id}) "
+            "CREATE (x)-[:FOLLOWS]->(y) "
+        )
+        # 自身のフォロー人数、相手のフォロワー人数をカウントアップ
+        update_query = (
+            "WITH x, y "
             "MATCH (u:UserFF {user_id: $from_user_id}) "
             "SET u.following = u.following + 1 "
             "WITH u "
             "MATCH (v:UserFF {user_id: $to_user_id}) "
             "SET v.followers = v.followers + 1 "
         )
-        return query
-    # トランザクションの範囲を広げて複数操作を 1 セットとして扱うためクエリを結合
-    query += _query_for_update_userff_node()
-    tx.run(query, from_user_id=from_user_id, to_user_id=to_user_id)
+        query = create_query + update_query
+        tx.run(query, from_user_id=from_user_id, to_user_id=to_user_id)
     
 
 #* FOLLOWS 関係解除関数
-def tx_unset_follows(tx:Transaction, from_user_id: int, to_user_id: int):
-    query = (
-        "MATCH (x) -[r:FOLLOWS]-> (y) " 
-        "WHERE x.user_id = $from_user_id AND y.user_id = $to_user_id " 
-        "DELETE r"
+def tx_unset_follows(tx: Transaction, from_user_id: int, to_user_id: int):
+    # フォロー関係が存在するかを確認するクエリ
+    check_query = (
+        "MATCH (x:UserFF {user_id: $from_user_id})-[:FOLLOWS]->(y:UserFF {user_id: $to_user_id}) "
+        "RETURN COUNT(*) AS follow_count"
     )
-    def _query_for_update_userff_node():
-        query = (
+    check_result = tx.run(check_query, from_user_id=from_user_id, to_user_id=to_user_id).single()
+    follow_count = check_result["follow_count"]
+    # フォローしていた場合
+    if follow_count > 0:
+        # フォロー解除
+        delete_query = (
+            "MATCH (x:UserFF {user_id: $from_user_id})-[:FOLLOWS]->(y:UserFF {user_id: $to_user_id}) "
+            "DELETE r"
+        )
+        # 自身のフォロー人数、相手のフォロワー人数をカウントダウン
+        update_query = (
             "WITH x, y "
             "MATCH (u:UserFF {user_id: $from_user_id}) "
             "SET u.following = u.following - 1 "
@@ -74,15 +90,15 @@ def tx_unset_follows(tx:Transaction, from_user_id: int, to_user_id: int):
             "MATCH (v:UserFF {user_id: $to_user_id}) "
             "SET v.followers = v.followers - 1 "
         )
-        return query
-    query += _query_for_update_userff_node()
-    tx.run(query, from_user_id=from_user_id, to_user_id=to_user_id)
+        query = delete_query + update_query
+        tx.run(query, from_user_id=from_user_id, to_user_id=to_user_id)
+
 
 
 #* あるユーザーのフォロー先のユーザーIDを一覧取得
 def tx_get_following_ids(tx: Transaction, user_id: int):
     query = (
-        "MATCH (x:UserFF {user_id: $user_id}) -[:FOLLOWS]-> (y:UserFF) "
+        "MATCH (x:UserFF {user_id: $user_id})-[:FOLLOWS]->(y:UserFF) "
         "RETURN y.user_id AS following_id"
     )
     result = tx.run(query, user_id=user_id)
@@ -96,7 +112,7 @@ def get_following_ids(user_id: int):
 #* あるユーザーのフォロワーのユーザーIDを一覧取得
 def tx_get_follower_ids(tx: Transaction, user_id: int):
     query = (
-        "MATCH (x:UserFF {user_id: $user_id}) <-[:FOLLOWS]- (y:UserFF) "
+        "MATCH (x:UserFF {user_id: $user_id})<-[:FOLLOWS]-(y:UserFF) "
         "RETURN y.user_id as follower_id"
     )
     result = tx.run(query, user_id=user_id)
@@ -112,13 +128,13 @@ n = 15
 if __name__ == "__main__":
     def _create_node_and_set_edge(n: int):
         txs  = [(tx_create_userff, i, 0, 0) for i in range(1, n + 1)]
-        txs += [(tx_set_follows, *random.sample(tuple(range(1, n - 5)), 2)) for _ in range(1, 5 + 1)]
+        txs += [(tx_set_follows, *random.sample(tuple(range(1, n - 10)), 2)) for _ in range(1, 5 + 1)]
         with driver.session() as session:
             for tx in txs:
                 session.execute_write(*tx)
     def _read_edge(n: int):
         for user_id in range(1, n):
-            # 毎回 driver.session() しているので低速であるが、検索自体は比較的高速であると見ている
+            # get_following_ids 関数の仕様上、毎回 driver.session() が発生していることに留意
             print(str(user_id) + " -> " + str(get_following_ids(user_id)))
         for user_id in range(1, n):
             print(str(user_id) + " <- " + str(get_follower_ids(user_id)))
