@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "routine.apps.RoutineConfig",
     "supplyAuth.apps.SupplyauthConfig",
+    "feed.apps.FeedConfig",
 ]
 
 AUTH_USER_MODEL = "supplyAuth.User" # accountアプリのUserモデルをデフォルトで使用する認証ユーザーモデルとして設定する
