@@ -141,7 +141,7 @@ class Edge:
                 return
 
 class Execute:
-    """ 一回のセッションで複数のトランザクションを実行 """
+    """ 1 回のセッションで単体または複数のトランザクションを実行 """
     @classmethod
     def write_multi(cls, txs: list[tuple]):
         with driver.session() as session:
