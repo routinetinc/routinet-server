@@ -10,7 +10,7 @@ class Node:
     """ ノードまたはノードの属性の作成、取得、更新、削除 """
     @classmethod
     def _delete_all(cls):
-        """ 全ノード削除実行 """
+        """ 全ノード削除 `実行` """
         with driver.session() as session:
             # ノードのラベルを全種類取得する関数
             def _tx_get_node_labels(tx: Transaction):
@@ -18,7 +18,7 @@ class Node:
                 result = tx.run(query)
                 return [record['label'] for record in result]
             # あるラベルのノードを全て削除する関数
-            def _tx_delete_nodes_with_label(tx: Transaction, label):
+            def _tx_delete_nodes_with_label(tx: Transaction, label: str):
                 query = f'MATCH (u:{label}) DETACH DELETE u'
                 tx.run(query)
             # ラベルを一括取得
@@ -33,8 +33,15 @@ class Node:
             """ トランザクションの設計 """
             @classmethod
             def create(cls, tx: Transaction, user_id: int, following: int, followers: int) -> None:
+                """ ノード作成 """
                 query = 'CREATE (:UserFF {user_id: $user_id, following: $following, followers: $followers})'
                 tx.run(query, user_id=user_id, following=following, followers=followers)
+                return 
+            @classmethod
+            def delete(cls, tx: Transaction, user_id):
+                """ ノード削除 """
+                query = 'MATCH (u:UserFF {user_id: $user_id}) DETACH DELETE u'
+                tx.run(query, user_id=user_id)
                 return 
             @classmethod
             def read_following_ids(cls, tx: Transaction, user_id: int) -> list[int]:
@@ -66,6 +73,7 @@ class Node:
             with driver.session() as session:
                 follower_ids = session.execute_read(cls.TX.read_follower_ids, user_id)
             return follower_ids  
+        
 
 
 class Edge:
@@ -135,18 +143,28 @@ class Edge:
 class Execute:
     """ 一回のセッションで複数のトランザクションを実行 """
     @classmethod
-    def write(cls, txs: list[tuple]):
+    def write_multi(cls, txs: list[tuple]):
         with driver.session() as session:
             for tx in txs:
                 session.execute_write(*tx)
         return 
     @classmethod
-    def read(cls, txs: list[tuple]):
+    def read_multi(cls, txs: list[tuple]):
         stores = []
         with driver.session() as session:
             for tx in txs:
                 stores.append = session.execute_read(*tx)
         return stores
+    @classmethod
+    def write_single(cls, *tx):
+        with driver.session() as session:
+            session.execute_write(*tx)
+        return 
+    @classmethod
+    def read_single(cls, *tx):
+        with driver.session() as session:
+            store = session.execute_write(*tx)
+        return store
 
 #* テスト
 n = 15
@@ -155,13 +173,20 @@ if __name__ == '__main__':
     txs += [(Edge.FOLLOWS.TX.create, *random.sample(tuple(range(1, n - 10)), 2)) for _ in range(1, 5 + 1)]
     def __read_edge(n: int):
         for user_id in range(1, n):
-            # get_following_ids 関数の仕様上、毎回 driver.session() が発生していることに留意
-            print(str(user_id) + ' -> ' + str(Node.UserFF.read_following_ids(user_id)))
+            try: 
+                # get_following_ids 関数の仕様上、毎回 driver.session() が発生していることに留意
+                print(str(user_id) + ' -> ' + str(Node.UserFF.read_following_ids(user_id)))
+            except:
+                pass
         for user_id in range(1, n):
-            print(str(user_id) + ' <- ' + str(Node.UserFF.read_follower_ids(user_id)))
+            try:
+                print(str(user_id) + ' <- ' + str(Node.UserFF.read_follower_ids(user_id)))
+            except:
+                pass
 
     Node._delete_all()
-    Execute.write(txs)
+    Execute.write_multi(txs)
+    Execute.write_single(Node.UserFF.TX.delete, 5)
     __read_edge(n)
 
     pass
