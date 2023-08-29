@@ -3,8 +3,7 @@ import secret
 import boto3
 
 class NoSQLBase(models.Model):
-    def __init__(self):
-        self.table_name = ''
+    table_name = ''
         
     class Meta:
         abstract = True
@@ -16,30 +15,27 @@ class NoSQLBase(models.Model):
         return dynamodb.Table(self.table_name)
     
     @classmethod
-    def create(self, Item):
-        response = self.client.put_item(
-                    TableName=self.table_name,
-                    Item=Item
-        )
+    def create(cls, Item):
+        table = cls.get_dynamodb_table()
+        table.put_item(Item = Item)
     
     @classmethod
-    def get(cls, id):
+    def get(cls, key):
         table = cls.get_dynamodb_table()
-        response = table.get_item(Key={'id': id})
+        response = table.get_item(Key=key)
         item = response.get('Item')
         if item:
             return item
         return None
     
     @classmethod
-    def delete(cls, id):
+    def delete(cls, key):
         table = cls.get_dynamodb_table()
-        table.delete_item(Key={'id': id})
+        table.delete_item(Key=key)
         
 class Cache():
     class User(NoSQLBase):
         table_name = 'usercache'
-        client = boto3.client('dynamodb')
     
     class InterestCAT(NoSQLBase):
         table_name = 'usercache'
