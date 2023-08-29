@@ -144,12 +144,14 @@ class Execute:
     """ 1 回のセッションで単体または複数のトランザクションを実行 """
     @classmethod
     def write_multi(cls, txs: list[tuple]):
+        """ 複数の書き込みがあるトランザクションを実行 """
         with driver.session() as session:
             for tx in txs:
                 session.execute_write(*tx)
         return 
     @classmethod
     def read_multi(cls, txs: list[tuple]):
+        """ 複数の戻り値があるトランザクションを実行 """
         stores = []
         with driver.session() as session:
             for tx in txs:
@@ -157,11 +159,13 @@ class Execute:
         return stores
     @classmethod
     def write_single(cls, *tx):
+        """ 1 つの書き込みがあるトランザクションを実行 """
         with driver.session() as session:
             session.execute_write(*tx)
         return 
     @classmethod
     def read_single(cls, *tx):
+        """ 1 つの戻り値があるトランザクションを実行 """
         with driver.session() as session:
             store = session.execute_write(*tx)
         return store
