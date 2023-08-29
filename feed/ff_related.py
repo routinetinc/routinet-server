@@ -2,13 +2,6 @@ import random
 from neo4j import GraphDatabase, Transaction
 from secret import LocalNeo4jDB as Neo4j
 
-""" [命名規則]
-    トランザクションを定義する関数は名前に <tx_> という接頭辞を持つ
-    ノードの作成、更新、削除を定義する関数は名前に <create, update, delete> という単語を持つ
-    エッジの紐づけ、解除を定義する関数は名前に <set, unset> という単語を持つ
-    読み取りのための関数は名前に <read> という単語を持つ
-    関数は関連するノードまたはエッジのラベル名を名前に持つ
-"""
 
 #* Neo4jデータベースに接続するための設定
 driver = GraphDatabase.driver(Neo4j.uri, auth=(Neo4j.user, Neo4j.password))
