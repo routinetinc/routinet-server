@@ -12,18 +12,14 @@ class NoAvailableTask(APIView):
         try:
             data = get_json(request, serializers.TaskRecord_create)  # Assuming TaskRecord_create is a valid serializer -> ok by shogo
         except RequestInvalid as e:
-            return make_response(550, data={'error': str(e)})
             return make_response(status_code=400)
         try:
             task = models.Task.objects.get(id=data["task_id"])
         except models.Task.DoesNotExist:
             return make_response(status_code=404, data={'message': 'Task not found'})
             
-        try:
-            task_record = models.TaskRecord(task_id=task, done_time=data.get("done_time"))
-            task_record.save()
-        except Exception as e:
-            return make_response(550, data={'error': str(e)})
+        task_record = models.TaskRecord(task_id=task, done_time=data.get("done_time"))
+        task_record.save()
 
         data = {"task_record_id": task_record.id}
         return make_response(status_code=1, data=data)

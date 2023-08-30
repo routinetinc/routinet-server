@@ -57,7 +57,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'KGAvengers.middleware_myself.MyCustomMiddleware'
+    'KGAvengers.middleware_myself.MyCustomMiddleware',
+    'KGAvengers.middleware_myself.HandleError',
 ]
 
 ROOT_URLCONF = 'KGAvengers.urls'
@@ -83,35 +84,7 @@ WSGI_APPLICATION = 'KGAvengers.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-""" DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-} """
-
-"""DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'HOST': '/cloudsql/my-project-test-385602:asia-northeast2:test',
-        'USER': 'superuser',
-        'PASSWORD': 'postgres',
-        'NAME': 'test',
-    }   
-}  -> secret.RemoteDB.DATABASES に移動 """
-
 DATABASES = secret.LocalDB.DATABASES
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'HOST': 'localhost',
-#         'USER': '####',
-#         'PASSWORD': '####',
-#         'NAME': 'KGAvengers',
-#     }   
-# } 
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -131,6 +104,37 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+#ログ出力先のディレクトリを設定する
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"simple": {"format": "%(asctime)s [%(levelname)s] %(message)s"}},
+    "handlers": {
+        "info": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "info.log"),
+            "formatter": "simple",
+        },
+        "warning": {
+            "level": "WARNING",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "warning.log"),
+            "formatter": "simple",
+        },
+        "error": {
+            "level": "ERROR",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "error.log"),
+            "formatter": "simple",
+        },
+    },
+    "root": {
+        "handlers": ["info", "warning", "error"],
+        "level": "INFO",
+    },
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
