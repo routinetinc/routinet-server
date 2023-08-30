@@ -57,7 +57,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'KGAvengers.middleware_myself.MyCustomMiddleware'
+    'KGAvengers.middleware_myself.MyCustomMiddleware',
+    'KGAvengers.middleware_myself.HandleError',
 ]
 
 ROOT_URLCONF = 'KGAvengers.urls'
