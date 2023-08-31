@@ -1,12 +1,9 @@
 from functools import partial
 import random
-from typing import Any, Final
 from neo4j import GraphDatabase, Driver, Transaction, Session
 from django.db import transaction, connection
 from django.db.backends.base.base import BaseDatabaseWrapper as BDW
 from secret import LocalNeo4jDB as Neo4j
-import psycopg2
-from psycopg2 import sql
 from supplyAuth.models import User as UserModel
 from feed.models import FeedPost as FeedPostModel
 
