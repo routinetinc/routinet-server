@@ -12,9 +12,6 @@ urlpatterns = [
 ]
 
 urlpatterns += [
-    path('hello/', views.Hello.as_view()),
-    path('read/', views.Read.as_view()),
-    path('delete/', views.Delete.as_view()),
     path('routine/', Routine.as_view()),
     path('task/', Task.as_view()),
     path('timetree/before/get/', TimeTreeBefore.as_view()),
