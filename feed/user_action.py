@@ -317,22 +317,22 @@ class Edge:
         class _TX:
             """ トランザクションの設計 """
             @staticmethod
-            def create_to_feed_post(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
+            def create_to_feed(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
                 """ いいね """
                 _UtilityAboutEdge.create_by_user_action(tx, from_user_id, to_feed_post_id, label='LIKES')
                 return
             @staticmethod
-            def delete_to_feed_post(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
+            def delete_to_feed(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
                 """ いいね取り消し """
                 _UtilityAboutEdge.delete_by_user_action(tx, from_user_id, to_feed_post_id, label='LIKES')
                 return
         @classmethod
-        def create(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
+        def create_to_feed(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
             """ いいね実行 """
             session.execute_write(cls._TX.create_to_feed_post, from_user_id, to_user_id)
             return
         @classmethod
-        def delete(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
+        def delete_to_feed(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
             """ いいね取り消し実行 """
             session.execute_write(cls._TX.create_to_feed_post, from_user_id, to_user_id)
             return
@@ -341,22 +341,22 @@ class Edge:
         class _TX:
             """ トランザクションの設計 """
             @staticmethod
-            def create_to_feed_post(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
+            def create_to_feed(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
                 """ ブックマークへ追加 """
                 _UtilityAboutEdge.create_by_user_action(tx, from_user_id, to_feed_post_id, label='BOOKMARKS')
                 return
             @staticmethod
-            def delete_to_feed_post(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
+            def delete_to_feed(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
                 """ ブックマーク削除 """
                 _UtilityAboutEdge.delete_by_user_action(tx, from_user_id, to_feed_post_id, label='BOOKMARKS')
                 return
         @classmethod
-        def create(cls, session: Session, to_feed_post_id: int) -> None:
+        def create_to_feed(cls, session: Session, to_feed_post_id: int) -> None:
             """ ブックマークへ追加実行 """
             session.execute_write(cls._TX.create_to_feed_post, to_feed_post_id)
             return
         @classmethod
-        def delete(cls, session: Session, to_feed_post_id: int) -> None:
+        def delete_to_feed(cls, session: Session, to_feed_post_id: int) -> None:
             """ ブックマーク削除実行 """
             session.execute_write(cls._TX.create_to_feed_post, to_feed_post_id)
             return
@@ -370,15 +370,15 @@ if __name__ == '__main__':
             Node.User.create(session, i)
             Node.FeedPost.create(session, i)
             Edge.FOLLOWS.create(session, *random.sample(tuple(range(1, n - 10)), 2))            
-            Edge.LIKES.create(session, *random.sample(tuple(range(1, n - 10)), 2))            
-            Edge.BOOKMARKS.create(session, *random.sample(tuple(range(1, n - 10)), 2))   
+            Edge.LIKES.create_to_feed(session, *random.sample(tuple(range(1, n - 10)), 2))            
+            Edge.BOOKMARKS.create_to_feed(session, *random.sample(tuple(range(1, n - 10)), 2))   
 
         def __read_edge(n: int):
             #WARNING 存在しないノードを対象に探索していたとしてもエラーは吐かない
             for user_id in range(1, n):
-                print(f'{user_id} -> {Node.User.read_follows_user_ids(user_id)}')
+                print(f'{user_id} -> {Node.User.read_follows_user_ids(session, user_id)}')
             for user_id in range(1, n):
-                print(f'{user_id} <- {Node.User.read_followed_user_ids(user_id)}')
+                print(f'{user_id} <- {Node.User.read_followed_user_ids(session, user_id)}')
 
         Node._delete_all()
         __read_edge(n)
