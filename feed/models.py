@@ -1,6 +1,11 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 import secret
 import boto3
+from django.contrib.postgres.fields import ArrayField
+from supplyAuth.models import User  # 2つ目のmodels.pyからインポート
+from routine.fields import CustomModels  # 1つ目のmodels.pyから仮にインポート（必要に応じて）
+from routine.models import Interest, TaskRecord  # 1つ目のmodels.pyからインポート
 
 class NoSQLBase(models.Model):
     table_name = ''
@@ -40,3 +45,42 @@ class Cache():
     class InterestCAT(NoSQLBase):
         table_name = 'usercache'
 
+# Challengeモデルは独自に定義（適切な場所からインポートする必要があるかもしれません）
+class Challenge(models.Model):
+    name = models.CharField(max_length=255)
+
+class FeedPost(models.Model):
+    table_name = "feed_post"
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    sentence = models.CharField(max_length=400, blank=True)
+    media_id = models.IntegerField(null=True, blank=True)
+    post_time = models.DateTimeField()
+    good_num = models.IntegerField(default=0)
+    interests = ArrayField(Interest)
+    challenge = models.ForeignKey(Challenge, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return self.sentence
+
+
+    def __str__(self):
+        return self.sentence
+
+class FeedPostComment(models.Model):
+    feed_post = models.ForeignKey(FeedPost, on_delete=models.CASCADE)
+    post_time = models.DateTimeField()
+    media_id = models.IntegerField(null=True, blank=True)
+    good_num = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"Comment by {self.feed_post.user} on {self.post_time}"
+    
+
+class TaskRecordComment(models.Model):
+    task_record = models.ForeignKey(TaskRecord, on_delete=models.CASCADE)
+    post_time = models.DateTimeField()
+    media_id = models.IntegerField(null=True, blank=True)
+    good_num = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"Comment on TaskRecord {self.task_record.id} at {self.post_time}"
