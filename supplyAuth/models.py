@@ -85,5 +85,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
 
+
+    following = models.IntegerField(default=0)
+    follower = models.IntegerField(default=0)
+    
     def __str__(self):
         return self.username

@@ -1,52 +1,18 @@
-# import os
-# os.chdir('../..')
-# os.environ['DJANGO_SETTINGS_MODULE'] = 'KGAvengers.settings'
-# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'KGAvengers.settings')
-# import django
-# django.setup()
-#* ---------------------------------------------------------------------- *# 
+from functools import partial
 import random
 from typing import Any, Final
 from neo4j import GraphDatabase, Driver, Transaction, Session
-from secret import LocalNeo4jDB as Neo4j
-from django.db import connections
+from django.db import transaction, connection
 from django.db.backends.base.base import BaseDatabaseWrapper as BDW
+from secret import LocalNeo4jDB as Neo4j
+import psycopg2
 from psycopg2 import sql
-from psycopg2.extensions import cursor
+from supplyAuth.models import User as UserModel
+from feed.models import FeedPost as FeedPostModel
 
-#* PostgreSQL, Neo4j データベースに接続するために必要
-pg_connection: BDW = connections['default']
+#* PostgreSQL, Neo4j データベースに接続するために必要な情報を設定
+pg_connection: BDW = connection['default']
 driver: Driver = GraphDatabase.driver(Neo4j.uri, auth=(Neo4j.user, Neo4j.password))
-
-# class Execute:
-#     """ 1 回のセッションで単数または複数のトランザクションを実行 """
-#     @staticmethod
-#     def write_multi(txs: list[tuple]) -> None:
-#         """ 複数のトランザクション (書き込み) を実行 """
-#         with driver.session() as session:
-#             for tx in txs:
-#                 session.execute_write(*tx)
-#         return 
-#     @staticmethod
-#     def read_multi(txs: list[tuple]) -> list[Any]:
-#         """ 複数のトランザクション (取得) を実行 """
-#         stores = []
-#         with driver.session() as session:
-#             for tx in txs:
-#                 stores.append = session.execute_read(*tx)
-#         return stores
-#     @staticmethod
-#     def write_single(*tx) -> None:
-#         """ 1 つのトランザクション (書き込み) を実行 """
-#         with driver.session() as session:
-#             session.execute_write(*tx)
-#         return 
-#     @staticmethod
-#     def read_single(*tx) -> Any:
-#         """ 1 つのトランザクション (取得) を実行 """
-#         with driver.session() as session:
-#             store = session.execute_read(*tx)
-#         return store
 
 
 class Node:
@@ -57,15 +23,13 @@ class Node:
         with driver.session() as session:
             # ノードのラベルを全種類取得する関数
             def _tx_get_node_labels(tx: Transaction):
-                query = 'MATCH (n) UNWIND labels(n) AS label RETURN DISTINCT label'
-                with driver.session().begin_transaction() as tx:
-                    result = tx.run(query)
+                cypher = 'MATCH (n) UNWIND labels(n) AS label RETURN DISTINCT label'
+                result = tx.run(cypher)
                 return [record['label'] for record in result]
             # あるラベルのノードを全て削除する関数
             def _tx_delete_nodes_with_label(tx: Transaction, label: str):
-                query = f'MATCH (u:{label}) DETACH DELETE u'
-                with driver.session().begin_transaction() as tx:
-                    tx.run(query)
+                cypher = f'MATCH (u:{label}) DETACH DELETE u'
+                tx.run(cypher)
             # ラベルを一括取得
             labels = session.execute_read(_tx_get_node_labels)
             # ラベルごとにノードを削除
@@ -78,52 +42,61 @@ class Node:
             """ トランザクションの設計 """
             @staticmethod
             def create(tx: Transaction, user_id: int) -> None:
-                """ ノード作成 """
-                query = 'CREATE (:User {user_id: $user_id})'
-                tx.run(query, user_id=user_id)
+                """ user_id となるノードを作成 """
+                cypher = 'CREATE (:User {user_id: $user_id})'
+                tx.run(cypher, user_id=user_id)
                 return 
             @staticmethod
-            def delete(tx: Transaction, user_id):
-                """ user_id が一致するノード削除 """
-                query = 'MATCH (u:User {user_id: $user_id}) DETACH DELETE u'
-                tx.run(query, user_id=user_id)
+            def delete(tx: Transaction, user_id: int) -> None:
+                """ user_id が一致するノードを削除 """
+                cypher = 'MATCH (u:User {user_id: $user_id}) DETACH DELETE u'
+                tx.run(cypher, user_id=user_id)
                 return 
             @staticmethod
             def read_follows_user_ids(tx: Transaction, user_id: int) -> list[int]:
                 """ フォロー中のユーザー ID 一覧を取得 """
-                query = (
+                cypher = (
                     'MATCH (x:User {user_id: $user_id})-[:FOLLOWS]->(y:User) '
                     'RETURN y.user_id AS following_id'
                 )
-                result = tx.run(query, user_id=user_id)
+                result = tx.run(cypher, user_id=user_id)
                 return [record['following_id'] for record in result]
             @staticmethod
             def read_followed_user_ids(tx: Transaction, user_id: int) -> list[int]:
                 """ フォロワーの ID 一覧を取得 """
-                query = (
+                cypher = (
                     'MATCH (x:User {user_id: $user_id})<-[:FOLLOWS]-(y:User) '
                     'RETURN y.user_id as follower_id'
                 )
-                result = tx.run(query, user_id=user_id)
+                result = tx.run(cypher, user_id=user_id)
                 return [record['follower_id'] for record in result]
             @staticmethod
             def read_likes_feed_post_ids(tx: Transaction, user_id: int) -> list[int]:
                 """ このユーザーがいいねしている Feed 投稿の ID 一覧を取得 """
-                query = (
+                cypher = (
                     'MATCH (u:User {user_id: $user_id})-[:LIKES]->(p:FeedPost) '
                     'RETURN p.post_id AS post_id'
                 )
-                result = tx.run(query, user_id=user_id)
+                result = tx.run(cypher, user_id=user_id)
                 return [record['post_id'] for record in result]
             @staticmethod
             def read_bookmarks_feed_post_ids(tx: Transaction, user_id: int) -> list[int]:
                 """ このユーザーがブックマークしている Feed 投稿の ID 一覧を取得 """
-                query = (
+                cypher = (
                     'MATCH (u:User {user_id: $user_id})-[:BOOKMARKS]->(p:FeedPost) '
                     'RETURN p.post_id AS post_id'
                 )
-                result = tx.run(query, user_id=user_id)
+                result = tx.run(cypher, user_id=user_id)
                 return [record['post_id'] for record in result]
+        @classmethod
+        def create(cls, session: Session, user_id: int) -> None:
+            """ user_id となるノードを作成実行 """
+            session.execute_write(cls.TX.create, user_id)       
+            return
+        def delete(cls, session: Session, user_id: int) -> None:
+            """ user_id が一致するノードを削除実行 """
+            session.execute_write(cls.TX.delete, user_id)       
+            return
         @classmethod
         def read_follows_user_ids(cls, session: Session, user_id: int) -> list[int]:
             """ Return: フォロー中のユーザー ID 一覧 """
@@ -149,94 +122,171 @@ class Node:
         class TX:
             @staticmethod
             def create(tx: Transaction, post_id: int) -> None:
-                """ ノード作成 """
-                query = 'CREATE (:FeedPost {post_id: $post_id})'
-                tx.run(query, post_id=post_id)
+                """ post_id となるノードを作成 """
+                cypher = 'CREATE (:FeedPost {post_id: $post_id})'
+                tx.run(cypher, post_id=post_id)
                 return 
             @staticmethod
-            def delete(tx: Transaction, post_id):
+            def delete(tx: Transaction, post_id: int) -> None:
                 """ post_id が一致するノード削除 """
-                query = 'MATCH (p:FeedPost {post_id: $post_id}) DETACH DELETE p'
-                tx.run(query, post_id=post_id)
+                cypher = 'MATCH (p:FeedPost {post_id: $post_id}) DETACH DELETE p'
+                tx.run(cypher, post_id=post_id)
                 return 
             @staticmethod
             def read_liked_user_ids(tx: Transaction, post_id: int) -> list[int]:
                 """ この投稿にいいねしているユーザーの ID 一覧を取得 """
-                query = (
+                cypher = (
                     'MATCH (p:FeedPost {post_id: $post_id})<-[:LIKES]-(u:User) '
                     'RETURN u.user_id AS user_id'
                 )
-                result = tx.run(query, post_id=post_id)
+                result = tx.run(cypher, post_id=post_id)
                 return [record['user_id'] for record in result]
             @staticmethod
             def read_bookmarked_user_ids(tx: Transaction, post_id: int) -> list[int]:
                 """ この投稿をブックマークしているユーザーの ID 一覧を取得 """
-                query = (
+                cypher = (
                     'MATCH (p:FeedPost {post_id: $post_id})<-[:BOOKMARKS]-(u:User) '
                     'RETURN u.user_id AS user_id'
                 )
-                result = tx.run(query, post_id=post_id)
-                return [record['user_id'] for record in result]            
+                result = tx.run(cypher, post_id=post_id)
+                return [record['user_id'] for record in result]   
         @classmethod
-        def read_liked_user_ids(cls, *post_ids: int) -> list[dict]:
-            """ Return: これらの投稿にいいねしているユーザーの ID 一覧 """
-            user_ids = []
-            with driver.session() as session:
-                for post_id in post_ids:
-                    user_ids.append({'post_id': post_id, 'user_ids': session.execute_read(cls.read_liked_user_ids, post_id)})
-            return user_ids
+        def create(cls, session: Session, post_id: int) -> None:
+            """ post_id となるノードを作成実行 """
+            session.execute_write(cls.TX.create, post_id)
+            return
         @classmethod
-        def read_bookmarked_user_ids(cls, *post_ids: int) -> list[dict]:
-            """ Return: これらの投稿をブックマークしているユーザーの ID 一覧 """
-            user_ids = []
-            with driver.session() as session:
-                for post_id in post_ids:
-                    user_ids.append({'post_id': post_id, 'user_ids': session.execute_read(cls.read_bookmarked_user_ids, post_id)})
-            return user_ids
+        def delete(cls, session: Session, post_id: int) -> None:
+            """ post_id が一致するノードを削除実行 """
+            session.execute_write(cls.TX.delete, post_id)
+            return         
+        @classmethod
+        def read_liked_user_ids(cls, session: Session, post_id: int) -> list[int]:
+            """ Return: その投稿にいいねしているユーザーの ID 一覧 """
+            return session.execute_read(cls.TX.read_liked_user_ids, post_id)
+        @classmethod
+        def read_bookmarked_user_ids(cls, session: Session, post_id: int) -> list[int]:
+            """ Return: その投稿をブックマークしているユーザーの ID 一覧 """
+            return session.execute_read(cls.TX.read_bookmarked_user_ids, post_id)
 
 
 class UtilityAboutEdge:
-    @staticmethod
-    def _create_by_user_action(tx: Transaction, from_user_id: int, to_id: int, label: str) -> None:
+    class PGRun:
+        def create_follows(from_user_id: int, to_user_id: int) -> None:
+            from_u: UserModel = UserModel.objects.get(id=from_user_id)
+            to_u:   UserModel = UserModel.objects.get(id=to_user_id)
+            from_u.following += 1 
+            to_u.follower    += 1 
+            from_u.save()
+            to_u.save()
+            return
+        def delete_follows(from_user_id: int, to_user_id: int) -> None:
+            from_u: UserModel = UserModel.objects.get(id=from_user_id)
+            to_u:   UserModel = UserModel.objects.get(id=to_user_id)
+            from_u.following -= 1 
+            to_u.follower    -= 1 
+            from_u.save()
+            to_u.save()
+            return
+        def create_likes(to_feed_post_id: int) -> None:
+            p: FeedPostModel = FeedPostModel.objects.get(id=to_feed_post_id)
+            p.like_num      += 1 
+            p.save()
+            return
+        def delete_likes(to_feed_post_id: int) -> None:
+            p: FeedPostModel = FeedPostModel.objects.get(id=to_feed_post_id)
+            p.like_num      -= 1 
+            p.save()
+            return
+        def create_bookmarks(to_feed_post_id: int) -> None:
+            p: FeedPostModel = FeedPostModel.objects.get(id=to_feed_post_id)
+            p.bookmark_num  += 1
+            p.save
+            return
+        def delete_bookmarks(to_feed_post_id: int):
+            p: FeedPostModel = FeedPostModel.objects.get(id=to_feed_post_id)
+            p.bookmark_num  -= 1
+            p.save
+            return
+    @classmethod
+    def _create_by_user_action(cls, tx: Transaction, from_user_id: int, to_id: int, label: str) -> None:
         """ `rdb_tx` is the RDB transaction function to be linked. `label` is the edge label name. """
-        to_node_label = 'User' if(label=='FOLLOWS') else 'FeedPost'
-        to_id_name = 'user_id' if(label=='FOLLOWS') else 'post_id'
-        check_query = (
+        # 必要な値をセット
+        if(label=='FOLLOWS'):
+            to_node_label = 'User' 
+            to_id_name = 'user_id' 
+            pg_tx = partial(cls.PGRun.create_follows, from_user_id=from_user_id, to_user_id=to_id)
+        elif(label=='LIKES'):
+            to_node_label = 'FeedPost'
+            to_id_name = 'post_id'
+            pg_tx = partial(cls.PGRun.create_likes, to_feed_post_id=to_id)
+        elif(label=='BOOKMARKS'):
+            to_node_label = 'FeedPost'
+            to_id_name = 'post_id'
+            pg_tx = partial(cls.PGRun.create_bookmarks, to_feed_post_id=to_id)
+        # アクション済みかを調べる Cypher
+        check_cypher = (
                     f'MATCH (x:User {{user_id: $from_user_id}})-[:{label}]->(y:{to_node_label} {{{to_id_name}: $to_id}}) '
                     'RETURN COUNT(*) AS num'
                 )
-        check_result = tx.run(check_query, from_user_id=from_user_id, to_id=to_id).single()
+        check_result = tx.run(check_cypher, from_user_id=from_user_id, to_id=to_id).single()
         num = check_result['num']
-        # アクションしていないならばアクション
+        # アクション済みでなかったならばアクション
         if num == 0:
-            create_query = (
+            create_cypher = (
                         f'MATCH (x:User {{user_id: $from_user_id}}), (y:{to_node_label} {{{to_id_name}: $to_id}}) '
                         f'CREATE (x)-[:{label}]->(y) '
                     )
-            query = create_query
-            tx.run(query, from_user_id=from_user_id, to_id=to_id)
-        return
-    @staticmethod
-    def _delete_by_user_action(tx: Transaction, from_user_id: int, to_id: int, label: str) -> int:
-        """ `rdb_tx` is the RDB transaction function to be linked. `label` is the edge label name. \
-            The return value is 1 if the action has already been performed, 0 otherwise."""
-        to_id_name = 'user_id' if(label=='FOLLOWS') else 'post_id'
-        to_node_label = 'User' if(label=='FOLLOWS') else 'FeedPost'
-        check_query = (
+            cypher = create_cypher
+            try:
+                tx.run(cypher, from_user_id=from_user_id, to_id=to_id)
+                with transaction.atomic():
+                    pg_tx()
+            except Exception as e:
+                print(f'Transaction Failed: {e}')
+                tx.rollback()
+                pg_connection.rollback() 
+
+        return num
+    @classmethod
+    def _delete_by_user_action(cls, tx: Transaction, from_user_id: int, to_id: int, label: str) -> int:
+        """ `rdb_tx` is the RDB transaction function to be linked. `label` is the edge label name. """
+        # 必要な値をセット
+        if(label=='FOLLOWS'):
+            to_node_label = 'User' 
+            to_id_name = 'user_id' 
+            pg_tx = partial(cls.PGRun.delete_follows, from_user_id=from_user_id, to_user_id=to_id)
+        elif(label=='LIKES'):
+            to_node_label = 'FeedPost'
+            to_id_name = 'post_id'
+            pg_tx = partial(cls.PGRun.delete_likes, to_feed_post_id=to_id)
+        elif(label=='BOOKMARKS'):
+            to_node_label = 'FeedPost'
+            to_id_name = 'post_id'
+            pg_tx = partial(cls.PGRun.delete_bookmarks, to_feed_post_id=to_id)
+        # アクション済みかを調べる Cypher
+        check_cypher = (
                     f'MATCH (x:User {{user_id: $from_user_id}})-[:{label}]->(y:{to_node_label} {{{to_id_name}: $to_id}}) '
                     'RETURN COUNT(*) AS num'
                 )
-        check_result = tx.run(check_query, from_user_id=from_user_id, to_id=to_id).single()
+        check_result = tx.run(check_cypher, from_user_id=from_user_id, to_id=to_id).single()
         num = check_result['num']
-        # アクションしていたならばアクション取り消し
+        # アクション済みであったならばアクション取り消し
         if num > 0:
-            create_query = (
+            delete_cypher = (
                         f'MATCH (x:User {{user_id: $from_user_id}})-[:{label}]->(y:{to_node_label} {{{to_id_name}: $to_user_id}}) '
                         'DELETE r'
                     )
-            query = create_query
-            tx.run(query, from_user_id=from_user_id, to_id=to_id)
-        return num
+            cypher = delete_cypher
+            try:
+                tx.run(cypher, from_user_id=from_user_id, to_id=to_id)
+                with transaction.atomic():
+                    pg_tx()
+            except Exception as e:
+                print(f'Transaction Failed: {e}')
+                tx.rollback()
+                pg_connection.rollback() 
+        return
 
 
 class Edge:
@@ -255,53 +305,16 @@ class Edge:
                 """ フォロー解除時の Neo4j 側の動作を指定 """
                 UtilityAboutEdge._delete_by_user_action(tx, from_user_id, to_user_id, label='FOLLOWS')
                 return
-            class PG:
-                """ PostgreSQL """
-                @staticmethod
-                def _update_user_by_create(pg_cursor: cursor, from_user_id: int, to_user_id: int) -> None:
-                    """ フォロー時にそれぞれのユーザーのフォロー人数及びフォロワー人数を更新 """
-                    pg_query = sql.SQL('''
-                                WARNING: テーブル構造やテーブル名、属性の変更に注意
-                                UPDATE supplyauth_user 
-                                SET following = following + 1 
-                                WHERE id = %s;
-                                UPDATE supplyauth_user 
-                                SET followers = follower + 1 
-                                WHERE id = %s;
-                        ''')
-                    pg_cursor.execute(pg_query, (from_user_id, to_user_id))
-                    pg_connection.commit()
-                    return
-                def _update_user_by_delete(pg_cursor: cursor, from_user_id: int, to_user_id: int) -> None:
-                    """ フォロー解除時にそれぞれのユーザーのフォロー人数及びフォロワー人数を更新 """
-                    pg_query = sql.SQL('''
-                                WARNING: テーブル構造やテーブル名、属性の変更に注意
-                                UPDATE supplyauth_user 
-                                SET following = following - 1 
-                                WHERE id = %s;
-                                UPDATE supplyauth_user 
-                                SET followers = follower - 1 
-                                WHERE id = %s;
-                        ''')
-                    pg_cursor.execute(pg_query, (from_user_id, to_user_id))
-                    pg_connection.commit()
-                    return                    
         @classmethod
-        def create(cls, cursor: cursor, session: Session, from_user_id: int, to_user_id: int) -> None:
-            """ Neo4j と PostgreSQL のフォロー時のトランザクションを統合 """
-            try: 
-                session.execute_write(cls.TX.create, from_user_id, to_user_id)
-                cls.TX.PG._update_user_by_create(cursor, from_user_id, to_user_id)
-            except Exception as e:
-                return {'status_code': -1, 'error_message': f'Transaction Failed: {e}'}
+        def create(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
+            """ フォロー """
+            session.execute_write(cls.TX.create, from_user_id, to_user_id)
+            return 
         @classmethod
-        def delete(cls, cursor: cursor, session: Session, from_user_id: int, to_user_id: int) -> None:
-            """ Neo4j と PostgreSQL のフォロー解除時のトランザクションを統合 """
-            try: 
-                session.execute_write(cls.TX.create, from_user_id, to_user_id)
-                cls.TX.PG._update_user_by_delete(cursor, from_user_id, to_user_id)
-            except Exception as e:
-                return {'status_code': -1, 'error_message': f'Transaction Failed: {e}'}
+        def delete(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
+            """ フォロー解除 """
+            session.execute_write(cls.TX.create, from_user_id, to_user_id)
+            return
     class LIKES:
         """ Label: LIKES """
         class TX:
@@ -316,50 +329,16 @@ class Edge:
                 """ いいね取り消し時の Neo4j 側の動作を指定 """
                 UtilityAboutEdge._delete_by_user_action(tx, from_user_id, to_feed_post_id, label='LIKES')
                 return
-            class PG:
-                """ PostgreSQL """
-                @staticmethod
-                def _update_feed_post_by_create(pg_cursor: cursor, to_feed_post_id: int) -> None:
-                    """ いいね時にコンテンツのいいね数を更新 """
-                    pg_query = sql.SQL('''
-                                WARNING: テーブル構造やテーブル名、属性の変更に注意
-                                UPDATE feed_post 
-                                SET like_num = like_num + 1 
-                                WHERE id = %s;
-                        ''')
-                    pg_cursor.execute(pg_query, (to_feed_post_id, ))
-                    pg_connection.commit()
-                    return
-                @staticmethod
-                def _update_feed_post_by_delete(pg_cursor: cursor, to_feed_post_id: int) -> None:
-                    """ いいね取り消し時にコンテンツのいいね数を更新 """
-                    pg_query = sql.SQL('''
-                                WARNING: テーブル構造やテーブル名、属性の変更に注意
-                                UPDATE feed_post 
-                                SET like_num = like_num - 1 
-                                WHERE id = %s;
-                        ''')
-                    pg_cursor.execute(pg_query, (to_feed_post_id, ))
-                    pg_connection.commit()
-                    return  
         @classmethod
-        def create(cls, cursor: cursor, session: Session, from_user_id: int, to_user_id: int) -> None:
-            """ Neo4j と PostgreSQL のいいね時のトランザクションを統合 """
-            try: 
-                session.execute_write(cls.TX.create_to_feed_post, from_user_id, to_user_id)
-                cls.TX.PG._update_feed_post_by_create(cursor, from_user_id, to_user_id)
-            except Exception as e:
-                pg_connection.rollback()
-                driver.session().rollback()#HACK
-                return {'status_code': -1, 'error_message': f'Transaction Failed: {e}'}
+        def create(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
+            """ いいね """
+            session.execute_write(cls.TX.create_to_feed_post, from_user_id, to_user_id)
+            return
         @classmethod
-        def delete(cls, cursor: cursor, session: Session, from_user_id: int, to_user_id: int) -> None:
-            """ Neo4j と PostgreSQL のいいね取り消し時のトランザクションを統合 """
-            try: 
-                session.execute_write(cls.TX.create_to_feed_post, from_user_id, to_user_id)
-                cls.TX.PG._update_feed_post_by_delete(cursor, from_user_id, to_user_id)
-            except Exception as e:
-                return {'status_code': -1, 'error_message': f'Transaction Failed: {e}'}
+        def delete(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
+            """ いいね取り消し """
+            session.execute_write(cls.TX.create_to_feed_post, from_user_id, to_user_id)
+            return
     class BOOKMARKS:
         """ Label: BOOKMARKS """
         class TX:
@@ -374,55 +353,40 @@ class Edge:
                 """ ブックマーク削除 """
                 UtilityAboutEdge._delete_by_user_action(tx, from_user_id, to_feed_post_id, label='BOOKMARKS')
                 return
-            class PG:
-                """ PostgreSQL """
-                @staticmethod
-                def _update_user_by_create(pg_cursor: cursor, post_id: int) -> None:
-                    """ いいね時にコンテンツのいいね数を更新 """
-                    pg_query = sql.SQL('''
-                                WARNING: テーブル構造やテーブル名、属性の変更に注意
-                                UPDATE feed_post 
-                                SET like_num = like_num + 1 
-                                WHERE id = %s;
-                        ''')
-                    pg_cursor.execute(pg_query, (post_id, ))
-                    pg_connection.commit()
-                    return
-                @staticmethod
-                def _update_user_by_delete(pg_cursor: cursor, post_id: int) -> None:
-                    """ いいね取り消し時にコンテンツのいいね数を更新 """
-                    pg_query = sql.SQL('''
-                                WARNING: テーブル構造やテーブル名、属性の変更に注意
-                                UPDATE feed_post 
-                                SET like_num = like_num - 1 
-                                WHERE id = %s;
-                        ''')
-                    pg_cursor.execute(pg_query, (post_id, ))
-                    pg_connection.commit()
-                    return  
-
+        @classmethod
+        def create(cls, session: Session, to_feed_post_id: int) -> None:
+            """ ブックマーク """
+            session.execute_write(cls.TX.create_to_feed_post, to_feed_post_id)
+            return
+        @classmethod
+        def delete(cls, session: Session, to_feed_post_id: int) -> None:
+            """ ブックマーク削除 """
+            session.execute_write(cls.TX.create_to_feed_post, to_feed_post_id)
+            return
+        
 
 #* テスト
-n = 15
 if __name__ == '__main__':
-    txs  = [(Node.User.TX.create, i) for i in range(1, n + 1)]
-    txs += [(Edge.FOLLOWS.TX.create, *random.sample(tuple(range(1, n - 10)), 2)) for _ in range(1, n // 2)]
-    txs += [(Node.FeedPost.TX.create, i) for i in range(1, 3 * n + 1)]
-    txs += [(Edge.LIKES.TX.create_to_feed_post, *random.sample(tuple(range(1, 3 * n - 10)), 2)) for _ in range(1, n)]
-    txs += [(Edge.BOOKMARKS.TX.create_to_feed_post, *random.sample(tuple(range(1, 3 * n - 10)), 2)) for _ in range(1, n)]
-    def __read_edge(n: int):
-        for user_id in range(1, n):
-            # 実行している関数の仕様上、毎回 driver.session() が発生し低速であることに留意
-            # 存在しないノードであったとしてもエラーは吐かないことに留意
-            print(f'{user_id} -> {Node.User.read_follows_user_ids(user_id)}')
-        for user_id in range(1, n):
-            print(f'{user_id} <- {Node.User.read_followed_user_ids(user_id)}')
+    with driver.session() as session: 
+        n = 15
+        for i in range(1, n + 1):
+            Node.User.create(session, i)
+            Node.FeedPost.create(session, i)
+            Edge.FOLLOWS.create(session, *random.sample(tuple(range(1, n - 10)), 2))            
+            Edge.LIKES.create(session, *random.sample(tuple(range(1, n - 10)), 2))            
+            Edge.BOOKMARKS.create(session, *random.sample(tuple(range(1, n - 10)), 2))   
 
-    Node._delete_all()
-    # Execute.write_single(Node.User.TX.delete, 5)
-    # __read_edge(n)
+        def __read_edge(n: int):
+            #WARNING 存在しないノードを対象に探索していたとしてもエラーは吐かない
+            for user_id in range(1, n):
+                print(f'{user_id} -> {Node.User.read_follows_user_ids(user_id)}')
+            for user_id in range(1, n):
+                print(f'{user_id} <- {Node.User.read_followed_user_ids(user_id)}')
 
-    print(f'\[')
+        Node._delete_all()
+        __read_edge(n)
+
+
+    YELLOW, RESET = '\033[93m', '\033[0m'    
+    print(f'{YELLOW} be succeeded {RESET}')
     pass
-
-

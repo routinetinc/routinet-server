@@ -40,3 +40,17 @@ class Cache():
     class InterestCAT(NoSQLBase):
         table_name = 'usercache'
 
+
+# Neo4j 一貫性テスト用
+class User(models.Model):
+    table_name     = 'user'
+    following      = models.IntegerField
+    follower       = models.IntegerField
+    def __str__(self):
+        return f'{self.id}'
+class FeedPost(models.Model):
+    table_name     = 'feed_post'
+    like_num       = models.IntegerField
+    bookmark_num   = models.IntegerField
+    def __str__(self):
+        return f'{self.id}'
