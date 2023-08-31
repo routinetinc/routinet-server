@@ -329,12 +329,12 @@ class Edge:
         @classmethod
         def create_to_feed(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
             """ いいね実行 """
-            session.execute_write(cls._TX.create_to_feed_post, from_user_id, to_user_id)
+            session.execute_write(cls._TX.create_to_feed, from_user_id, to_user_id)
             return
         @classmethod
         def delete_to_feed(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
             """ いいね取り消し実行 """
-            session.execute_write(cls._TX.create_to_feed_post, from_user_id, to_user_id)
+            session.execute_write(cls._TX.create_to_feed, from_user_id, to_user_id)
             return
     class BOOKMARKS:
         """ Label: BOOKMARKS """
@@ -353,12 +353,12 @@ class Edge:
         @classmethod
         def create_to_feed(cls, session: Session, to_feed_post_id: int) -> None:
             """ ブックマークへ追加実行 """
-            session.execute_write(cls._TX.create_to_feed_post, to_feed_post_id)
+            session.execute_write(cls._TX.create_to_feed, to_feed_post_id)
             return
         @classmethod
         def delete_to_feed(cls, session: Session, to_feed_post_id: int) -> None:
             """ ブックマーク削除実行 """
-            session.execute_write(cls._TX.create_to_feed_post, to_feed_post_id)
+            session.execute_write(cls._TX.create_to_feed, to_feed_post_id)
             return
         
 
