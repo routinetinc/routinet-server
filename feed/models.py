@@ -56,7 +56,7 @@ class FeedPost(models.Model):
     media_id = models.IntegerField(null=True, blank=True)
     post_time = models.DateTimeField()
     good_num = models.IntegerField(default=0)
-    interests = ArrayField(Interest)
+    interest_ids = ArrayField(models.IntegerField(null=True, blank=True))
     challenge = models.ForeignKey(Challenge, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
