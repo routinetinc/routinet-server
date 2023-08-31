@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from routine.models import NoSQL
@@ -258,3 +259,5 @@ class MiniComment(APIView):
 
         data = {"task_id": task_record.task_id.id}
         return make_response(status_code=1, data=data)
+=======
+>>>>>>> dev
