@@ -294,22 +294,22 @@ class Edge:
             """ トランザクションの設計 """
             @staticmethod
             def create(tx: Transaction, from_user_id: int, to_user_id: int) -> None:
-                """ フォロー時の Neo4j 側の動作を指定 """
+                """ フォロー """
                 UtilityAboutEdge._create_by_user_action(tx, from_user_id, to_user_id, label='FOLLOWS')
                 return
             @staticmethod
             def delete(tx: Transaction, from_user_id: int, to_user_id: int) -> None:
-                """ フォロー解除時の Neo4j 側の動作を指定 """
+                """ フォロー解除 """
                 UtilityAboutEdge._delete_by_user_action(tx, from_user_id, to_user_id, label='FOLLOWS')
                 return
         @classmethod
         def create(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
-            """ フォロー """
+            """ フォロー実行 """
             session.execute_write(cls.TX.create, from_user_id, to_user_id)
             return 
         @classmethod
         def delete(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
-            """ フォロー解除 """
+            """ フォロー解除実行 """
             session.execute_write(cls.TX.create, from_user_id, to_user_id)
             return
     class LIKES:
@@ -318,22 +318,22 @@ class Edge:
             """ トランザクションの設計 """
             @staticmethod
             def create_to_feed_post(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
-                """ いいね時の Neo4j 側の動作を指定 """
+                """ いいね """
                 UtilityAboutEdge._create_by_user_action(tx, from_user_id, to_feed_post_id, label='LIKES')
                 return
             @staticmethod
             def delete_to_feed_post(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
-                """ いいね取り消し時の Neo4j 側の動作を指定 """
+                """ いいね取り消し """
                 UtilityAboutEdge._delete_by_user_action(tx, from_user_id, to_feed_post_id, label='LIKES')
                 return
         @classmethod
         def create(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
-            """ いいね """
+            """ いいね実行 """
             session.execute_write(cls.TX.create_to_feed_post, from_user_id, to_user_id)
             return
         @classmethod
         def delete(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
-            """ いいね取り消し """
+            """ いいね取り消し実行 """
             session.execute_write(cls.TX.create_to_feed_post, from_user_id, to_user_id)
             return
     class BOOKMARKS:
@@ -342,7 +342,7 @@ class Edge:
             """ トランザクションの設計 """
             @staticmethod
             def create_to_feed_post(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
-                """ ブックマークに追加 """
+                """ ブックマークへ追加 """
                 UtilityAboutEdge._create_by_user_action(tx, from_user_id, to_feed_post_id, label='BOOKMARKS')
                 return
             @staticmethod
@@ -352,12 +352,12 @@ class Edge:
                 return
         @classmethod
         def create(cls, session: Session, to_feed_post_id: int) -> None:
-            """ ブックマーク """
+            """ ブックマークへ追加実行 """
             session.execute_write(cls.TX.create_to_feed_post, to_feed_post_id)
             return
         @classmethod
         def delete(cls, session: Session, to_feed_post_id: int) -> None:
-            """ ブックマーク削除 """
+            """ ブックマーク削除実行 """
             session.execute_write(cls.TX.create_to_feed_post, to_feed_post_id)
             return
         
