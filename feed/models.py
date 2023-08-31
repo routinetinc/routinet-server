@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 import secret
 import boto3
 from django.contrib.postgres.fields import ArrayField
@@ -53,9 +54,9 @@ class FeedPost(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     sentence = models.CharField(max_length=400, blank=True)
     media_id = models.IntegerField(null=True, blank=True)
-    post_time = CustomModels.TimeStringField()
+    post_time = CustomModels.DateTimeField()
     good_num = models.IntegerField(default=0)
-    interests = models.ManyToManyField(Interest)
+    interests = models.ArrayField(models.IntegerField(Interest))
     challenge = models.ForeignKey(Challenge, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
@@ -67,7 +68,7 @@ class FeedPost(models.Model):
 
 class FeedPostComment(models.Model):
     feed_post = models.ForeignKey(FeedPost, on_delete=models.CASCADE)
-    post_time = CustomModels.TimeStringField()
+    post_time = CustomModels.DateTimeField()
     media_id = models.IntegerField(null=True, blank=True)
     good_num = models.IntegerField(default=0)
 
@@ -77,7 +78,7 @@ class FeedPostComment(models.Model):
 
 class TaskRecordComment(models.Model):
     task_record = models.ForeignKey(TaskRecord, on_delete=models.CASCADE)
-    post_time = CustomModels.TimeStringField()
+    post_time = CustomModels.DateTimeField()
     media_id = models.IntegerField(null=True, blank=True)
     good_num = models.IntegerField(default=0)
 
