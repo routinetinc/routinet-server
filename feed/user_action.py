@@ -243,7 +243,6 @@ class _UtilityAboutEdge:
                 print(f'Transaction Failed: {e}')
                 tx.rollback()
                 pg_connection.rollback() 
-
         return num
     @classmethod
     def delete_by_user_action(cls, tx: Transaction, from_user_id: int, to_id: int, label: str) -> int:
