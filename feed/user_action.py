@@ -35,7 +35,7 @@ class Node:
             return
     class User:
         """ Label: User """
-        class _TX:
+        class _Tx:
             """ トランザクションの設計 """
             @staticmethod
             def create(tx: Transaction, user_id: int) -> None:
@@ -88,35 +88,35 @@ class Node:
         @classmethod
         def create(cls, session: Session, user_id: int) -> None:
             """ user_id となるノードを作成実行 """
-            session.execute_write(cls._TX.create, user_id)       
+            session.execute_write(cls._Tx.create, user_id)       
             return
         def delete(cls, session: Session, user_id: int) -> None:
             """ user_id が一致するノードを削除実行 """
-            session.execute_write(cls._TX.delete, user_id)       
+            session.execute_write(cls._Tx.delete, user_id)       
             return
         @classmethod
         def read_follows_user_ids(cls, session: Session, user_id: int) -> list[int]:
             """ Return: フォロー中のユーザー ID 一覧 """
-            return session.execute_read(cls._TX.read_follows_user_ids, user_id)
+            return session.execute_read(cls._Tx.read_follows_user_ids, user_id)
         @classmethod 
         def read_followed_user_ids(cls, session: Session, user_id: int) -> list[int]:
             """ Return: フォロワーの ID 一覧 """
-            return session.execute_read(cls._TX.read_followed_user_ids, user_id)
+            return session.execute_read(cls._Tx.read_followed_user_ids, user_id)
         @classmethod
         def read_likes_feed_post_ids(cls, session: Session, user_id: int) -> list[int]:
             """ Return: このユーザーがいいねしている Feed 投稿の ID 一覧 (降順) """
             # 投稿 ID が大きいことを最新の投稿物と仮定して最新のそれを取得しやすいよう降順にソート
-            post_ids: list[int] = session.execute_read(cls._TX.read_likes_feed_post_ids, user_id)
+            post_ids: list[int] = session.execute_read(cls._Tx.read_likes_feed_post_ids, user_id)
             return post_ids.sort(reverse=True)
         @classmethod
         def read_bookmarks_feed_post_ids(cls, session: Session, user_id: int) -> list[int]:
             """ Return: このユーザーがブックマークしている Feed 投稿の ID 一覧 (降順) """
             # 投稿 ID が大きいことを最新の投稿物と仮定して最新のそれを取得しやすいよう降順にソート
-            post_ids: list[int] = session.execute_read(cls._TX.read_bookmarks_feed_post_ids, user_id)
+            post_ids: list[int] = session.execute_read(cls._Tx.read_bookmarks_feed_post_ids, user_id)
             return post_ids.sort(reverse=True)
     class FeedPost:
         """ Label: FeedPost """
-        class _TX:
+        class _Tx:
             @staticmethod
             def create(tx: Transaction, post_id: int) -> None:
                 """ post_id となるノードを作成 """
@@ -150,25 +150,25 @@ class Node:
         @classmethod
         def create(cls, session: Session, post_id: int) -> None:
             """ post_id となるノードを作成実行 """
-            session.execute_write(cls._TX.create, post_id)
+            session.execute_write(cls._Tx.create, post_id)
             return
         @classmethod
         def delete(cls, session: Session, post_id: int) -> None:
             """ post_id が一致するノードを削除実行 """
-            session.execute_write(cls._TX.delete, post_id)
+            session.execute_write(cls._Tx.delete, post_id)
             return         
         @classmethod
         def read_liked_user_ids(cls, session: Session, post_id: int) -> list[int]:
             """ Return: その投稿にいいねしているユーザーの ID 一覧 """
-            return session.execute_read(cls._TX.read_liked_user_ids, post_id)
+            return session.execute_read(cls._Tx.read_liked_user_ids, post_id)
         @classmethod
         def read_bookmarked_user_ids(cls, session: Session, post_id: int) -> list[int]:
             """ Return: その投稿をブックマークしているユーザーの ID 一覧 """
-            return session.execute_read(cls._TX.read_bookmarked_user_ids, post_id)
+            return session.execute_read(cls._Tx.read_bookmarked_user_ids, post_id)
 
 
 class _UtilityAboutEdge:
-    class PGRun:
+    class PgRun:
         def create_follows(from_user_id: int, to_user_id: int) -> None:
             from_u: UserModel = UserModel.objects.get(id=from_user_id)
             to_u:   UserModel = UserModel.objects.get(id=to_user_id)
@@ -212,15 +212,15 @@ class _UtilityAboutEdge:
         if(label=='FOLLOWS'):
             to_node_label = 'User' 
             to_id_name = 'user_id' 
-            pg_tx = partial(cls.PGRun.create_follows, from_user_id=from_user_id, to_user_id=to_id)
+            pg_tx = partial(cls.PgRun.create_follows, from_user_id=from_user_id, to_user_id=to_id)
         elif(label=='LIKES'):
             to_node_label = 'FeedPost'
             to_id_name = 'post_id'
-            pg_tx = partial(cls.PGRun.create_likes, to_feed_post_id=to_id)
+            pg_tx = partial(cls.PgRun.create_likes, to_feed_post_id=to_id)
         elif(label=='BOOKMARKS'):
             to_node_label = 'FeedPost'
             to_id_name = 'post_id'
-            pg_tx = partial(cls.PGRun.create_bookmarks, to_feed_post_id=to_id)
+            pg_tx = partial(cls.PgRun.create_bookmarks, to_feed_post_id=to_id)
         # アクション済みかを調べる Cypher
         check_cypher = (
                     f'MATCH (x:User {{user_id: $from_user_id}})-[:{label}]->(y:{to_node_label} {{{to_id_name}: $to_id}}) '
@@ -251,15 +251,15 @@ class _UtilityAboutEdge:
         if(label=='FOLLOWS'):
             to_node_label = 'User' 
             to_id_name = 'user_id' 
-            pg_tx = partial(cls.PGRun.delete_follows, from_user_id=from_user_id, to_user_id=to_id)
+            pg_tx = partial(cls.PgRun.delete_follows, from_user_id=from_user_id, to_user_id=to_id)
         elif(label=='LIKES'):
             to_node_label = 'FeedPost'
             to_id_name = 'post_id'
-            pg_tx = partial(cls.PGRun.delete_likes, to_feed_post_id=to_id)
+            pg_tx = partial(cls.PgRun.delete_likes, to_feed_post_id=to_id)
         elif(label=='BOOKMARKS'):
             to_node_label = 'FeedPost'
             to_id_name = 'post_id'
-            pg_tx = partial(cls.PGRun.delete_bookmarks, to_feed_post_id=to_id)
+            pg_tx = partial(cls.PgRun.delete_bookmarks, to_feed_post_id=to_id)
         # アクション済みかを調べる Cypher
         check_cypher = (
                     f'MATCH (x:User {{user_id: $from_user_id}})-[:{label}]->(y:{to_node_label} {{{to_id_name}: $to_id}}) '
@@ -289,7 +289,7 @@ class Edge:
     """ エッジの作成、取得、更新、削除 """
     class FOLLOWS:
         """ Label: FOLLOWS """
-        class _TX:
+        class _Tx:
             """ トランザクションの設計 """
             @staticmethod
             def create(tx: Transaction, from_user_id: int, to_user_id: int) -> None:
@@ -304,16 +304,16 @@ class Edge:
         @classmethod
         def create(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
             """ フォロー実行 """
-            session.execute_write(cls._TX.create, from_user_id, to_user_id)
+            session.execute_write(cls._Tx.create, from_user_id, to_user_id)
             return 
         @classmethod
         def delete(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
             """ フォロー解除実行 """
-            session.execute_write(cls._TX.create, from_user_id, to_user_id)
+            session.execute_write(cls._Tx.create, from_user_id, to_user_id)
             return
     class LIKES:
         """ Label: LIKES """
-        class _TX:
+        class _Tx:
             """ トランザクションの設計 """
             @staticmethod
             def create_to_feed(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
@@ -328,16 +328,16 @@ class Edge:
         @classmethod
         def create_to_feed(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
             """ いいね実行 """
-            session.execute_write(cls._TX.create_to_feed, from_user_id, to_user_id)
+            session.execute_write(cls._Tx.create_to_feed, from_user_id, to_user_id)
             return
         @classmethod
         def delete_to_feed(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
             """ いいね取り消し実行 """
-            session.execute_write(cls._TX.create_to_feed, from_user_id, to_user_id)
+            session.execute_write(cls._Tx.create_to_feed, from_user_id, to_user_id)
             return
     class BOOKMARKS:
         """ Label: BOOKMARKS """
-        class _TX:
+        class _Tx:
             """ トランザクションの設計 """
             @staticmethod
             def create_to_feed(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
@@ -352,12 +352,12 @@ class Edge:
         @classmethod
         def create_to_feed(cls, session: Session, to_feed_post_id: int) -> None:
             """ ブックマークへ追加実行 """
-            session.execute_write(cls._TX.create_to_feed, to_feed_post_id)
+            session.execute_write(cls._Tx.create_to_feed, to_feed_post_id)
             return
         @classmethod
         def delete_to_feed(cls, session: Session, to_feed_post_id: int) -> None:
             """ ブックマーク削除実行 """
-            session.execute_write(cls._TX.create_to_feed, to_feed_post_id)
+            session.execute_write(cls._Tx.create_to_feed, to_feed_post_id)
             return
         
 
