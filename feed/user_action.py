@@ -1,9 +1,9 @@
-from functools import partial
 import random
+from functools import partial
+from secret import LocalNeo4jDB as Neo4j
 from neo4j import GraphDatabase, Driver, Transaction, Session
 from django.db import transaction, connection
 from django.db.backends.base.base import BaseDatabaseWrapper as BDW
-from secret import LocalNeo4jDB as Neo4j
 from supplyAuth.models import User as UserModel
 from feed.models import FeedPost as FeedPostModel
 
@@ -384,5 +384,5 @@ if __name__ == '__main__':
 
 
     YELLOW, RESET = '\033[93m', '\033[0m'    
-    print(f'{YELLOW} be succeeded {RESET}')
+    print(f'{YELLOW} succeeded {RESET}')
     pass
