@@ -1,9 +1,8 @@
 from django.db import models
 from routine.fields import CustomModels
-<<<<<<< HEAD
 import boto3
 from supplyAuth.models import User
-
+from boto3.dynamodb.conditions import Key
 
 class NoSQLBase(models.Model):
     table_name = ''
@@ -43,10 +42,6 @@ class NoSQL():
     class test(NoSQLBase):
         table_name = 'test'
 
-=======
-from supplyAuth.models import User
-from django.utils import timezone
->>>>>>> dev
     
 class Interest(models.Model): # 外部キーのため依存解消のために仮置き
     table_name  = 'interest'
@@ -79,7 +74,6 @@ class Task(models.Model):
     def __str__(self):
         return self.title
 
-<<<<<<< HEAD
 class TaskComment(models.Model):
     table_name  = 'task_comment'
     task_id     = models.ForeignKey('Task', on_delete=models.PROTECT)
@@ -95,25 +89,3 @@ class TaskRecord(models.Model):
     when        = models.DateTimeField()
     def __str__(self):
         return f'{self.task_id}'
-=======
-class TaskRecord(models.Model):
-    table_name  = 'task_record'
-    task_id     = models.ForeignKey(Task, on_delete=models.PROTECT)
-    is_achieved = models.BooleanField(help_text='完了したか', default=True) 
-    done_time   = models.IntegerField()
-    when        = models.DateTimeField(help_text='完了日時')
-    
-    def save(self, *args, **kwargs):
-        self.when = timezone.now()  # 保存されるたびに更新
-        return super(TaskRecord, self).save(*args, **kwargs)
-    
-    def __str__(self):
-        return f'{self.task_id}'
-    
-class Minicomment(models.Model):
-    table_name     = 'minicomment'
-    task_record_id = models.ForeignKey(TaskRecord, on_delete=models.PROTECT)
-    comment        = models.CharField(max_length=120)
-    def __str__(self):
-        return f'{self.task_record_id}'
->>>>>>> dev

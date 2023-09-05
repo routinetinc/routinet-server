@@ -7,11 +7,7 @@ class Task_create(serializers.Serializer):  # /routine/task/(POST)
     title         = serializers.CharField(max_length=20, min_length=None, allow_blank=False, trim_whitespace=True)
     detail        = serializers.CharField(max_length=60, min_length=None, allow_blank=True, trim_whitespace=True)
     icon          = serializers.CharField(max_length=1, min_length=None, allow_blank=True, trim_whitespace=True)
-<<<<<<< HEAD
     required_time = serializers.IntegerField(max_value=None, min_value=None)
-=======
-    required_time = serializers.IntegerField(max_value=None, min_value=0)
->>>>>>> dev
     is_notified   = serializers.BooleanField()
     
 class Routine_create(serializers.Serializer):  # /routine/routine/(POST)
@@ -21,7 +17,6 @@ class Routine_create(serializers.Serializer):  # /routine/routine/(POST)
     title         = serializers.CharField(max_length=15, min_length=None, allow_blank=False, trim_whitespace=True)
     subtitle      = serializers.CharField(max_length=40, min_length=None, allow_blank=True, trim_whitespace=True)
     icon          = serializers.CharField(max_length=1, min_length=None, allow_blank=True, trim_whitespace=True)
-<<<<<<< HEAD
     public        = serializers.BooleanField()
     is_notified   = serializers.BooleanField()
 
@@ -30,27 +25,14 @@ class TaskComment_create(serializers.Serializer):# /api/comment(POST&PATCH)　<-
     comment = serializers.CharField(max_length=120, min_length=None, allow_blank=True, trim_whitespace=True)
 
 class Task_update(serializers.Serializer):# /api/routine(PATCH)
-=======
-    is_published  = serializers.BooleanField()
-    is_notified   = serializers.BooleanField()
-    
-class Task_update(serializers.Serializer):  # /routine/task/(PATCH)
->>>>>>> dev
     task_id       = serializers.IntegerField(max_value=None, min_value=None)
     title         = serializers.CharField(max_length=20, min_length=None, allow_blank=False, trim_whitespace=True)
     detail        = serializers.CharField(max_length=60, min_length=None, allow_blank=True, trim_whitespace=True)
     icon          = serializers.CharField(max_length=1, min_length=None, allow_blank=True, trim_whitespace=True)
-<<<<<<< HEAD
     required_time = serializers.IntegerField(max_value=None, min_value=None)
     is_notified   = serializers.BooleanField()
     
 class Routine_update(serializers.Serializer):# /api/task(PATCH):
-=======
-    required_time = serializers.IntegerField(max_value=None, min_value=0)
-    is_notified   = serializers.BooleanField()
-    
-class Routine_update(serializers.Serializer):  # /routine/routine(PATCH)
->>>>>>> dev
     routine_id    = serializers.IntegerField(max_value=None, min_value=None)
     dow           = serializers.ListField(child=serializers.IntegerField(min_value=0, max_value=6))
     start_time    = CustomSerializers.TimeStringField()
