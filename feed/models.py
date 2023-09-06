@@ -40,39 +40,7 @@ class Cache():
     
     class InterestCAT(NoSQLBase):
         table_name = 'interest_category'
-        def create_category_table(self):
-            table = self.dynamodb.create_table(
-                TableName = self.table_name,
-                KeySchema = [
-                    {
-                        'AttributeName' : 'categoryid',
-                        'KeyType' : 'HASH'
-                    },
-                    {
-                        'AttributeName' : 'priority',
-                        'KeyType' : 'RANGE'
-                    }
-                ],
-                AttributeDefinitions = [
-                    {
-                        'AttributeName' : 'categoryid',
-                        'AttributeType' : 'N'
-                    },
-                    {
-                        'AttributeName' : 'priority',
-                        'AttributeType' : 'N'
-                    },
-                    {
-                        'AttributeName' : 'data',
-                        'AttributeType' : 'M'
-                    },
-                ],
-                ProvisionedThroughput = {
-                    'ReadCapacityUnits': 1,
-                    'WriteCapacityUnits': 1
-                }
-            )
-
+        
         @classmethod
         def create(cls, data, format=None):
             if data.score <= 100: #数値は仮置き
