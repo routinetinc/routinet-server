@@ -2,13 +2,13 @@ from feed.models import Cache
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-class Hello(APIView):
+class UserCreate(APIView):
     def get(self, request, format=None):
         Item = {'user_id': 3, 'created': '2023-08-26','data':{'content_id':4}}
         Cache.User.create(Item = Item)
         return Response('hello')
     
-class Read(APIView):
+class UserRead(APIView):
     def get(self, request, format=None):
         key = {'user_id':3,
                'created':'2023-08-26'}
@@ -19,10 +19,21 @@ class Read(APIView):
             print("なし")
         return Response('hello')
     
-class Delete(APIView):
+class UserDelete(APIView):
     def get(self, request, format=None):
         key = {'user_id':3,
                'created':'2023-08-26'}
         Cache.User.delete(key)
         return Response('hello')
- 
+    
+class InteresstCATCreate(APIView):
+    def get(self, request, format=None):
+        class Data():
+            categoryid:int = 0
+            score:     int = 0
+            priority:  int = 0
+            content_id:int = 0
+
+        data = Data()
+        Cache.InterestCAT.create(data = data)
+        return Response('hello')
