@@ -22,14 +22,14 @@ def _delete_all(session: Session) -> None:
         result = tx.run(cypher)
         return [record['label'] for record in result]
     # あるラベルのノードを全て削除する関数
-    def _tx_delete_nodes_with_label(tx: Transaction, label: str):
-        cypher = f'MATCH (u:{label}) DETACH DELETE u'
+    def _tx_delete_nodes_with_label(tx: Transaction, node_label: str):
+        cypher = f'MATCH (u:{node_label}) DETACH DELETE u'
         tx.run(cypher)
     # ラベルを一括取得
     labels = session.execute_read(_tx_get_node_labels)
     # ラベルごとにノードを削除
-    for node_labels in labels:
-        session.execute_write(_tx_delete_nodes_with_label, node_labels)
+    for node_label in labels:
+        session.execute_write(_tx_delete_nodes_with_label, node_label)
     return
 
 
@@ -101,6 +101,8 @@ class GenericEdge:
             to_node_label = 'FeedPost'
             to_id_name = 'post_id'
             pg_tx = partial(cls.PgRun.create_bookmarks, to_feed_post_id=to_id)
+        else:
+            raise Exception('Invalid Value Error: The label name does not exist.')
         # アクション済みかを調べる Cypher
         check_cypher = (
                     f'MATCH (x:User {{user_id: $from_user_id}})-[:{label}]->(y:{to_node_label} {{{to_id_name}: $to_id}}) '
@@ -122,7 +124,8 @@ class GenericEdge:
             except Exception as e:
                 print(f'Transaction Failed: {e}')
                 tx.rollback()
-                pg_connection.rollback() 
+                pg_connection.rollback()
+                raise Exception('Control Error: The rollback has taken place.')
         return num
     @classmethod
     def delete(cls, tx: Transaction, from_user_id: int, to_id: int, label: str) -> int:
@@ -140,6 +143,7 @@ class GenericEdge:
             to_node_label = 'FeedPost'
             to_id_name = 'post_id'
             pg_tx = partial(cls.PgRun.delete_bookmarks, to_feed_post_id=to_id)
+            raise Exception('Invalid Value Error: The label name does not exist.')
         # アクション済みかを調べる Cypher
         check_cypher = (
                     f'MATCH (x:User {{user_id: $from_user_id}})-[:{label}]->(y:{to_node_label} {{{to_id_name}: $to_id}}) '
@@ -162,6 +166,7 @@ class GenericEdge:
                 print(f'Transaction Failed: {e}')
                 tx.rollback()
                 pg_connection.rollback() 
+                raise Exception('Control Error: The rollback has taken place.')
         return
     
 
