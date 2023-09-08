@@ -173,8 +173,8 @@ if __name__ == '__main__':
             User.create(session, i)
             FeedPost.create(session, i)
             FOLLOWS.create(session, *random.sample(tuple(range(1, n - 10)), 2))            
-            LIKES.create_to_feed(session, *random.sample(tuple(range(1, n - 10)), 2))            
-            BOOKMARKS.create_to_feed(session, *random.sample(tuple(range(1, n - 10)), 2))   
+            LIKES.create(session, *random.sample(tuple(range(1, n - 10)), 2))            
+            BOOKMARKS.create(session, *random.sample(tuple(range(1, n - 10)), 2))   
 
         def _read_edge(session: Session, n: int):
             #WARNING 存在しないノードを対象に探索していたとしてもエラーは吐かない

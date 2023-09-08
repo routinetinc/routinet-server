@@ -73,46 +73,46 @@ class LIKES:
     class _Tx:
         """ トランザクションの設計 """
         @staticmethod
-        def create_to_feed(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
+        def create(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
             """ いいね """
             GenericEdge.create(tx, from_user_id, to_feed_post_id, label='LIKES')
             return
         @staticmethod
-        def delete_to_feed(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
+        def delete(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
             """ いいね取り消し """
             GenericEdge.delete(tx, from_user_id, to_feed_post_id, label='LIKES')
             return
     @classmethod
-    def create_to_feed(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
+    def create(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
         """ いいね実行 """
-        session.execute_write(cls._Tx.create_to_feed, from_user_id, to_user_id)
+        session.execute_write(cls._Tx.create, from_user_id, to_user_id)
         return
     @classmethod
-    def delete_to_feed(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
+    def delete(cls, session: Session, from_user_id: int, to_user_id: int) -> None:
         """ いいね取り消し実行 """
-        session.execute_write(cls._Tx.create_to_feed, from_user_id, to_user_id)
+        session.execute_write(cls._Tx.create, from_user_id, to_user_id)
         return
 class BOOKMARKS:
     """ Label: BOOKMARKS <Edge> """
     class _Tx:
         """ トランザクションの設計 """
         @staticmethod
-        def create_to_feed(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
+        def create(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
             """ ブックマークへ追加 """
             GenericEdge.create(tx, from_user_id, to_feed_post_id, label='BOOKMARKS')
             return
         @staticmethod
-        def delete_to_feed(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
+        def delete(tx: Transaction, from_user_id: int, to_feed_post_id: int) -> None:
             """ ブックマーク削除 """
             GenericEdge.delete(tx, from_user_id, to_feed_post_id, label='BOOKMARKS')
             return
     @classmethod
-    def create_to_feed(cls, session: Session, to_feed_post_id: int) -> None:
+    def create(cls, session: Session, to_feed_post_id: int) -> None:
         """ ブックマークへ追加実行 """
-        session.execute_write(cls._Tx.create_to_feed, to_feed_post_id)
+        session.execute_write(cls._Tx.create, to_feed_post_id)
         return
     @classmethod
-    def delete_to_feed(cls, session: Session, to_feed_post_id: int) -> None:
+    def delete(cls, session: Session, to_feed_post_id: int) -> None:
         """ ブックマーク削除実行 """
-        session.execute_write(cls._Tx.create_to_feed, to_feed_post_id)
+        session.execute_write(cls._Tx.create, to_feed_post_id)
         return
