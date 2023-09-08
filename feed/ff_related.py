@@ -45,24 +45,6 @@ class User:
             )
             result = tx.run(cypher, user_id=user_id)
             return [record['follower_id'] for record in result]
-        @staticmethod
-        def read_likes_feed_post_ids(tx: Transaction, user_id: int) -> list[int]:
-            """ このユーザーがいいねしている Feed 投稿の ID 一覧を取得 """
-            cypher = (
-                'MATCH (u:User {user_id: $user_id})-[:LIKES]->(p:FeedPost) '
-                'RETURN p.post_id AS post_id'
-            )
-            result = tx.run(cypher, user_id=user_id)
-            return [record['post_id'] for record in result]
-        @staticmethod
-        def read_bookmarks_feed_post_ids(tx: Transaction, user_id: int) -> list[int]:
-            """ このユーザーがブックマークしている Feed 投稿の ID 一覧を取得 """
-            cypher = (
-                'MATCH (u:User {user_id: $user_id})-[:BOOKMARKS]->(p:FeedPost) '
-                'RETURN p.post_id AS post_id'
-            )
-            result = tx.run(cypher, user_id=user_id)
-            return [record['post_id'] for record in result]
     @classmethod
     def create(cls, session: Session, user_id: int) -> None:
         """ user_id となるノードを作成実行 """
@@ -80,18 +62,6 @@ class User:
     def read_followed_user_ids(cls, session: Session, user_id: int) -> list[int]:
         """ Return: フォロワーの ID 一覧 """
         return session.execute_read(cls._Tx.read_followed_user_ids, user_id)
-    @classmethod
-    def read_likes_feed_post_ids(cls, session: Session, user_id: int) -> list[int]:
-        """ Return: このユーザーがいいねしている Feed 投稿の ID 一覧 (降順) """
-        # 投稿 ID が大きいことを最新の投稿物と仮定して最新のそれを取得しやすいよう降順にソート
-        post_ids: list[int] = session.execute_read(cls._Tx.read_likes_feed_post_ids, user_id)
-        return post_ids.sort(reverse=True)
-    @classmethod
-    def read_bookmarks_feed_post_ids(cls, session: Session, user_id: int) -> list[int]:
-        """ Return: このユーザーがブックマークしている Feed 投稿の ID 一覧 (降順) """
-        # 投稿 ID が大きいことを最新の投稿物と仮定して最新のそれを取得しやすいよう降順にソート
-        post_ids: list[int] = session.execute_read(cls._Tx.read_bookmarks_feed_post_ids, user_id)
-        return post_ids.sort(reverse=True)
     
   
 #* class Edge:

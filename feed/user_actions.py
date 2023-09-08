@@ -29,6 +29,24 @@ class FeedPost:
             tx.run(cypher, post_id=post_id)
             return 
         @staticmethod
+        def read_likes_feed_post_ids(tx: Transaction, user_id: int) -> list[int]:
+            """ このユーザーがいいねしている Feed 投稿の ID 一覧を取得 """
+            cypher = (
+                'MATCH (u:User {user_id: $user_id})-[:LIKES]->(p:FeedPost) '
+                'RETURN p.post_id AS post_id'
+            )
+            result = tx.run(cypher, user_id=user_id)
+            return [record['post_id'] for record in result]
+        @staticmethod
+        def read_bookmarks_feed_post_ids(tx: Transaction, user_id: int) -> list[int]:
+            """ このユーザーがブックマークしている Feed 投稿の ID 一覧を取得 """
+            cypher = (
+                'MATCH (u:User {user_id: $user_id})-[:BOOKMARKS]->(p:FeedPost) '
+                'RETURN p.post_id AS post_id'
+            )
+            result = tx.run(cypher, user_id=user_id)
+            return [record['post_id'] for record in result]
+        @staticmethod
         def read_liked_user_ids(tx: Transaction, post_id: int) -> list[int]:
             """ この投稿にいいねしているユーザーの ID 一覧を取得 """
             cypher = (
@@ -55,7 +73,19 @@ class FeedPost:
     def delete(cls, session: Session, post_id: int) -> None:
         """ post_id が一致するノードを削除実行 """
         session.execute_write(cls._Tx.delete, post_id)
-        return         
+        return   
+    @classmethod
+    def read_likes_feed_post_ids(cls, session: Session, user_id: int) -> list[int]:
+        """ Return: このユーザーがいいねしている Feed 投稿の ID 一覧 (降順) """
+        # 投稿 ID が大きいことを最新の投稿物と仮定して最新のそれを取得しやすいよう降順にソート
+        post_ids: list[int] = session.execute_read(cls._Tx.read_likes_feed_post_ids, user_id)
+        return post_ids.sort(reverse=True)
+    @classmethod
+    def read_bookmarks_feed_post_ids(cls, session: Session, user_id: int) -> list[int]:
+        """ Return: このユーザーがブックマークしている Feed 投稿の ID 一覧 (降順) """
+        # 投稿 ID が大きいことを最新の投稿物と仮定して最新のそれを取得しやすいよう降順にソート
+        post_ids: list[int] = session.execute_read(cls._Tx.read_bookmarks_feed_post_ids, user_id)
+        return post_ids.sort(reverse=True)      
     @classmethod
     def read_liked_user_ids(cls, session: Session, post_id: int) -> list[int]:
         """ Return: その投稿にいいねしているユーザーの ID 一覧 """
