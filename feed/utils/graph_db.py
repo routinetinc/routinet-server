@@ -143,6 +143,7 @@ class GenericEdge:
             to_node_label = 'FeedPost'
             to_id_name = 'post_id'
             pg_tx = partial(cls.PgRun.delete_bookmarks, to_feed_post_id=to_id)
+        else:
             raise Exception('Invalid Value Error: The label name does not exist.')
         # アクション済みかを調べる Cypher
         check_cypher = (
