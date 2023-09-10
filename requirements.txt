@@ -4,3 +4,4 @@ psycopg2 == 2.8.6
 boto3 == 1.26.146
 djangorestframework == 3.14.0
 neo4j == 5.11.0
+google-cloud-tasks==2.14.1
