@@ -1,13 +1,15 @@
 import random
 from functools import partial
 from feed.ff_related import FOLLOWS, User
-from feed.user_actions import BOOKMARKS, LIKES, FeedPost
+from feed.user_actions import FeedPost
 from secret import LocalNeo4jDB as Neo4j
 from neo4j import GraphDatabase, Driver, Session, Transaction
 from django.db import transaction, connection
 from django.db.backends.base.base import BaseDatabaseWrapper as BDW
 from supplyAuth.models import User as UserModel
 from feed.models import FeedPost as FeedPostModel
+from routine.models import TaskRecord as TaskFinishModel
+from routine.models import Routine as RoutineModel
 
 #* PostgreSQL, Neo4j データベースに接続するために必要な情報を設定
 pg_connection: BDW = connection['default']
@@ -58,29 +60,58 @@ class GenericEdge:
             to_u.save()
             return
         @staticmethod
-        def create_likes(to_feed_post_id: int) -> None:
+        def create_likes(to_feed_post_id: int, node_label: str) -> None:
             """ いいね数を加算 """
-            p: FeedPostModel = FeedPostModel.objects.get(id=to_feed_post_id)
+            if(node_label=='FeedPost'):
+                p: FeedPostModel = FeedPostModel.objects.get(id=to_feed_post_id)
+            elif(node_label=='TaskFinish'):
+                p: TaskFinishModel = TaskFinishModel.objects.get(id=to_feed_post_id)
+            elif(node_label=='Routine'):
+                p: RoutineModel = RoutineModel.objects.get(id=to_feed_post_id)
+            else:
+                raise Exception('Invalid Value Error: The node label name does not exist.')
             p.like_num      += 1 
             p.save()
             return
         @staticmethod
-        def delete_likes(to_feed_post_id: int) -> None:
+        def delete_likes(to_feed_post_id: int, node_label: str) -> None:
             """ いいね数を減算 """
-            p: FeedPostModel = FeedPostModel.objects.get(id=to_feed_post_id)
+            if(node_label=='FeedPost'):
+                p: FeedPostModel = FeedPostModel.objects.get(id=to_feed_post_id)
+            elif(node_label=='TaskFinish'):
+                p: TaskFinishModel = TaskFinishModel.objects.get(id=to_feed_post_id)
+            elif(node_label=='Routine'):
+                p: RoutineModel = RoutineModel.objects.get(id=to_feed_post_id)
+            else:
+                raise Exception('Invalid Value Error: The node label name does not exist.')
             p.like_num      -= 1 
             p.save()
             return
         @staticmethod
-        def create_bookmarks(to_feed_post_id: int) -> None:
+        def create_bookmarks(to_feed_post_id: int, node_label: str) -> None:
             """ ブックマーク数を加算 """
-            p: FeedPostModel = FeedPostModel.objects.get(id=to_feed_post_id)
+            if(node_label=='FeedPost'):
+                p: FeedPostModel = FeedPostModel.objects.get(id=to_feed_post_id)
+            elif(node_label=='TaskFinish'):
+                p: TaskFinishModel = TaskFinishModel.objects.get(id=to_feed_post_id)
+            elif(node_label=='Routine'):
+                p: RoutineModel = RoutineModel.objects.get(id=to_feed_post_id)
+            else:
+                raise Exception('Invalid Value Error: The node label name does not exist.')
             p.bookmark_num  += 1
             p.save
             return
         @staticmethod
-        def delete_bookmarks(to_feed_post_id: int):
+        def delete_bookmarks(to_feed_post_id: int, node_label: str):
             """ ブックマーク数を減算 """
+            if(node_label=='FeedPost'):
+                p: FeedPostModel = FeedPostModel.objects.get(id=to_feed_post_id)
+            elif(node_label=='TaskFinish'):
+                p: TaskFinishModel = TaskFinishModel.objects.get(id=to_feed_post_id)
+            elif(node_label=='Routine'):
+                p: RoutineModel = RoutineModel.objects.get(id=to_feed_post_id)
+            else:
+                raise Exception('Invalid Value Error: The node label name does not exist.')            
             p: FeedPostModel = FeedPostModel.objects.get(id=to_feed_post_id)
             p.bookmark_num  -= 1
             p.save
@@ -96,11 +127,11 @@ class GenericEdge:
         elif(edge_label=='LIKES'):
             to_node_label = 'FeedPost' if(is_to_node_label_feed_post) else 'TaskFinish'
             to_id_name = 'id_for_rdb'
-            pg_tx = partial(cls._PgRun.create_likes, to_feed_post_id=to_id)
+            pg_tx = partial(cls._PgRun.create_likes, to_feed_post_id=to_id, to_node_label=to_node_label)
         elif(edge_label=='BOOKMARKS'):
             to_node_label = 'Rouine'
             to_id_name = 'id_for_rdb'
-            pg_tx = partial(cls._PgRun.create_bookmarks, to_feed_post_id=to_id)
+            pg_tx = partial(cls._PgRun.create_bookmarks, to_feed_post_id=to_id, to_node_label=to_node_label)
         else:
             raise Exception('Invalid Value Error: The edge label name does not exist.')
         # アクション済みかを調べる Cypher
@@ -138,11 +169,11 @@ class GenericEdge:
         elif(edge_label=='LIKES'):
             to_node_label = 'FeedPost' if(is_to_node_label_feed_post) else 'TaskFinish'
             to_id_name = 'id_for_rdb'
-            pg_tx = partial(cls._PgRun.delete_likes, to_feed_post_id=to_id)
+            pg_tx = partial(cls._PgRun.delete_likes, to_feed_post_id=to_id, to_node_label=to_node_label)
         elif(edge_label=='BOOKMARKS'):
             to_node_label = 'FeedPost'
             to_id_name = 'id_for_rdb'
-            pg_tx = partial(cls._PgRun.delete_bookmarks, to_feed_post_id=to_id)
+            pg_tx = partial(cls._PgRun.delete_bookmarks, to_feed_post_id=to_id, to_node_label=to_node_label)
         else:
             raise Exception('Invalid Value Error: The edge_label name does not exist.')
         # アクション済みかを調べる Cypher
@@ -179,8 +210,6 @@ if __name__ == '__main__':
             User.create(session, i)
             FeedPost.create(session, i)
             FOLLOWS.create(session, *random.sample(tuple(range(1, n - 10)), 2))            
-            LIKES.create(session, *random.sample(tuple(range(1, n - 10)), 2))            
-            BOOKMARKS.create(session, *random.sample(tuple(range(1, n - 10)), 2))   
 
         def _read_edge(session: Session, n: int):
             #WARNING 存在しないノードを対象に探索していたとしてもエラーは吐かない

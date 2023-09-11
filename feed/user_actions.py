@@ -185,13 +185,13 @@ class Routine:
             @staticmethod
             def create(tx: Transaction, id_for_rdb: int) -> None:
                 """ id_for_rdb となるノードを作成 """
-                cypher = 'CREATE (:FeedPost {id_for_rdb: $id_for_rdb})'
+                cypher = 'CREATE (:Routine {id_for_rdb: $id_for_rdb})'
                 tx.run(cypher, id_for_rdb=id_for_rdb)
                 return 
             @staticmethod
             def delete(tx: Transaction, id_for_rdb: int) -> None:
                 """ id_for_rdb が一致するノード削除 """
-                cypher = 'MATCH (p:FeedPost {id_for_rdb: $id_for_rdb}) DETACH DELETE p'
+                cypher = 'MATCH (p:Routine {id_for_rdb: $id_for_rdb}) DETACH DELETE p'
                 tx.run(cypher, id_for_rdb=id_for_rdb)
                 return 
             @staticmethod
