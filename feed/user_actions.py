@@ -18,44 +18,44 @@ class FeedPost:
         class _Tx:
             """ トランザクションの設計 """
             @staticmethod
-            def create(tx: Transaction, id_for_rdb: int) -> None:
-                """ id_for_rdb となるノードを作成 """
-                cypher = 'CREATE (:FeedPost {id_for_rdb: $id_for_rdb})'
-                tx.run(cypher, id_for_rdb=id_for_rdb)
+            def create(tx: Transaction, id_of_rdb: int) -> None:
+                """ id_of_rdb となるノードを作成 """
+                cypher = 'CREATE (:FeedPost {id_of_rdb: $id_of_rdb})'
+                tx.run(cypher, id_of_rdb=id_of_rdb)
                 return 
             @staticmethod
-            def delete(tx: Transaction, id_for_rdb: int) -> None:
-                """ id_for_rdb が一致するノード削除 """
-                cypher = 'MATCH (p:FeedPost {id_for_rdb: $id_for_rdb}) DETACH DELETE p'
-                tx.run(cypher, id_for_rdb=id_for_rdb)
+            def delete(tx: Transaction, id_of_rdb: int) -> None:
+                """ id_of_rdb が一致するノード削除 """
+                cypher = 'MATCH (p:FeedPost {id_of_rdb: $id_of_rdb}) DETACH DELETE p'
+                tx.run(cypher, id_of_rdb=id_of_rdb)
                 return 
             @staticmethod
             def read_likes_feed_post_ids(tx: Transaction, user_id: int) -> list[int]:
                 """ このユーザーがいいねしている Feed 投稿の ID 一覧を取得 """
                 cypher = (
                     'MATCH (u:User {user_id: $user_id})-[:LIKES]->(p:FeedPost) '
-                    'RETURN p.id_for_rdb AS id_for_rdb'
+                    'RETURN p.id_of_rdb AS id_of_rdb'
                 )
                 result = tx.run(cypher, user_id=user_id)
-                return [record['id_for_rdb'] for record in result]
+                return [record['id_of_rdb'] for record in result]
             @staticmethod
-            def read_liked_user_ids(tx: Transaction, id_for_rdb: int) -> list[int]:
+            def read_liked_user_ids(tx: Transaction, id_of_rdb: int) -> list[int]:
                 """ この投稿にいいねしているユーザーの ID 一覧を取得 """
                 cypher = (
-                    'MATCH (p:FeedPost {id_for_rdb: $id_for_rdb})<-[:LIKES]-(u:User) '
+                    'MATCH (p:FeedPost {id_of_rdb: $id_of_rdb})<-[:LIKES]-(u:User) '
                     'RETURN u.user_id AS user_id'
                 )
-                result = tx.run(cypher, id_for_rdb=id_for_rdb)
+                result = tx.run(cypher, id_of_rdb=id_of_rdb)
                 return [record['user_id'] for record in result]  
         @classmethod
-        def create(cls, session: Session, id_for_rdb: int) -> None:
-            """ id_for_rdb となるノードを作成実行 """
-            session.execute_write(cls._Tx.create, id_for_rdb)
+        def create(cls, session: Session, id_of_rdb: int) -> None:
+            """ id_of_rdb となるノードを作成実行 """
+            session.execute_write(cls._Tx.create, id_of_rdb)
             return
         @classmethod
-        def delete(cls, session: Session, id_for_rdb: int) -> None:
-            """ id_for_rdb が一致するノードを削除実行 """
-            session.execute_write(cls._Tx.delete, id_for_rdb)
+        def delete(cls, session: Session, id_of_rdb: int) -> None:
+            """ id_of_rdb が一致するノードを削除実行 """
+            session.execute_write(cls._Tx.delete, id_of_rdb)
             return   
         @classmethod
         def read_likes_feed_post_ids(cls, session: Session, user_id: int) -> list[int]:
@@ -64,9 +64,9 @@ class FeedPost:
             post_ids: list[int] = session.execute_read(cls._Tx.read_likes_feed_post_ids, user_id)
             return post_ids.sort(reverse=True)     
         @classmethod
-        def read_liked_user_ids(cls, session: Session, id_for_rdb: int) -> list[int]:
+        def read_liked_user_ids(cls, session: Session, id_of_rdb: int) -> list[int]:
             """ Return: その投稿にいいねしているユーザーの ID 一覧 """
-            return session.execute_read(cls._Tx.read_liked_user_ids, id_for_rdb)
+            return session.execute_read(cls._Tx.read_liked_user_ids, id_of_rdb)
     
     #* class Edge:
     # エッジの作成、取得、更新、削除
@@ -100,44 +100,44 @@ class TaskFinish:
     class _Tx:
         """ トランザクションの設計 """
         @staticmethod
-        def create(tx: Transaction, id_for_rdb: int) -> None:
+        def create(tx: Transaction, id_of_rdb: int) -> None:
             """ ノードを作成 """
-            cypher = 'CREATE (:TaskFinish {id_for_rdb: $id_for_rdb})'
-            tx.run(cypher, id_for_rdb=id_for_rdb)
+            cypher = 'CREATE (:TaskFinish {id_of_rdb: $id_of_rdb})'
+            tx.run(cypher, id_of_rdb=id_of_rdb)
             return 
         @staticmethod
-        def delete(tx: Transaction, id_for_rdb: int) -> None:
+        def delete(tx: Transaction, id_of_rdb: int) -> None:
             """ ノード削除 """
-            cypher = 'MATCH (p:TaskFinish {id_for_rdb: $id_for_rdb}) DETACH DELETE p'
-            tx.run(cypher, id_for_rdb=id_for_rdb)
+            cypher = 'MATCH (p:TaskFinish {id_of_rdb: $id_of_rdb}) DETACH DELETE p'
+            tx.run(cypher, id_of_rdb=id_of_rdb)
             return 
         @staticmethod
         def read_likes_feed_post_ids(tx: Transaction, user_id: int) -> list[int]:
             """ このユーザーがいいねしている Feed 投稿の ID 一覧を取得 """
             cypher = (
                 'MATCH (u:User {user_id: $user_id})-[:LIKES]->(p:TaskFinish) '
-                'RETURN p.id_for_rdb AS id_for_rdb'
+                'RETURN p.id_of_rdb AS id_of_rdb'
             )
             result = tx.run(cypher, user_id=user_id)
-            return [record['id_for_rdb'] for record in result]
+            return [record['id_of_rdb'] for record in result]
         @staticmethod
-        def read_liked_user_ids(tx: Transaction, id_for_rdb: int) -> list[int]:
+        def read_liked_user_ids(tx: Transaction, id_of_rdb: int) -> list[int]:
             """ この投稿にいいねしているユーザーの ID 一覧を取得 """
             cypher = (
-                'MATCH (p:TaskFinish {id_for_rdb: $id_for_rdb})<-[:LIKES]-(u:User) '
+                'MATCH (p:TaskFinish {id_of_rdb: $id_of_rdb})<-[:LIKES]-(u:User) '
                 'RETURN u.user_id AS user_id'
             )
-            result = tx.run(cypher, id_for_rdb=id_for_rdb)
+            result = tx.run(cypher, id_of_rdb=id_of_rdb)
             return [record['user_id'] for record in result]  
     @classmethod
-    def create(cls, session: Session, id_for_rdb: int) -> None:
+    def create(cls, session: Session, id_of_rdb: int) -> None:
         """ ノードを作成実行 """
-        session.execute_write(cls._Tx.create, id_for_rdb)
+        session.execute_write(cls._Tx.create, id_of_rdb)
         return
     @classmethod
-    def delete(cls, session: Session, id_for_rdb: int) -> None:
+    def delete(cls, session: Session, id_of_rdb: int) -> None:
         """ ノードを削除実行 """
-        session.execute_write(cls._Tx.delete, id_for_rdb)
+        session.execute_write(cls._Tx.delete, id_of_rdb)
         return   
     @classmethod
     def read_likes_feed_post_ids(cls, session: Session, user_id: int) -> list[int]:
@@ -146,9 +146,9 @@ class TaskFinish:
         post_ids: list[int] = session.execute_read(cls._Tx.read_likes_feed_post_ids, user_id)
         return post_ids.sort(reverse=True)     
     @classmethod
-    def read_liked_user_ids(cls, session: Session, id_for_rdb: int) -> list[int]:
+    def read_liked_user_ids(cls, session: Session, id_of_rdb: int) -> list[int]:
         """ Return: その投稿にいいねしているユーザーの ID 一覧 """
-        return session.execute_read(cls._Tx.read_liked_user_ids, id_for_rdb)
+        return session.execute_read(cls._Tx.read_liked_user_ids, id_of_rdb)
     
     #* class Edge:
     # エッジの作成、取得、更新、削除
@@ -183,44 +183,44 @@ class Routine:
         class _Tx:
             """ トランザクションの設計 """
             @staticmethod
-            def create(tx: Transaction, id_for_rdb: int) -> None:
-                """ id_for_rdb となるノードを作成 """
-                cypher = 'CREATE (:Routine {id_for_rdb: $id_for_rdb})'
-                tx.run(cypher, id_for_rdb=id_for_rdb)
+            def create(tx: Transaction, id_of_rdb: int) -> None:
+                """ id_of_rdb となるノードを作成 """
+                cypher = 'CREATE (:Routine {id_of_rdb: $id_of_rdb})'
+                tx.run(cypher, id_of_rdb=id_of_rdb)
                 return 
             @staticmethod
-            def delete(tx: Transaction, id_for_rdb: int) -> None:
-                """ id_for_rdb が一致するノード削除 """
-                cypher = 'MATCH (p:Routine {id_for_rdb: $id_for_rdb}) DETACH DELETE p'
-                tx.run(cypher, id_for_rdb=id_for_rdb)
+            def delete(tx: Transaction, id_of_rdb: int) -> None:
+                """ id_of_rdb が一致するノード削除 """
+                cypher = 'MATCH (p:Routine {id_of_rdb: $id_of_rdb}) DETACH DELETE p'
+                tx.run(cypher, id_of_rdb=id_of_rdb)
                 return 
             @staticmethod
             def read_bookmarks_feed_post_ids(tx: Transaction, user_id: int) -> list[int]:
                 """ このユーザーがブックマークしている Feed 投稿の ID 一覧を取得 """
                 cypher = (
                     'MATCH (u:User {user_id: $user_id})-[:BOOKMARKS]->(p:Routine) '
-                    'RETURN p.id_for_rdb AS id_for_rdb'
+                    'RETURN p.id_of_rdb AS id_of_rdb'
                 )
                 result = tx.run(cypher, user_id=user_id)
-                return [record['id_for_rdb'] for record in result]
+                return [record['id_of_rdb'] for record in result]
             @staticmethod
-            def read_bookmarked_user_ids(tx: Transaction, id_for_rdb: int) -> list[int]:
+            def read_bookmarked_user_ids(tx: Transaction, id_of_rdb: int) -> list[int]:
                 """ この投稿をブックマークしているユーザーの ID 一覧を取得 """
                 cypher = (
-                    'MATCH (p:Routine {id_for_rdb: $id_for_rdb})<-[:BOOKMARKS]-(u:User) '
+                    'MATCH (p:Routine {id_of_rdb: $id_of_rdb})<-[:BOOKMARKS]-(u:User) '
                     'RETURN u.user_id AS user_id'
                 )
-                result = tx.run(cypher, id_for_rdb=id_for_rdb)
+                result = tx.run(cypher, id_of_rdb=id_of_rdb)
                 return [record['user_id'] for record in result]
         @classmethod
-        def create(cls, session: Session, id_for_rdb: int) -> None:
+        def create(cls, session: Session, id_of_rdb: int) -> None:
             """ ノードを作成実行 """
-            session.execute_write(cls._Tx.create, id_for_rdb)
+            session.execute_write(cls._Tx.create, id_of_rdb)
             return
         @classmethod
-        def delete(cls, session: Session, id_for_rdb: int) -> None:
+        def delete(cls, session: Session, id_of_rdb: int) -> None:
             """ ノードを削除実行 """
-            session.execute_write(cls._Tx.delete, id_for_rdb)
+            session.execute_write(cls._Tx.delete, id_of_rdb)
             return     
         @classmethod
         def read_bookmarks_feed_post_ids(cls, session: Session, user_id: int) -> list[int]:
@@ -229,9 +229,9 @@ class Routine:
             post_ids: list[int] = session.execute_read(cls._Tx.read_bookmarks_feed_post_ids, user_id)
             return post_ids.sort(reverse=True)      
         @classmethod
-        def read_bookmarked_user_ids(cls, session: Session, id_for_rdb: int) -> list[int]:
+        def read_bookmarked_user_ids(cls, session: Session, id_of_rdb: int) -> list[int]:
             """ Return: その投稿をブックマークしているユーザーの ID 一覧 """
-            return session.execute_read(cls._Tx.read_bookmarked_user_ids, id_for_rdb)
+            return session.execute_read(cls._Tx.read_bookmarked_user_ids, id_of_rdb)
     class BOOKMARKS:
         """ Label: BOOKMARKS <Edge> """
         class _Tx:

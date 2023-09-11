@@ -126,11 +126,11 @@ class GenericEdge:
             pg_tx = partial(cls._PgRun.create_follows, from_user_id=from_user_id, to_user_id=to_id)
         elif(edge_label=='LIKES'):
             to_node_label = 'FeedPost' if(is_to_node_label_feed_post) else 'TaskFinish'
-            to_id_name = 'id_for_rdb'
+            to_id_name = 'id_of_rdb'
             pg_tx = partial(cls._PgRun.create_likes, to_feed_post_id=to_id, to_node_label=to_node_label)
         elif(edge_label=='BOOKMARKS'):
             to_node_label = 'Rouine'
-            to_id_name = 'id_for_rdb'
+            to_id_name = 'id_of_rdb'
             pg_tx = partial(cls._PgRun.create_bookmarks, to_feed_post_id=to_id, to_node_label=to_node_label)
         else:
             raise Exception('Invalid Value Error: The edge label name does not exist.')
@@ -168,11 +168,11 @@ class GenericEdge:
             pg_tx = partial(cls._PgRun.delete_follows, from_user_id=from_user_id, to_user_id=to_id)
         elif(edge_label=='LIKES'):
             to_node_label = 'FeedPost' if(is_to_node_label_feed_post) else 'TaskFinish'
-            to_id_name = 'id_for_rdb'
+            to_id_name = 'id_of_rdb'
             pg_tx = partial(cls._PgRun.delete_likes, to_feed_post_id=to_id, to_node_label=to_node_label)
         elif(edge_label=='BOOKMARKS'):
             to_node_label = 'Routine'
-            to_id_name = 'id_for_rdb'
+            to_id_name = 'id_of_rdb'
             pg_tx = partial(cls._PgRun.delete_bookmarks, to_feed_post_id=to_id, to_node_label=to_node_label)
         else:
             raise Exception('Invalid Value Error: The edge_label name does not exist.')
