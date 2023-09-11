@@ -35,7 +35,7 @@ def _delete_all(session: Session) -> None:
 
 class GenericEdge:
     """ 汎用的な Edge に関する機能の枠組み """
-    class PgRun:
+    class _PgRun:
         """ RDB 操作用関数群 """
         @staticmethod
         def create_follows(from_user_id: int, to_user_id: int) -> None:
@@ -86,26 +86,26 @@ class GenericEdge:
             p.save
             return
     @classmethod
-    def create(cls, tx: Transaction, from_user_id: int, to_id: int, label: str) -> None:
-        """ `rdb_tx` is the RDB transaction function to be linked. `label` is the edge label name. """
+    def create(cls, tx: Transaction, from_user_id: int, to_id: int, edge_label: str, is_to_node_label_feed_post: bool = False) -> None:
+        """ `rdb_tx` is the RDB transaction function to be linked. """
         # 必要な値をセット
-        if(label=='FOLLOWS'):
-            to_node_label = 'User' 
+        if(edge_label=='FOLLOWS'):
+            to_node_label = 'User'
             to_id_name = 'user_id' 
-            pg_tx = partial(cls.PgRun.create_follows, from_user_id=from_user_id, to_user_id=to_id)
-        elif(label=='LIKES'):
-            to_node_label = 'FeedPost'
-            to_id_name = 'post_id'
-            pg_tx = partial(cls.PgRun.create_likes, to_feed_post_id=to_id)
-        elif(label=='BOOKMARKS'):
-            to_node_label = 'FeedPost'
-            to_id_name = 'post_id'
-            pg_tx = partial(cls.PgRun.create_bookmarks, to_feed_post_id=to_id)
+            pg_tx = partial(cls._PgRun.create_follows, from_user_id=from_user_id, to_user_id=to_id)
+        elif(edge_label=='LIKES'):
+            to_node_label = 'FeedPost' if(is_to_node_label_feed_post) else 'TaskFinish'
+            to_id_name = 'id_for_rdb'
+            pg_tx = partial(cls._PgRun.create_likes, to_feed_post_id=to_id)
+        elif(edge_label=='BOOKMARKS'):
+            to_node_label = 'Rouine'
+            to_id_name = 'id_for_rdb'
+            pg_tx = partial(cls._PgRun.create_bookmarks, to_feed_post_id=to_id)
         else:
-            raise Exception('Invalid Value Error: The label name does not exist.')
+            raise Exception('Invalid Value Error: The edge label name does not exist.')
         # アクション済みかを調べる Cypher
         check_cypher = (
-                    f'MATCH (x:User {{user_id: $from_user_id}})-[:{label}]->(y:{to_node_label} {{{to_id_name}: $to_id}}) '
+                    f'MATCH (x:User {{user_id: $from_user_id}})-[:{edge_label}]->(y:{to_node_label} {{{to_id_name}: $to_id}}) '
                     'RETURN COUNT(*) AS num'
                 )
         check_result = tx.run(check_cypher, from_user_id=from_user_id, to_id=to_id).single()
@@ -114,7 +114,7 @@ class GenericEdge:
         if num == 0:
             create_cypher = (
                         f'MATCH (x:User {{user_id: $from_user_id}}), (y:{to_node_label} {{{to_id_name}: $to_id}}) '
-                        f'CREATE (x)-[:{label}]->(y) '
+                        f'CREATE (x)-[:{edge_label}]->(y) '
                     )
             cypher = create_cypher
             try:
@@ -128,26 +128,26 @@ class GenericEdge:
                 raise Exception('Control Error: The rollback has taken place.')
         return num
     @classmethod
-    def delete(cls, tx: Transaction, from_user_id: int, to_id: int, label: str) -> int:
-        """ `rdb_tx` is the RDB transaction function to be linked. `label` is the edge label name. """
+    def delete(cls, tx: Transaction, from_user_id: int, to_id: int, edge_label: str, is_to_node_label_feed_post: bool = False) -> int:
+        """ `rdb_tx` is the RDB transaction function to be linked. """
         # 必要な値をセット
-        if(label=='FOLLOWS'):
+        if(edge_label=='FOLLOWS'):
             to_node_label = 'User' 
             to_id_name = 'user_id' 
-            pg_tx = partial(cls.PgRun.delete_follows, from_user_id=from_user_id, to_user_id=to_id)
-        elif(label=='LIKES'):
+            pg_tx = partial(cls._PgRun.delete_follows, from_user_id=from_user_id, to_user_id=to_id)
+        elif(edge_label=='LIKES'):
+            to_node_label = 'FeedPost' if(is_to_node_label_feed_post) else 'TaskFinish'
+            to_id_name = 'id_for_rdb'
+            pg_tx = partial(cls._PgRun.delete_likes, to_feed_post_id=to_id)
+        elif(edge_label=='BOOKMARKS'):
             to_node_label = 'FeedPost'
-            to_id_name = 'post_id'
-            pg_tx = partial(cls.PgRun.delete_likes, to_feed_post_id=to_id)
-        elif(label=='BOOKMARKS'):
-            to_node_label = 'FeedPost'
-            to_id_name = 'post_id'
-            pg_tx = partial(cls.PgRun.delete_bookmarks, to_feed_post_id=to_id)
+            to_id_name = 'id_for_rdb'
+            pg_tx = partial(cls._PgRun.delete_bookmarks, to_feed_post_id=to_id)
         else:
-            raise Exception('Invalid Value Error: The label name does not exist.')
+            raise Exception('Invalid Value Error: The edge_label name does not exist.')
         # アクション済みかを調べる Cypher
         check_cypher = (
-                    f'MATCH (x:User {{user_id: $from_user_id}})-[:{label}]->(y:{to_node_label} {{{to_id_name}: $to_id}}) '
+                    f'MATCH (x:User {{user_id: $from_user_id}})-[:{edge_label}]->(y:{to_node_label} {{{to_id_name}: $to_id}}) '
                     'RETURN COUNT(*) AS num'
                 )
         check_result = tx.run(check_cypher, from_user_id=from_user_id, to_id=to_id).single()
@@ -155,7 +155,7 @@ class GenericEdge:
         # アクション済みであったならばアクション取り消し
         if num > 0:
             delete_cypher = (
-                        f'MATCH (x:User {{user_id: $from_user_id}})-[:{label}]->(y:{to_node_label} {{{to_id_name}: $to_user_id}}) '
+                        f'MATCH (x:User {{user_id: $from_user_id}})-[:{edge_label}]->(y:{to_node_label} {{{to_id_name}: $to_user_id}}) '
                         'DELETE r'
                     )
             cypher = delete_cypher
