@@ -171,7 +171,7 @@ class GenericEdge:
             to_id_name = 'id_for_rdb'
             pg_tx = partial(cls._PgRun.delete_likes, to_feed_post_id=to_id, to_node_label=to_node_label)
         elif(edge_label=='BOOKMARKS'):
-            to_node_label = 'FeedPost'
+            to_node_label = 'Routine'
             to_id_name = 'id_for_rdb'
             pg_tx = partial(cls._PgRun.delete_bookmarks, to_feed_post_id=to_id, to_node_label=to_node_label)
         else:
