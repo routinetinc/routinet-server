@@ -13,6 +13,9 @@ driver: Driver = GraphDatabase.driver(Neo4j.uri, auth=(Neo4j.user, Neo4j.passwor
 #* class Node:
 # ノードまたはノードの属性の作成、取得、更新、削除
 class FeedPost:
+    GENERIC('FeedPost')
+
+class GENERIC(NODENAME):
     """ Label: FeedPost <Node> """
     class _Tx:
         """ トランザクションの設計 """
@@ -20,6 +23,7 @@ class FeedPost:
         def create(tx: Transaction, post_id: int) -> None:
             """ post_id となるノードを作成 """
             cypher = 'CREATE (:FeedPost {post_id: $post_id})'
+            cypher = f'CREATE (:{NODENAME} {{post_id: $post_id}})'
             tx.run(cypher, post_id=post_id)
             return 
         @staticmethod
