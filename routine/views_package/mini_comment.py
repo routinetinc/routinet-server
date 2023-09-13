@@ -14,17 +14,17 @@ class MiniComment(APIView):
             return make_response(status_code=400)
 
         try:
-            task_record = models.TaskRecord.objects.get(id=data["task_record_id"])
-        except models.TaskRecord.DoesNotExist:
-            return make_response(status_code=404, data={'message': 'Task_record not found'})
+            task_finish = models.TaskFinish.objects.get(id=data["task_finish_id"])
+        except models.TaskFinish.DoesNotExist:
+            return make_response(status_code=404, data={'message': 'Task_finish not found'})
 
         try:
-            minicomment = models.Minicomment(task_record_id=task_record, comment=data["comment"])
+            minicomment = models.Minicomment(task_finish_id=task_finish, comment=data["comment"])
             minicomment.save()
-        except models.TaskRecord.DoesNotExist:
+        except models.TaskFinish.DoesNotExist:
             pass
 
-        data = {"task_record_id": str(minicomment.task_record_id)}
+        data = {"task_finish_id": str(minicomment.task_finish_id)}
         return make_response(status_code=200, data=data)
 
     def patch(self, request, format=None):
@@ -37,8 +37,8 @@ class MiniComment(APIView):
             minicomment = models.Minicomment.objects.get(id=data["minicomment_id"])
             minicomment.comment = data["comment"]
             minicomment.save()
-        except models.TaskRecord.DoesNotExist:
+        except models.TaskFinish.DoesNotExist:
             return make_response(status_code=400, data={"message": "Minicomment not found."})
 
-        data = {"task_record_id": str(minicomment.task_record_id)}
+        data = {"task_finish_id": str(minicomment.task_finish_id)}
         return make_response(status_code=200, data=data)
