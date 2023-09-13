@@ -1,9 +1,11 @@
+import time
 from rest_framework.views import APIView
 from datetime import datetime, timedelta
 from routine import models, serializers
 from routine.utils.handle_json import RequestInvalid, get_json, make_response
 from routine import serializers
 from supplyAuth.models import User as UserModel
+from django.utils import timezone
 
 class Routine(APIView):
     def get(self, request, format=None):
@@ -73,9 +75,11 @@ class ReadRoutineAndTask(APIView):
         user_id = 1 if(request.user.id is None) else request.user.id
         user = UserModel.objects.get(id=user_id)
 
-        #dowのリストを、[0, 1, 2, 3, 4, 5, 6]の形式で、その日から順番に用意
+        # 現在の日付を取得し、その週の月曜日の日付を計算
         now = datetime.now()
-        dow_list = [(now + timedelta(days=i)).weekday() for i in range(7)]
+        monday = now - timedelta(days=now.weekday())
+        # その週の月曜から日曜までの日付のリストを作成
+        week_dates = [(monday + timedelta(days=i)).weekday() for i in range(7)]
 
         routines_data = {}
         routines_by_day = {
@@ -89,7 +93,7 @@ class ReadRoutineAndTask(APIView):
         }
         day_of_week = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 
-        for dow in dow_list:
+        for dow in week_dates:
             #SQL文の実行結果をDjangoのインスタンスとして返す
             routines = models.Routine.objects.raw(
             
@@ -107,18 +111,33 @@ class ReadRoutineAndTask(APIView):
             for routine in routines:
                 if str(routine.id) not in routines_data:
                     tasks = models.Task.objects.filter(routine_id=routine).order_by('id')
-                    task_data = []
+                    task_data_by_day = {day: [] for day in day_of_week}
+
+                    # 全てのタスクレコードを取得
+                    all_task_records = models.TaskRecord.objects.filter(task_id__in=[task.id for task in tasks]).order_by('-when')
+                    
                     for task in tasks:
-                        latest_task_record = models.TaskRecord.objects.filter(task_id=task.id).order_by('-when').first()
-                        is_achieved = latest_task_record.is_achieved if latest_task_record else False
-                        task_data.append({
-                            "task_id": task.id,
-                            "title": task.title,
-                            "detail": task.detail,
-                            "required_time": task.required_time,
-                            "is_notified": task.is_notified,
-                            "is_achieved": is_achieved,
-                        })
+                        # 各曜日に一致するタスクレコードをフィルタリング
+                        for day in day_of_week:
+                            start_of_day = timezone.make_aware(datetime.combine(week_dates[day_of_week.index(day)], time.min))
+                            end_of_day = timezone.make_aware(datetime.combine(week_dates[day_of_week.index(day)], time.max))
+
+                            task_records_for_day = all_task_records.filter(
+                                task_id=task.id,
+                                when__range=(start_of_day, end_of_day)
+                            )
+
+                            is_achieved = any(record.is_achieved for record in task_records_for_day)
+                            
+                            task_data_by_day[day].append({
+                                "task_id": task.id,
+                                "title": task.title,
+                                "detail": task.detail,
+                                "required_time": task.required_time,
+                                "is_notified": task.is_notified,
+                                "is_achieved": is_achieved,
+                            })
+
                     routines_data[str(routine.id)] = {
                         "start_time": routine.start_time,
                         "end_time": routine.end_time,
@@ -126,7 +145,7 @@ class ReadRoutineAndTask(APIView):
                         "subtitle": routine.subtitle,
                         "is_published": routine.is_published,
                         "is_notified": routine.is_notified,
-                        "tasks": task_data
+                        "tasks": task_data_by_day  # 曜日ごとにタスクデータを格納
                     }
                 routines_by_day[day_of_week[dow]].append(str(routine.id))
 
