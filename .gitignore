@@ -1,5 +1,6 @@
 # Original dir and files for the our project.
 secret.py
+worker_secret.py
 .vscode
 *.pgpass
 *.psql_cnf
