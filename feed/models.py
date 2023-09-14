@@ -2,6 +2,7 @@ from django.db import models
 import secret
 import boto3
 import random
+from boto3.dynamodb.conditions import Key, Attr
 
 class NoSQLBase(models.Model):
     table_name = ''
@@ -44,38 +45,90 @@ class Cache():
         @classmethod
         def create(cls, data, format=None):
             if data.score <= 100: #数値は仮置き
-                Item = {
-                    'categoryid': 1,
-                    'priority': 100,
-                    'data': {}
-                }
+                num = [198]
 
             elif 100 < data.score <=200:
-                Item = {
-                    'categoryid': 1,
-                    'priority': 110,
-                    'data': {}
-                }
+                num = [199]
 
             else:
-                num = random.randint(200,300)
-                Item = {
-                    'categoryid': 1,
-                    'priority': num,
-                    'data': {}
+                num = []
+                for i in range(200):
+                    num.append(200+i)
+            Item = {
+                'categoryid': data.category_id,
+                'priority': num,
+                'time': 1
+                'data': {
+                    {
+                        data.content_id,
+                        data.score
+                    }
                 }
+            }
             table = cls.get_dynamodb_table()
             table.put_item(Item=Item)
         
-        def update(self, request, format=None):
+        @classmethod
+        def put(cls, data, format=None):
+            if data.score <= 100: #数値は仮置き
+                num = 100
+
+            elif 100 < data.score <=200:
+                num = 110
+
+            else:
+                num = random.randint(200,300)
             options = {
-                'TableName': self.table_name,
                 'Key': {
-                    'Categoryid': {'N': ''},
-                    'Priority': {'N': ''}
+                    'categoryid': data.category_id,
+                    'priority': num,
                 },
+                'UpdateExpression': 'set #data = list_append(data,:add)',
+                'ExpressionAttributeNames': {'#data': 'data'},
                 'ExpressionAttributeValues': {
-                    'data': {'M' : request.data}
+                    ':add': {
+                        data.content_id,
+                        data.score
+                    }
                 }
             }
-            self.dynamodb.update_item(**options)
+            table = cls.get_dynamodb_table()
+            table.update_item(**options)
+
+        @classmethod
+        def update(cls, data, format=None):
+            if data.score <= 100: #数値は仮置き
+                num = [198]
+
+            elif 100 < data.score <=200:
+                num = [199]
+
+            else:
+                num = random.randint(200,300)
+            options = {
+                'Key': {
+                    'categoryid': data.category_id,
+                    'priority': num,
+                },
+                'UpdateExpression': 'set #data = list_append(data,:add)',
+                'ExpressionAttributeNames': {'#data': 'data'},
+                'ExpressionAttributeValues': {
+                    ':add': {
+                        data.content_id,
+                        data.score
+                    }
+                }
+            }
+            table = cls.get_dynamodb_table()
+            table.update_item(**options)
+
+        @classmethod
+        def query(cls, data, format=None):
+            num = random.randint(198,400)
+            table = cls.get_dynamodb_table
+            response = table.query(
+                KeyConditionExpression=Key('categoryid').eq(data.category_id) & Attr('priority').contains(num)
+            )
+            items = len(response)
+            rand = random.randint(items)
+            return response['Item'][rand]
