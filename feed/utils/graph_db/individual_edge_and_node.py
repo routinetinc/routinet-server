@@ -29,20 +29,26 @@ class Node:
         @classmethod
         def read_follows_user_id(cls, session: Session, from_rdb_id: int) -> list[int]:
             cls.FollowsUser.read_rdb_id_of_destination(session, from_rdb_id)
+            return
         @classmethod
         def read_followed_user_id(cls, session: Session, to_rdb_id: int) -> list[int]:
             cls.FollowsUser.read_rdb_id_of_starting(session, to_rdb_id)
+            return
         @classmethod
         def read_likes_feed_post_id(cls, session: Session, from_rdb_id: int) -> list[int]:
             cls.LikesFeedPost.read_rdb_id_of_destination(session, from_rdb_id)
+            return
         @classmethod
         def read_likes_task_finish_id(cls, session: Session, from_rdb_id: int) -> list[int]:
             cls.LikesTaskFinish.read_rdb_id_of_destination(session, from_rdb_id)
+            return
         @classmethod
         def read_bookmarks_routine_id(cls, session: Session, from_rdb_id: int) -> list[int]:
             cls.BookmarksRoutine.read_rdb_id_of_destination(session, from_rdb_id)
+            return
     class FeedPost(AbstractNode):
         from_node = Option.NodeLabel.FeedPost
+        edge = Option.EdgeLabel.LIKES
         to_node = Option.NodeLabel.User
         @classmethod
         def read_liked_by_user_id(cls, session: Session, feed_post_id):
@@ -51,7 +57,9 @@ class Node:
         @classmethod
         def read_bookmarked_by_user_id(cls, session: Session, feed_post_id):
             cls.edge = Option.EdgeLabel.BOOKMARKS
+            cls.set_class_props()
             cls.read_rdb_id_of_starting(session, feed_post_id)
+            return
     class TaskFinish(AbstractNode):
         from_node = Option.NodeLabel.FeedPost
         edge = Option.EdgeLabel.LIKES
@@ -59,6 +67,7 @@ class Node:
         @classmethod
         def read_liked_by_user_id(cls, session: Session, feed_post_id):
             cls.read_rdb_id_of_starting(session, feed_post_id)
+            return
     class Routine(AbstractNode):
         from_node = Option.NodeLabel.FeedPost
         edge = Option.EdgeLabel.BOOKMARKS
@@ -66,6 +75,7 @@ class Node:
         @classmethod
         def read_bookmarked_by_user_id(cls, session: Session, feed_post_id):
             cls.read_rdb_id_of_starting(session, feed_post_id)
+            return
 
 class _RestrictedAbstractEdge:
     class AbstractFOLLOWS(AbstractEdge):

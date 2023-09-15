@@ -85,55 +85,65 @@ class AbstractNode:
         edge (String): 関係付け時のエッジのラベル名 \n
         to_node (String): 関係付け時の目的点となるノードのラベル名 \n
     """
-    from_node      = ''
-    edge           = ''
-    to_node        = ''
+    from_node = ''
+    edge = ''
+    to_node = ''
+    props = {}
     class _Tx:
         """ トランザクションの設計 """
         @classmethod
-        def create(cls, tx: Transaction, rdb_id: int) -> None:
-            cypher = f'CREATE (:{AbstractNode.from_node} {{rdb_id: $rdb_id}})'
+        def create(cls, tx: Transaction, rdb_id: int, props: dict) -> None:
+            cypher = f'CREATE (:{props["from_node"]} {{rdb_id: $rdb_id}})'
             tx.run(cypher, rdb_id=rdb_id)
             return 
         @classmethod
-        def delete(cls, tx: Transaction, rdb_id: int) -> None:
-            cypher = f'MATCH (u:{AbstractNode.from_node} {{rdb_id: $rdb_id}}) DETACH DELETE u'
+        def delete(cls, tx: Transaction, rdb_id: int, props: dict) -> None:
+            cypher = f'MATCH (u:{props["from_node"]} {{rdb_id: $rdb_id}}) DETACH DELETE u'
             tx.run(cypher, rdb_id=rdb_id)
             return 
         @classmethod
-        def read_rdb_id_of_destination(cls, tx: Transaction, from_rdb_id: int) -> list[int]:
+        def read_rdb_id_of_destination(cls, tx: Transaction, from_rdb_id: int, props: dict) -> list[int]:
             """ あるノードに対して、そのノードからエッジを方向づけられているノードの RDB 特定用 id を一覧取得するトランザクション """
             cypher = (
-                f'MATCH (x:{AbstractNode.from_node} {{rdb_id: $from_rdb_id}})-[:{AbstractNode.edge}]->(y:{AbstractNode.to_node}) '
+                f'MATCH (x:{props["from_node"]} {{rdb_id: $from_rdb_id}})-[:{props["edge"]}]->(y:{props["to_node"]}) '
                 'RETURN y.rdb_id as rdb_id'
             )
             result = tx.run(cypher, from_rdb_id=from_rdb_id)
             return [record['rdb_id'] for record in result]
         @classmethod
-        def read_rdb_id_of_starting(cls, tx: Transaction, to_rdb_id: int) -> list[int]:
+        def read_rdb_id_of_starting(cls, tx: Transaction, to_rdb_id: int, props: dict) -> list[int]:
             """ あるノードに対して、エッジを方向づけているノードの RDB 特定用 id を一覧取得するトランザクション"""
             cypher = (
-                f'MATCH (x:{AbstractNode.from_node})-[:{AbstractNode.edge}]->(y:{AbstractNode.to_node} {{rdb_id: $to_rdb_id}}) '
+                f'MATCH (x:{props["from_node"]})-[:{props["AbstractNode.edge"]}]->(y:{props["to_node"]} {{rdb_id: $to_rdb_id}}) '
                 f'RETURN x.rdb_id AS rdb_id'
             )
             result = tx.run(cypher, to_rdb_id=to_rdb_id)
             return [record['rdb_id'] for record in result]
     @classmethod
+    def set_class_props(cls):
+        cls.props['from_node'] = cls.from_node
+        cls.props['edge'] = cls.edge
+        cls.props['to_node'] = cls.to_node
+    @classmethod
     def create(cls, session: Session, rdb_id: int) -> None:
-        session.execute_write(cls._Tx.create, rdb_id)       
+        cls.set_class_props()
+        session.execute_write(cls._Tx.create, rdb_id, cls.props)       
         return
     @classmethod
     def delete(cls, session: Session, rdb_id: int) -> None:
-        session.execute_write(cls._Tx.delete, rdb_id)       
+        cls.set_class_props()
+        session.execute_write(cls._Tx.delete, rdb_id, cls.props)       
         return
     @classmethod 
     def read_rdb_id_of_destination(cls, session: Session, from_rdb_id: int) -> list[int]:
         """ (e.g.) (X {rdb_id: 1}) -[F]-> (X {rdb_id: 2}) AND (X {rdb_id: 1}) -[F]-> (X {rdb_id: 3}) の場合、戻り値は [2, 3] """
-        return session.execute_read(cls._Tx.read_rdb_id_of_destination, from_rdb_id)  
+        cls.set_class_props()
+        return session.execute_read(cls._Tx.read_rdb_id_of_destination, from_rdb_id, cls.props)  
     @classmethod
     def read_rdb_id_of_starting(cls, session: Session, to_rdb_id: int) -> list[int]:
         """ (e.g.) (X {rdb_id: 2}) -[F]-> (X {rdb_id: 1}) AND (X {rdb_id: 3}) -[F]-> (X {rdb_id: 1}) の場合、戻り値は [2, 3] """
-        return session.execute_read(cls._Tx.read_rdb_id_of_starting, to_rdb_id)
+        cls.set_class_props()
+        return session.execute_read(cls._Tx.read_rdb_id_of_starting, to_rdb_id, cls.props)
 
 
 class AbstractEdge:
@@ -147,17 +157,18 @@ class AbstractEdge:
         pg_tx_by_create (Function): エッジ作成時に必要となる RDB 操作用のトランザクション関数 \n
         pg_tx_by_delete (Function): エッジ削除時に必要となる RDB 操作用のトランザクション関数 \n
     """
-    from_node       = ''
-    edge            = ''
-    to_node         = ''
+    from_node = ''
+    edge = ''
+    to_node = ''
     pg_tx_by_create = lambda: None
     pg_tx_by_delete = lambda: None
+    props = {}
     class _Tx:
         @classmethod
-        def create(cls, tx: Transaction, pg_driver: BDW, from_rdb_id: int, to_rdb_id: int) -> None:
+        def create(cls, tx: Transaction, pg_driver: BDW, from_rdb_id: int, to_rdb_id: int, props: dict) -> None:
             # アクション済みかを調べる Cypher
             check_cypher = (
-                        f'MATCH (x:{AbstractEdge.from_node} {{rdb_id: $from_rdb_id}})-[:{AbstractEdge.edge}]->(y:{AbstractEdge.to_node} {{rdb_id: $to_rdb_id}}) '
+                        f'MATCH (x:{props["from_node"]} {{rdb_id: $from_rdb_id}})-[:{props["edge"]}]->(y:{props["to_node"]} {{rdb_id: $to_rdb_id}}) '
                         'RETURN COUNT(*) AS num'
                     )
             check_result = tx.run(check_cypher, from_rdb_id=from_rdb_id, to_rdb_id=to_rdb_id).single()
@@ -165,24 +176,24 @@ class AbstractEdge:
             # アクション済みでなかったならばアクション
             if num == 0:
                 create_cypher = (
-                            f'MATCH (x:{AbstractEdge.from_node} {{rdb_id: $from_rdb_id}}), (y:{AbstractEdge.to_node} {{rdb_id: $to_rdb_id}}) '
-                            f'CREATE (x)-[:{AbstractEdge.to_node}]->(y) '
+                            f'MATCH (x:{props["from_node"]} {{rdb_id: $from_rdb_id}}), (y:{props["to_node"]} {{rdb_id: $to_rdb_id}}) '
+                            f'CREATE (x)-[:{props["to_node"]}]->(y) '
                         )
                 cypher = create_cypher
                 try:
                     tx.run(cypher, from_rdb_id=from_rdb_id, to_rdb_id=to_rdb_id)
                     with transaction.atomic():
-                        AbstractEdge.pg_tx_by_create()
+                        props['pg_tx_by_create']()
                 except Exception as e:
                     tx.rollback()
                     pg_driver.rollback()
                     raise Exception(f'Control Error: The rollback has taken place. \ndetail: {e}')
             return num
         @classmethod
-        def delete(cls, tx: Transaction, pg_driver: BDW, from_rdb_id: int, to_rdb_id: int) -> int:
+        def delete(cls, tx: Transaction, pg_driver: BDW, from_rdb_id: int, to_rdb_id: int, props: dict) -> int:
             # アクション済みかを調べる Cypher
             check_cypher = (
-                        f'MATCH (x:{AbstractEdge.from_node} {{rdb_id: $from_rdb_id}})-[:{AbstractEdge.edge}]->(y:{AbstractEdge.to_node} {{rdb_id: $to_rdb_id}}) '
+                        f'MATCH (x:{props["from_node"]} {{rdb_id: $from_rdb_id}})-[:{props["edge"]}]->(y:{props["to_node"]} {{rdb_id: $to_rdb_id}}) '
                         'RETURN COUNT(*) AS num'
                     )
             check_result = tx.run(check_cypher, from_rdb_id=from_rdb_id, to_rdb_id=to_rdb_id).single()
@@ -190,26 +201,35 @@ class AbstractEdge:
             # アクション済みであったならばアクション取り消し
             if num > 0:
                 delete_cypher = (
-                            f'MATCH (x:{AbstractEdge.from_node} {{rdb_id: $from_rdb_id}})-[:{AbstractEdge.edge}]->(y:{AbstractEdge.to_node} {{rdb_id: $to_rdb_id}}) '
+                            f'MATCH (x:{props["from_node"]} {{rdb_id: $from_rdb_id}})-[:{props["edge"]}]->(y:{props["to_node"]} {{rdb_id: $to_rdb_id}}) '
                             'DELETE r'
                         )
                 cypher = delete_cypher
                 try:
                     tx.run(cypher, from_rdb_id=from_rdb_id, to_rdb_id=to_rdb_id)
                     with transaction.atomic():
-                        AbstractEdge.pg_tx_by_delete()
+                        props["pg_tx_by_delete"]()
                 except Exception as e:
                     tx.rollback()
                     pg_driver.rollback() 
                     raise Exception(f'Control Error: The rollback has taken place. \ndetail: {e}')
             return
     @classmethod
+    def set_class_props(cls):
+        cls.props['from_node'] = cls.from_node
+        cls.props['edge'] = cls.edge
+        cls.props['to_node'] = cls.to_node
+        cls.props['pg_tx_by_create'] = cls.pg_tx_by_create
+        cls.props['pg_tx_by_delete'] = cls.pg_tx_by_delete
+    @classmethod
     def create(cls, session: Session, pg_driver: BDW, from_rdb_id: int, to_rdb_id: int) -> None:
-        session.execute_write(cls._Tx.create, pg_driver, from_rdb_id, to_rdb_id)       
+        cls.set_class_props()
+        session.execute_write(cls._Tx.create, pg_driver, from_rdb_id, to_rdb_id, cls.props)       
         return
     @classmethod
     def delete(cls, session: Session, pg_driver: BDW, from_rdb_id: int, to_rdb_id: int) -> None:
-        session.execute_write(cls._Tx.delete, pg_driver, from_rdb_id, to_rdb_id)       
+        cls.set_class_props()
+        session.execute_write(cls._Tx.delete, pg_driver, from_rdb_id, to_rdb_id, cls.props)       
         return
     
 
