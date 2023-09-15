@@ -13,6 +13,7 @@ from django.core.management import call_command
 from django.db import connection
 from supplyAuth.models import User
 from routine.models import *
+from feed.models import *
 import random
 from datetime import timedelta
 from django.utils import timezone
@@ -92,6 +93,10 @@ def insert_routine_task_comments(task_comments: list[dict]):
                 for tc in task_comments]
     Minicomment.objects.bulk_create(instance)
     return
+def insert_feed_feed_post() -> None:
+    instance = [FeedPost(like_num=1) for _ in range(10)]
+    FeedPost.objects.bulk_create(instance)
+    return
 
 #* インサートするインスタンスのパラメータを設定
 users = [{'username': chr(i), 'email': chr(i)} for i in range(ord('a'), ord('z') + 1)]
@@ -105,10 +110,11 @@ tasK_comments = [{'task_record_id': random.randint(1, len(task_records))} for _ 
 if __name__ == '__main__':
     drop_all_tables()                   #! 取扱注意
     create_all_tables()
-    insert_supplyAuth_users(users)
-    insert_routine_interests(interests)
-    insert_routine_routines(routines)
-    insert_routine_tasks(tasks)
-    insert_routine_task_records(task_records)
-    insert_routine_task_comments(tasK_comments)
+    # insert_supplyAuth_users(users)
+    # insert_routine_interests(interests)
+    # insert_routine_routines(routines)
+    # insert_routine_tasks(tasks)
+    # insert_routine_task_records(task_records)
+    # insert_routine_task_comments(tasK_comments)
+    insert_feed_feed_post()
     print(f"{BLUE}Successfully completed.{END}")

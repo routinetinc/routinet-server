@@ -50,7 +50,7 @@ class User(models.Model):
         return f'{self.id}'
 class FeedPost(models.Model):
     table_name     = 'feed_post'
-    like_num       = models.IntegerField
-    bookmark_num   = models.IntegerField
+    like_num       = models.IntegerField(default = 0)
+    bookmark_num   = models.IntegerField(default = 0)
     def __str__(self):
         return f'{self.id}'
