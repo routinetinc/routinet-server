@@ -1,3 +1,4 @@
+import random
 from feed.user_actions import FeedPost
 from secret import LocalNeo4jDB as Neo4j
 from neo4j import GraphDatabase, Driver, Session, Transaction
@@ -42,16 +43,13 @@ class _Neo4jTest:
     def run_test(cls, session: Session):
         cls._delete_all(session)
         n = 10
-        # for i in range(1, n + 1):
-            # FeedPost.create(session, i)
-            # User.create(session, i)
-            # TaskFinish.create(session, i)
-        # cls._read_edge(session, n)
-
-        a = Option.PgRunSetsForEdge
-        a.table = Option.RDBTable.FeedPost
-        a.create_likes(2)
-
+        for i in range(1, n + 1):
+            FeedPost.create(session, i)
+            User.create(session, i)
+            TaskFinish.create(session, i)
+        for i in range(1, n + 1):
+            User.Relation.create(session, pg_driver, *random.sample(range(1, 5), 2))
+        cls._read_edge(session, n)
 
 class Command(BaseCommand):
     help = 'Description of your command'

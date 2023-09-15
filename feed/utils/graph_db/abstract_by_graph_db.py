@@ -49,30 +49,30 @@ class Option:
             to_u.save()
             return
         @classmethod
-        def create_likes(cls, rdb_id: int) -> None:
+        def create_likes(cls, *rdb_id: int) -> None:
             """ いいね数を加算 """
-            p: cls.table = cls.table.objects.get(id=rdb_id)
+            p: cls.table = cls.table.objects.get(id=rdb_id[0])
             p.like_num += 1 
             p.save()
             return
         @classmethod
-        def delete_likes(cls, rdb_id: int) -> None:
+        def delete_likes(cls, *rdb_id: int) -> None:
             """ いいね数を減算 """
-            p: cls.table = cls.table.objects.get(id=rdb_id)
+            p: cls.table = cls.table.objects.get(id=rdb_id[0])
             p.like_num -= 1 
             p.save()
             return
         @classmethod
-        def create_bookmarks(cls, to_id: int) -> None:
+        def create_bookmarks(cls, *rdb_id: int) -> None:
             """ ブックマーク数を加算 """
-            p: cls.table = cls.table.objects.get(id=to_id)
+            p: cls.table = cls.table.objects.get(id=rdb_id[0])
             p.bookmark_num += 1
             p.save
             return
         @classmethod
-        def delete_bookmarks(cls, to_id: int) -> None:
+        def delete_bookmarks(cls, *rdb_id: int) -> None:
             """ ブックマーク数を減算 """
-            p: cls.table = cls.table.objects.get(id=to_id)
+            p: cls.table = cls.table.objects.get(id=rdb_id[0])
             p.bookmark_num -= 1
             p.save
             return
@@ -114,7 +114,7 @@ class AbstractNode:
         def read_rdb_id_of_starting(cls, tx: Transaction, to_rdb_id: int, props: dict) -> list[int]:
             """ あるノードに対して、エッジを方向づけているノードの RDB 特定用 id を一覧取得するトランザクション"""
             cypher = (
-                f'MATCH (x:{props["from_node"]})-[:{props["AbstractNode.edge"]}]->(y:{props["to_node"]} {{rdb_id: $to_rdb_id}}) '
+                f'MATCH (x:{props["from_node"]})-[:{props["edge"]}]->(y:{props["to_node"]} {{rdb_id: $to_rdb_id}}) '
                 f'RETURN x.rdb_id AS rdb_id'
             )
             result = tx.run(cypher, to_rdb_id=to_rdb_id)
@@ -183,13 +183,10 @@ class AbstractEdge:
                 try:
                     tx.run(cypher, from_rdb_id=from_rdb_id, to_rdb_id=to_rdb_id)
                     with transaction.atomic():
-                        props['pg_tx_by_create']()
+                        props['pg_tx_by_create'](from_rdb_id, to_rdb_id)
                 except Exception as e:
-                    tx.rollback()
-                    pg_driver.rollback()
                     raise Exception(f'Control Error: The rollback has taken place. \ndetail: {e}')
-            return num
-        @classmethod
+            return
         def delete(cls, tx: Transaction, pg_driver: BDW, from_rdb_id: int, to_rdb_id: int, props: dict) -> int:
             # アクション済みかを調べる Cypher
             check_cypher = (
@@ -208,10 +205,8 @@ class AbstractEdge:
                 try:
                     tx.run(cypher, from_rdb_id=from_rdb_id, to_rdb_id=to_rdb_id)
                     with transaction.atomic():
-                        props["pg_tx_by_delete"]()
+                        props['pg_tx_by_delete']
                 except Exception as e:
-                    tx.rollback()
-                    pg_driver.rollback() 
                     raise Exception(f'Control Error: The rollback has taken place. \ndetail: {e}')
             return
     @classmethod
@@ -224,12 +219,18 @@ class AbstractEdge:
     @classmethod
     def create(cls, session: Session, pg_driver: BDW, from_rdb_id: int, to_rdb_id: int) -> None:
         cls.set_class_props()
-        session.execute_write(cls._Tx.create, pg_driver, from_rdb_id, to_rdb_id, cls.props)       
-        return
+        try:
+            session.execute_write(cls._Tx.create, pg_driver, from_rdb_id, to_rdb_id, cls.props)
+        except Exception as e:
+            print(f"An error occurred during the transaction: {e}")
+        return   
     @classmethod
     def delete(cls, session: Session, pg_driver: BDW, from_rdb_id: int, to_rdb_id: int) -> None:
         cls.set_class_props()
-        session.execute_write(cls._Tx.delete, pg_driver, from_rdb_id, to_rdb_id, cls.props)       
+        try:
+            session.execute_write(cls._Tx.delete, pg_driver, from_rdb_id, to_rdb_id, cls.props)
+        except Exception as e:
+            print(f"An error occurred during the transaction: {e}")
         return
     
 
