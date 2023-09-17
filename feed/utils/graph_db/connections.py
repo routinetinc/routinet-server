@@ -5,5 +5,5 @@ from neo4j import GraphDatabase, Driver
 
 # DjangoのデータベースドライバとNeo4jのドライバを取得
 pg_driver: BDW = connections['default']
-neo4j_driver: Driver = GraphDatabase.driver(Neo4j.uri, auth=(Neo4j.user, Neo4j.password))
-ne4j_session = neo4j_driver.session()
+_neo4j_driver: Driver = GraphDatabase.driver(Neo4j.uri, auth=(Neo4j.user, Neo4j.password))
+ne4j_session = _neo4j_driver.session()
