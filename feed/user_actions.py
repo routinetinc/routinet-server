@@ -1,7 +1,4 @@
-from secret import LocalNeo4jDB as Neo4j
-from neo4j import GraphDatabase, Driver, Transaction, Session
-from django.db import connection
-from django.db.backends.base.base import BaseDatabaseWrapper as BDW
+from neo4j import Session
 from feed.utils.graph_db.individual_edge_and_node import Node, EdgeByTargetNode
 
 class FeedPost(Node.FeedPost):

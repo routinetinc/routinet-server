@@ -1,12 +1,11 @@
-from secret import LocalNeo4jDB as Neo4j
-from neo4j import GraphDatabase, Driver, Session, Transaction
-from django.db import transaction, connection
+from neo4j import Session, Transaction
+from django.db import transaction
 from django.db.backends.base.base import BaseDatabaseWrapper as BDW
 from supplyAuth.models import User as UserModel
 from feed.models import FeedPost as FeedPostModel
 from routine.models import TaskRecord as TaskFinishModel
 from routine.models import Routine as RoutineModel
-from typing import Union, Final
+from typing import Final
 
 
 class Option:

@@ -1,17 +1,10 @@
 import random
 from feed.user_actions import FeedPost
-from secret import LocalNeo4jDB as Neo4j
-from neo4j import GraphDatabase, Driver, Session, Transaction
-from django.db import connections
-from django.db.backends.base.base import BaseDatabaseWrapper as BDW
+from neo4j import Session, Transaction
 from feed.ff_related import User
 from feed.user_actions import FeedPost, TaskFinish
 from django.core.management.base import BaseCommand
-from feed.utils.graph_db.abstract_by_graph_db import Option
-
-# DjangoのデータベースドライバとNeo4jのドライバを取得
-pg_driver: BDW = connections['default']
-neo4j_driver: Driver = GraphDatabase.driver(Neo4j.uri, auth=(Neo4j.user, Neo4j.password))
+from feed.utils.graph_db.connections import pg_driver, neo4j_driver
 
 # Neo4jで使用する関数を持つクラス
 class _Neo4jTest:
