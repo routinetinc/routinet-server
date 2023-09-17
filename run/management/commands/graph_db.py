@@ -4,7 +4,7 @@ from neo4j import Session, Transaction
 from feed.ff_related import User
 from feed.user_actions import FeedPost, TaskFinish
 from django.core.management.base import BaseCommand
-from feed.utils.graph_db.connections import pg_driver, neo4j_driver, session
+from feed.utils.graph_db.connections import pg_driver, neo4j_session
 
 # Neo4jで使用する関数を持つクラス
 class _Neo4jTest:
@@ -48,5 +48,5 @@ class Command(BaseCommand):
     help = 'Description of your command'
 
     def handle(self, *args, **kwargs):
-        with session:
-            _Neo4jTest.run_test(session)
+        with neo4j_session:
+            _Neo4jTest.run_test(neo4j_session)
