@@ -20,7 +20,6 @@ class Option:
         LIKES: Final     = 'LIKES'
         BOOKMARKS: Final = 'BOOKMARKS' 
     class RDBTable():
-        AllType: Final     = Union[UserModel, FeedPostModel, TaskFinishModel, RoutineModel]
         User: Final        = UserModel
         FeedPost: Final    = FeedPostModel
         TaskFinish: Final  = TaskFinishModel

@@ -54,11 +54,6 @@ class Node:
         def read_liked_by_user_id(cls, session: Session, feed_post_id):
             cls.edge = Option.EdgeLabel.LIKES
             cls.read_rdb_id_of_starting(session, feed_post_id)
-        @classmethod
-        def read_bookmarked_by_user_id(cls, session: Session, feed_post_id):
-            cls.edge = Option.EdgeLabel.BOOKMARKS
-            cls.set_class_props()
-            cls.read_rdb_id_of_starting(session, feed_post_id)
             return
     class TaskFinish(AbstractNode):
         from_node = Option.NodeLabel.FeedPost
