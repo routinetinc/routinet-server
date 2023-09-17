@@ -2,6 +2,7 @@ from django.db import models
 import secret
 import boto3
 import random
+import datetime
 from boto3.dynamodb.conditions import Key, Attr
 
 class NoSQLBase(models.Model):
@@ -40,27 +41,42 @@ class Cache():
         table_name = 'usercache'
     
     class InterestCAT(NoSQLBase):
-        table_name = 'interest_category'
+
+        @classmethod
+        def create_meta(cls, data, format=None):
+            table_name = 'interest_metadata'
+            string = ''
+            for i in range(200,400):
+                string = string + 'a' + str(i)
+            Item = {
+                'categoryid': data.categoryid,
+                'priority': ['a198','a199',string]
+            }
+            table = cls.get_dynamodb_table()
+            table.put_item(Item=Item)
         
         @classmethod
         def create(cls, data, format=None):
+            table_name = 'interest_category'
             if data.score <= 100: #数値は仮置き
-                num = [198]
+                string = 'a198'
 
             elif 100 < data.score <=200:
-                num = [199]
+                string = 'a199'
 
             else:
-                num = []
-                for i in range(200):
-                    num.append(200+i)
+                string = ''
+                for i in range(200,400):
+                    string = string + 'a' + str(i)
+                time = datetime.datetime.now().isoformat()
             Item = {
-                'categoryid': data.category_id,
-                'priority': num,
-                'time': 1
+                'categoryid': data.categoryid,
+                'priority': string,
+                'time': time,
+                'contentid': [data.contentid],
                 'data': {
                     {
-                        data.content_id,
+                        data.contentid,
                         data.score
                     }
                 }
@@ -101,6 +117,7 @@ class Cache():
                 num = [198]
 
             elif 100 < data.score <=200:
+                
                 num = [199]
 
             else:
@@ -124,11 +141,18 @@ class Cache():
 
         @classmethod
         def query(cls, data, format=None):
+            table_name = 'interest_metadata'
+            table = cls.get_dynamodb_table()
             num = random.randint(198,400)
-            table = cls.get_dynamodb_table
+            sort = table.query(
+                KeyConditionExpression=Key('categoryid').eq(data.categoryid) & Attr('priority').contains(str(num))
+            )
+
+            table_name = 'interest_category'
+            table = cls.get_dynamodb_table()
             response = table.query(
-                KeyConditionExpression=Key('categoryid').eq(data.category_id) & Attr('priority').contains(num)
+                KeyConditionExpression=Key('categoryid').eq(data.categoryid) & Key('priority').eq(sort['Item']['priority'])
             )
             items = len(response)
             rand = random.randint(items)
-            return response['Item'][rand]
+            return response['Item']['data'][rand]
