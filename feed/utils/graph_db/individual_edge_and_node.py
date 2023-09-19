@@ -77,7 +77,47 @@ class Edge:
         AbstractEdge._Tx.to_node                  = Option.NodeLabel.User
         (pg_run := Option.PgRunSetsForEdge).table = Option.RDBTable.User
         AbstractEdge._Tx.pg_tx_by_create          = pg_run.create_follows
-        AbstractEdge._Tx.pg_tx_by_delete          = pg_run.delete_follows      
+        AbstractEdge._Tx.pg_tx_by_delete          = pg_run.delete_follows
+        @classmethod
+        def create_follows_user(cls, session: Session, from_rdb_id: int, to_rdb_id: int) -> None:
+            AbstractEdge._Tx.to_node, AbstractEdge._Tx.to_node = Option.EdgeLabel.FOLLOWS, Option.NodeLabel.User
+            cls._create(session, from_rdb_id, to_rdb_id)  
+            return
+        @classmethod
+        def delete_follows_user(cls, session: Session, from_rdb_id: int, to_rdb_id: int) -> None:
+            AbstractEdge._Tx.to_node, AbstractEdge._Tx.to_node = Option.EdgeLabel.FOLLOWS, Option.NodeLabel.User
+            cls._delete(session, from_rdb_id, to_rdb_id)  
+            return     
+        @classmethod
+        def create_likes_feed_post(cls, session: Session, from_rdb_id: int, to_rdb_id: int) -> None:
+            AbstractEdge._Tx.to_node, AbstractEdge._Tx.to_node = Option.EdgeLabel.LIKES, Option.NodeLabel.FeedPost
+            cls._create(session, from_rdb_id, to_rdb_id)  
+            return 
+        @classmethod
+        def delete_likes_feed_post(cls, session: Session, from_rdb_id: int, to_rdb_id: int) -> None:
+            AbstractEdge._Tx.to_node, AbstractEdge._Tx.to_node = Option.EdgeLabel.LIKES, Option.NodeLabel.FeedPost
+            cls._delete(session, from_rdb_id, to_rdb_id)  
+            return         
+        @classmethod
+        def create_likes_task_finish(cls, session: Session, from_rdb_id: int, to_rdb_id: int) -> None:
+            AbstractEdge._Tx.to_node, AbstractEdge._Tx.to_node = Option.EdgeLabel.LIKES, Option.NodeLabel.TaskFinish
+            cls._create(session, from_rdb_id, to_rdb_id)  
+            return 
+        @classmethod
+        def delete_likes_task_finish(cls, session: Session, from_rdb_id: int, to_rdb_id: int) -> None:
+            AbstractEdge._Tx.to_node, AbstractEdge._Tx.to_node = Option.EdgeLabel.LIKES, Option.NodeLabel.TaskFinish
+            cls._delete(session, from_rdb_id, to_rdb_id)  
+            return            
+        @classmethod
+        def create_bookmarks_routine(cls, session: Session, from_rdb_id: int, to_rdb_id: int) -> None:
+            AbstractEdge._Tx.to_node, AbstractEdge._Tx.to_node = Option.EdgeLabel.BOOKMARKS, Option.NodeLabel.Routine
+            cls._create(session, from_rdb_id, to_rdb_id)  
+            return 
+        @classmethod
+        def delete_bookmarks_routine(cls, session: Session, from_rdb_id: int, to_rdb_id: int) -> None:
+            AbstractEdge._Tx.to_node, AbstractEdge._Tx.to_node = Option.EdgeLabel.BOOKMARKS, Option.NodeLabel.Routine
+            cls._delete(session, from_rdb_id, to_rdb_id)  
+            return                            
     class LikesFeedPost(AbstractEdge):
         AbstractEdge._Tx.from_node                = Option.NodeLabel.User
         AbstractEdge._Tx.edge                     = Option.EdgeLabel.LIKES
@@ -85,6 +125,14 @@ class Edge:
         (pg_run := Option.PgRunSetsForEdge).table = Option.RDBTable.FeedPost
         AbstractEdge._Tx.pg_tx_by_create          = pg_run.create_likes
         AbstractEdge._Tx.pg_tx_by_delete          = pg_run.delete_likes
+        @classmethod
+        def create_likes_feed_post(cls, session: Session, from_rdb_id: int, to_rdb_id: int) -> None:
+            cls._create(session, from_rdb_id, to_rdb_id)  
+            return 
+        @classmethod
+        def delete_likes_feed_post(cls, session: Session, from_rdb_id: int, to_rdb_id: int) -> None:
+            cls._delete(session, from_rdb_id, to_rdb_id)  
+            return        
     class LikesTaskFinish(AbstractEdge):
         AbstractEdge._Tx.from_node                = Option.NodeLabel.User
         AbstractEdge._Tx.edge                     = Option.EdgeLabel.LIKES
@@ -92,12 +140,28 @@ class Edge:
         (pg_run := Option.PgRunSetsForEdge).table = Option.RDBTable.TaskFinish
         AbstractEdge._Tx.pg_tx_by_create          = pg_run.create_likes
         AbstractEdge._Tx.pg_tx_by_delete          = pg_run.delete_likes
+        @classmethod
+        def create_likes_task_finish(cls, session: Session, from_rdb_id: int, to_rdb_id: int) -> None:
+            cls._create(session, from_rdb_id, to_rdb_id)  
+            return 
+        @classmethod
+        def delete_likes_task_finish(cls, session: Session, from_rdb_id: int, to_rdb_id: int) -> None:
+            cls._delete(session, from_rdb_id, to_rdb_id)         
+            return
     class BookmarksRoutine(AbstractEdge):
         AbstractEdge._Tx.from_node                = Option.NodeLabel.User
         AbstractEdge._Tx.edge                     = Option.EdgeLabel.BOOKMARKS
         AbstractEdge._Tx.to_node                  = Option.NodeLabel.Routine    
         (pg_run := Option.PgRunSetsForEdge).table = Option.RDBTable.Routine
         AbstractEdge._Tx.pg_tx_by_create          = pg_run.create_bookmarks
-        AbstractEdge._Tx.pg_tx_by_delete          = pg_run.delete_bookmarks         
+        AbstractEdge._Tx.pg_tx_by_delete          = pg_run.delete_bookmarks   
+        @classmethod
+        def create_bookmarks_routine(cls, session: Session, from_rdb_id: int, to_rdb_id: int) -> None:
+            cls._create(session, from_rdb_id, to_rdb_id)  
+            return 
+        @classmethod
+        def delete_bookmarks_routine(cls, session: Session, from_rdb_id: int, to_rdb_id: int) -> None:
+            cls._delete(session, from_rdb_id, to_rdb_id)  
+            return              
      
      

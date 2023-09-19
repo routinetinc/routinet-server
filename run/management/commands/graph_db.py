@@ -35,7 +35,7 @@ class _Neo4jTest:
             User.create(session, i)
             FeedPost.create(session, i)
         for i in range(1, n + 1):
-            FeedPost.Relation.create(session, *random.sample(range(1, 5), 2))
+            FeedPost.Relation.create_likes_feed_post(session, *random.sample(range(1, 5), 2))
         # 存在しないノードを対象に探索してもエラーは吐かないことを確認
         for user_id in range(1, n):
             print(f'{user_id} -[LIKES]-> {FeedPost.read_likes_feed_post_ids(session, user_id)}')

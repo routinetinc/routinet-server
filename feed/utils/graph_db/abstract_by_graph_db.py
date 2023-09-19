@@ -151,7 +151,7 @@ class AbstractEdge:
         pg_tx_by_delete = lambda: None
         props = {}
         @classmethod
-        def create(cls, tx: Transaction, from_rdb_id: int, to_rdb_id: int) -> None:
+        def _create(cls, tx: Transaction, from_rdb_id: int, to_rdb_id: int) -> None:
             # アクション済みかを調べる Cypher
             check_cypher = (
                         f'MATCH (x:{cls.from_node} {{rdb_id: $from_rdb_id}})-[:{cls.edge}]->(y:{cls.to_node} {{rdb_id: $to_rdb_id}}) '
@@ -169,7 +169,7 @@ class AbstractEdge:
                 tx.run(cypher, from_rdb_id=from_rdb_id, to_rdb_id=to_rdb_id)
                 cls.pg_tx_by_create(from_rdb_id, to_rdb_id)
             return
-        def delete(cls, tx: Transaction, from_rdb_id: int, to_rdb_id: int) -> int:
+        def _delete(cls, tx: Transaction, from_rdb_id: int, to_rdb_id: int) -> int:
             # アクション済みかを調べる Cypher
             check_cypher = (
                         f'MATCH (x:{cls.from_node} {{rdb_id: $from_rdb_id}})-[:{cls.edge}]->(y:{cls.to_node} {{rdb_id: $to_rdb_id}}) '
@@ -188,12 +188,12 @@ class AbstractEdge:
                 cls.pg_tx_by_delete(from_rdb_id, to_rdb_id)
             return
     @classmethod
-    def create(cls, session: Session, from_rdb_id: int, to_rdb_id: int) -> None:
-        session.execute_write(cls._Tx.create, from_rdb_id, to_rdb_id)
+    def _create(cls, session: Session, from_rdb_id: int, to_rdb_id: int) -> None:
+        session.execute_write(cls._Tx._create, from_rdb_id, to_rdb_id)
         return   
     @classmethod
-    def delete(cls, session: Session, from_rdb_id: int, to_rdb_id: int) -> None:
-        session.execute_write(cls._Tx.delete, from_rdb_id, to_rdb_id)
+    def _delete(cls, session: Session, from_rdb_id: int, to_rdb_id: int) -> None:
+        session.execute_write(cls._Tx._delete, from_rdb_id, to_rdb_id)
         return
     
 
