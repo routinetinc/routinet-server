@@ -4,7 +4,8 @@ from neo4j import Session, Transaction
 from feed.ff_related import User
 from feed.user_actions import FeedPost, TaskFinish
 from django.core.management.base import BaseCommand
-from feed.utils.graph_db.connections import pg_driver, neo4j_session
+from feed.utils.graph_db.connections import neo4j_session
+import cProfile
 
 # Neo4jで使用する関数を持つクラス
 class _Neo4jTest:
@@ -25,24 +26,22 @@ class _Neo4jTest:
         # ラベルごとにノードを削除
         for node_label in labels:
             session.execute_write(_tx_delete_nodes_with_label, node_label)
-    @staticmethod
-    def _read_edge(session: Session, n: int):
-        # 存在しないノードを対象に探索してもエラーは吐かないことを確認
-        for user_id in range(1, n):
-            print(f'{user_id} -> {User.read_follows_user_id(session, user_id)}')
-        for user_id in range(1, n):
-            print(f'{user_id} <- {User.read_followed_user_id(session, user_id)}')
     @classmethod
     def run_test(cls, session: Session):
+        # コードを実行したい関数またはスクリプトを呼び出す
         cls._delete_all(session)
         n = 10
         for i in range(1, n + 1):
-            FeedPost.create(session, i)
             User.create(session, i)
-            TaskFinish.create(session, i)
+            FeedPost.create(session, i)
         for i in range(1, n + 1):
-            User.Relation.create(session, pg_driver, *random.sample(range(1, 5), 2))
-        cls._read_edge(session, n)
+            FeedPost.Relation.create(session, *random.sample(range(1, 5), 2))
+        # 存在しないノードを対象に探索してもエラーは吐かないことを確認
+        for user_id in range(1, n):
+            print(f'{user_id} -[LIKES]-> {FeedPost.read_likes_feed_post_ids(session, user_id)}')
+        BLUE, END = '\033[36m', '\033[0m'
+        print(f"{BLUE}Successfully completed.{END}")
+
 
 class Command(BaseCommand):
     help = 'Description of your command'
