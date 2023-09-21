@@ -65,10 +65,9 @@ def insert_routine_routines(routines: list[dict]):
             subtitle='a',
             icon='🥺',
             is_published=random.choice([True, False]),
-            is_notified=random.choice([True, False])
+            is_notified=random.choice([True, False]),
+            interest_ids = [random.randint(0,5)]
         )
-        interests = Interest.objects.all()  # すべてのインタレストを取得するか、適切な方法でインタレストを指定する
-        instance.interest_id.set(interests)
 def insert_routine_tasks(tasks: list[dict]):
     instance = [Task(routine_id=Routine.objects.get(id=task["routine_id"]),
                      title=task['title'],
@@ -80,10 +79,12 @@ def insert_routine_tasks(tasks: list[dict]):
     Task.objects.bulk_create(instance)
     return
 def insert_routine_task_records(task_records: list[dict]):
+    routine = Routine.objects.all()[0]
     instance = [TaskRecord(task_id=Task.objects.get(id=tr['task_id']),
                           is_achieved=random.choice([True, False]),
                           done_time=random.randint(0, 100),
-                          when=tr['when'])
+                          when=tr['when'],
+                          routine_id=routine)
                 for tr in task_records]
     TaskRecord.objects.bulk_create(instance)
     return

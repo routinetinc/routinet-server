@@ -1,6 +1,7 @@
 from feed.models import Cache
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import status
 
 class Hello(APIView):
     def get(self, request, format=None):
@@ -25,4 +26,3 @@ class Delete(APIView):
                'created':'2023-08-26'}
         Cache.User.delete(key)
         return Response('hello')
- 
