@@ -45,6 +45,7 @@ class Cache():
     class InterestCAT(NoSQLBase):
         table_name = 'usercache'
 
+
 # Challengeモデルは独自に定義（適切な場所からインポートする必要があるかもしれません）
 class Challenge(models.Model):
     name = models.CharField(max_length=255)

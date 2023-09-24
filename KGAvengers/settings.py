@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django_extensions',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
@@ -34,6 +35,7 @@ INSTALLED_APPS = [
     "routine.apps.RoutineConfig",
     "supplyAuth.apps.SupplyauthConfig",
     "feed.apps.FeedConfig",
+    "run.apps.RunConfig",
 ]
 
 AUTH_USER_MODEL = "supplyAuth.User" # accountアプリのUserモデルをデフォルトで使用する認証ユーザーモデルとして設定する

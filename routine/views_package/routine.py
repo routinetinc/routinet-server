@@ -25,7 +25,8 @@ class Routine(APIView):
                 subtitle = datas['subtitle'],
                 is_published = datas['is_published'],
                 is_notified = datas['is_notified'],
-                icon = datas['icon']
+                icon = datas['icon'],
+                interest_ids = datas['interest_ids']
             )
         r.save()
         datas = {'routine_id': r.id}
@@ -48,6 +49,7 @@ class Routine(APIView):
             r.is_published = datas.get('public', r.is_published)
             r.is_notified = datas.get('is_notified', r.is_notified)
             r.icon = datas.get('icon', r.icon)
+            r.interest_ids = datas.get('interest_ids', r.interest_ids)
             r.save()
         except models.Routine.DoesNotExist:
             return make_response(status_code=404, data={'message': 'Routine not found'})
