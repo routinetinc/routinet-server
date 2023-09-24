@@ -80,22 +80,22 @@ def insert_routine_tasks(tasks: list[dict]):
     return
 def insert_routine_task_records(task_records: list[dict]):
     routine = Routine.objects.all()[0]
-    instance = [TaskRecord(task_id=Task.objects.get(id=tr['task_id']),
+    instance = [TaskFinish(task_id=Task.objects.get(id=tr['task_id']),
                           is_achieved=random.choice([True, False]),
                           done_time=random.randint(0, 100),
                           when=tr['when'],
                           routine_id=routine)
                 for tr in task_records]
-    TaskRecord.objects.bulk_create(instance)
+    TaskFinish.objects.bulk_create(instance)
     return
 def insert_routine_task_comments(task_comments: list[dict]):
-    instance = [Minicomment(task_record_id=TaskRecord.objects.get(id=tc['task_record_id']),
+    instance = [Minicomment(task_finish_id=TaskFinish.objects.get(id=tc['task_finish_id']),
                             comment='a')
                 for tc in task_comments]
     Minicomment.objects.bulk_create(instance)
     return
 def insert_feed_feed_post() -> None:
-    instance = [FeedPost(like_num=1) for _ in range(10)]
+    instance = [FeedPost(like_num=1,post_time="2023-09-24",interest_ids=[1],user_id=1) for _ in range(10)]
     FeedPost.objects.bulk_create(instance)
     return
 
@@ -105,17 +105,17 @@ interests = [{'name': 'NULL'}]
 routines = [{'dow': random_dow(), 'title': f'{i}'} for i in range(50)]
 tasks = [{'routine_id': random.randint(1, len(routines)), 'title': f'{i + 100}'} for i in range(100)]
 task_records = [{'task_id': random.randint(1, len(tasks)), 'when': random_dt()} for _ in range(150)]
-tasK_comments = [{'task_record_id': random.randint(1, len(task_records))} for _ in range(100)]
+tasK_comments = [{'task_finish_id': random.randint(1, len(task_records))} for _ in range(100)]
 
 #* 実行
 if __name__ == '__main__':
     drop_all_tables()                   #! 取扱注意
     create_all_tables()
-    # insert_supplyAuth_users(users)
-    # insert_routine_interests(interests)
-    # insert_routine_routines(routines)
-    # insert_routine_tasks(tasks)
-    # insert_routine_task_records(task_records)
-    # insert_routine_task_comments(tasK_comments)
+    insert_supplyAuth_users(users)
+    insert_routine_interests(interests)
+    insert_routine_routines(routines)
+    insert_routine_tasks(tasks)
+    insert_routine_task_records(task_records)
+    insert_routine_task_comments(tasK_comments)
     insert_feed_feed_post()
     print(f"{BLUE}Successfully completed.{END}")
