@@ -111,7 +111,7 @@ class ReadRoutineAndTask(APIView):
                     tasks = models.Task.objects.filter(routine_id=routine).order_by('id')
                     task_data = []
                     for task in tasks:
-                        latest_task_record = models.TaskRecord.objects.filter(task_id=task.id).order_by('-when').first()
+                        latest_task_record = models.TaskFinish.objects.filter(task_id=task.id).order_by('-when').first()
                         is_achieved = latest_task_record.is_achieved if latest_task_record else False
                         task_data.append({
                             "task_id": task.id,

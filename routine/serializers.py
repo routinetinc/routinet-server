@@ -47,12 +47,12 @@ class Task_delete(serializers.Serializer):  # /routine/task/(DELETE)
 class Routine_delete(serializers.Serializer):  # /routine/routine/(DELETE)
     routine_id    = serializers.IntegerField(max_value=None, min_value=None)
     
-class TaskRecord_create(serializers.Serializer): # /routine/task/finish/(POST)
+class TaskFinish_create(serializers.Serializer): # /routine/task/finish/(POST)
     task_id       = serializers.IntegerField(max_value=None, min_value=None)
     done_time     = serializers.IntegerField(max_value=None, min_value=0)
     
 class MiniComment_create(serializers.Serializer): # /routine/task/minicomment/(POST)
-    task_record_id= serializers.IntegerField(max_value=None, min_value=None)
+    task_finish_id= serializers.IntegerField(max_value=None, min_value=None)
     comment       = serializers.CharField(max_length=50, min_length=None, allow_blank=False, trim_whitespace=False)
     
 class MiniComment_update(serializers.Serializer): # /routine/task/minicomment/(PATCH)
