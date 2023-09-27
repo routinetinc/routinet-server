@@ -107,14 +107,20 @@ class AbstractNode:
             print(f'{cls.from_node}, {cls.edge}, {cls.to_node}')
             cypher = f'MATCH (x:{cls.from_node} {{rdb_id: $from_rdb_id}})-[f:{cls.edge}]->(y:{cls.to_node}) RETURN y.rdb_id'
             result = tx.run(cypher, from_rdb_id=from_rdb_id)
-            return [record['y.rdb_id'] for record in result]
+            if result is not None:
+                return [record['y.rdb_id'] for record in result]
+            else:
+                return []
         @classmethod
         def _read_rdb_ids_of_starting(cls, tx: Transaction, to_rdb_id: int) -> list[int]:
             """あるノード X に対して、その X にエッジを方向づけている全てのノードの rdb_id を取得するトランザクション"""
             print(f'{cls.from_node}, {cls.edge}, {cls.to_node}')
             cypher = f'MATCH (x:{cls.from_node} {{rdb_id: $to_rdb_id}})<-[f:{cls.edge}]-(y:{cls.to_node}) RETURN y.rdb_id'
             result = tx.run(cypher, to_rdb_id=to_rdb_id)
-            return [record['y.rdb_id'] for record in result]
+            if result is not None:
+                return [record['y.rdb_id'] for record in result]
+            else:
+                return []
     def create(self, session: Session, rdb_id: int) -> None:
         session.execute_write(self._Tx.create, rdb_id)       
     def delete(self, session: Session, rdb_id: int) -> None:
