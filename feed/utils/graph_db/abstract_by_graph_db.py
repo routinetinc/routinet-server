@@ -1,7 +1,7 @@
 from neo4j import Session, Transaction
 from supplyAuth.models import User as UserModel
 from feed.models import FeedPost as FeedPostModel
-from routine.models import TaskRecord as TaskFinishModel
+from routine.models import TaskFinish as TaskFinishModel
 from routine.models import Routine as RoutineModel
 from typing import Final
 
