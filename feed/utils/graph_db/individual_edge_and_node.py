@@ -7,21 +7,32 @@ class Node:
         def __init__(self) -> None:
             super().__init__()
             self._Tx.from_node = Option.NodeLabel.User
+            self._Tx.edge      = Option.EdgeLabel.FOLLOWS
+            self._Tx.to_node   = Option.NodeLabel.User
         def read_follows_user_ids(self, session: Session, from_rdb_id: int) -> list[int]:
             self._Tx.edge, self._Tx.to_node = Option.EdgeLabel.FOLLOWS, Option.NodeLabel.User
-            self._read_rdb_ids_of_destination(session, from_rdb_id)
+            result = self._read_rdb_ids_of_destination(session, from_rdb_id)
+            self._Tx.edge, self._Tx.to_node = Option.EdgeLabel.FOLLOWS, Option.NodeLabel.User
+            return result
         def read_followed_user_ids(self, session: Session, to_rdb_id: int) -> list[int]:
             self._Tx.edge, self._Tx.to_node = Option.EdgeLabel.FOLLOWS, Option.NodeLabel.User
-            self._read_rdb_ids_of_starting(session, to_rdb_id)
+            result = self._read_rdb_ids_of_starting(session, to_rdb_id)
+            self._Tx.edge, self._Tx.to_node = Option.EdgeLabel.FOLLOWS, Option.NodeLabel.User
+            return result
         def read_likes_feed_post_ids(self, session: Session, from_rdb_id: int) -> list[int]:
             self._Tx.edge, self._Tx.to_node = Option.EdgeLabel.LIKES, Option.NodeLabel.FeedPost
-            self._read_rdb_ids_of_destination(session, from_rdb_id)
+            result = self._read_rdb_ids_of_destination(session, from_rdb_id)
+            self._Tx.edge, self._Tx.to_node = Option.EdgeLabel.FOLLOWS, Option.NodeLabel.User
+            return result
         def read_likes_task_finish_ids(self, session: Session, from_rdb_id: int) -> list[int]:
             self._Tx.edge, self._Tx.to_node = Option.EdgeLabel.LIKES, Option.NodeLabel.TaskFinish
-            self._read_rdb_ids_of_destination(session, from_rdb_id)
+            result = self._read_rdb_ids_of_destination(session, from_rdb_id)
+            self._Tx.edge, self._Tx.to_node = Option.EdgeLabel.FOLLOWS, Option.NodeLabel.User
+            return result
         def read_bookmarks_routine_ids(self, session: Session, from_rdb_id: int) -> list[int]:
             self._Tx.edge, self._Tx.to_node = Option.EdgeLabel.BOOKMARKS, Option.NodeLabel.Routine
-            self._read_rdb_ids_of_destination(session, from_rdb_id)
+            result = self._read_rdb_ids_of_destination(session, from_rdb_id)
+            return result
         
     class FeedPost(AbstractNode):
         def __init__(self) -> None:
@@ -31,9 +42,15 @@ class Node:
             self._Tx.edge      = Option.EdgeLabel.LIKES
             self._Tx.to_node   = Option.NodeLabel.User
         def read_likes_feed_post_ids(self, session: Session, from_user_id: int) -> list[int]:
-            self._read_rdb_ids_of_destination(session, from_user_id)
+            self._Tx.from_node, self._Tx.to_node = Option.NodeLabel.User, Option.NodeLabel.FeedPost
+            result = self._read_rdb_ids_of_destination(session, from_user_id)
+            self._Tx.from_node, self._Tx.to_node = Option.NodeLabel.FeedPost, Option.NodeLabel.User
+            return result
         def read_liked_user_ids(self, session: Session, to_feed_post_id) -> list[int]:
-            self._read_rdb_ids_of_starting(session, to_feed_post_id)
+            self._Tx.from_node, self._Tx.to_node = Option.NodeLabel.User, Option.NodeLabel.FeedPost
+            result = self._read_rdb_ids_of_starting(session, to_feed_post_id)
+            self._Tx.from_node, self._Tx.to_node = Option.NodeLabel.FeedPost, Option.NodeLabel.User
+            return result
 
     class TaskFinish(AbstractNode):
         def __init__(self) -> None:
@@ -43,9 +60,15 @@ class Node:
             self._Tx.edge      = Option.EdgeLabel.LIKES
             self._Tx.to_node   = Option.NodeLabel.User
         def read_likes_task_finish_ids(self, session: Session, from_user_id: int) -> list[int]:
-            self._read_rdb_ids_of_destination(session, from_user_id)
+            self._Tx.from_node, self._Tx.to_node = Option.NodeLabel.User, Option.NodeLabel.TaskFinish
+            result = self._read_rdb_ids_of_destination(session, from_user_id)
+            self._Tx.from_node, self._Tx.to_node = Option.NodeLabel.TaskFinish, Option.NodeLabel.User
+            return result
         def read_liked_user_ids(self, session: Session, to_task_finish_id) -> list[int]:
-            self._read_rdb_ids_of_starting(session, to_task_finish_id)
+            self._Tx.from_node, self._Tx.to_node = Option.NodeLabel.User, Option.NodeLabel.TaskFinish
+            result = self._read_rdb_ids_of_starting(session, to_task_finish_id)
+            self._Tx.from_node, self._Tx.to_node = Option.NodeLabel.TaskFinish, Option.NodeLabel.User
+            return result
         
     class Routine(AbstractNode):
         def __init__(self):
@@ -55,9 +78,15 @@ class Node:
             self._Tx.edge      = Option.EdgeLabel.BOOKMARKS
             self._Tx.to_node   = Option.NodeLabel.User
         def read_bookmarks_routine_ids(self, session: Session, from_user_id: int) -> list[int]:
-            self._read_rdb_ids_of_destination(session, from_user_id)
+            self._Tx.from_node, self._Tx.to_node = Option.NodeLabel.User, Option.NodeLabel.Routine
+            result = self._read_rdb_ids_of_destination(session, from_user_id)
+            self._Tx.from_node, self._Tx.to_node = Option.NodeLabel.Routine, Option.NodeLabel.User
+            return result
         def read_bookmarked_user_ids(self, session: Session, to_routine_id) -> list[int]:
-            self._read_rdb_ids_of_starting(session, to_routine_id)
+            self._Tx.from_node, self._Tx.to_node = Option.NodeLabel.User, Option.NodeLabel.Routine
+            result = self._read_rdb_ids_of_starting(session, to_routine_id)
+            self._Tx.from_node, self._Tx.to_node = Option.NodeLabel.Routine, Option.NodeLabel.User
+            return result
 
 class Edge:
     class FollowsUserAndActsOthers(AbstractEdge):

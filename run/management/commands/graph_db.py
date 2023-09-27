@@ -59,26 +59,30 @@ class _Neo4jTest:
     @classmethod
     def run_test(cls, session: Session) -> None:
         # コードを実行したい関数またはスクリプトを呼び出す
-        # cls._delete_all(session)
+        cls._delete_all(session)
         n = 10
-        # for i in range(1, n + 1):
-        #     (_ := User()).create(session, i)
-        #     (_ := FeedPost()).create(session, i)
-        #     (_ := TaskFinish()).create(session, i)
-        #     (_ := Routine()).create(session, i)
-        # _Neo4jTest._duplicate_create(session)
-        # _Neo4jTest._create_and_duplicate_delete_edge(session)
-        # for i in range(1, n + 1):
-        #     (_ := User.Relation()).create_follows_user(session, *random.sample(range(1,  n - 5 if(n - 5 > 0) else 2), 2))
-        #     (_ := User.Relation()).create_likes_feed_post(session, *random.sample(range(1,  n - 5 if(n - 5 > 0) else 2), 2))
-        #     (_ := User.Relation()).create_likes_task_finish(session, *random.sample(range(1,  n - 5 if(n - 5 > 0) else 2), 2))
-        #     (_ := User.Relation()).create_bookmarks_routine(session, *random.sample(range(1,  n - 5 if(n - 5 > 0) else 2), 2))
-        #     (_ := FeedPost.Relation()).create_likes_feed_post(session, *random.sample(range(1,  n - 5 if(n - 5 > 0) else 2), 2))
-        #     (_ := TaskFinish.Relation()).create_likes_task_finish(session, *random.sample(range(1,  n - 5 if(n - 5 > 0) else 2), 2))
-        #     (_ := Routine.Relation()).create_bookmarks_routine(session, *random.sample(range(1,  n - 5 if(n - 5 > 0) else 2), 2))
+        m = 5
+        for i in range(1, n + 1):
+            (_ := User()).create(session, i)
+            (_ := FeedPost()).create(session, i)
+            (_ := TaskFinish()).create(session, i)
+            (_ := Routine()).create(session, i)
+        _Neo4jTest._duplicate_create(session)
+        _Neo4jTest._create_and_duplicate_delete_edge(session)
+        for i in range(1, n + 1):
+            (_ := User.Relation()).create_follows_user(session, *random.sample(range(1,  m), 2))
+            (_ := User.Relation()).create_likes_feed_post(session, *random.sample(range(1,  m), 2))
+            (_ := User.Relation()).create_likes_task_finish(session, *random.sample(range(1,  m), 2))
+            (_ := User.Relation()).create_bookmarks_routine(session, *random.sample(range(1,  m), 2))
+            (_ := FeedPost.Relation()).create_likes_feed_post(session, *random.sample(range(1,  m), 2))
+            (_ := TaskFinish.Relation()).create_likes_task_finish(session, *random.sample(range(1,  m), 2))
+            (_ := Routine.Relation()).create_bookmarks_routine(session, *random.sample(range(1,  n - 5 if(n - 5 > 0) else 2), 2))
         # 存在しないノードを対象に探索してもエラーは吐かないことを確認
-        for user_id in range(1, n):
-            print(f'user_id = {user_id} -[LIKES]-> feed_post_ids = {(_ := FeedPost()).read_liked_user_ids(session, user_id)}')
+        for user_id in range(1, m):
+            print(f'user_id = {user_id} --[FOLLOWS]-> user_ids      = {(_ := User()).read_follows_user_ids(session, user_id)}')
+            print(f'user_id = {user_id} <-[FOLLOWS]-- user_ids      = {(_ := User()).read_followed_user_ids(session, user_id)}')
+            print(f'user_id = {user_id} --[LIKES]---> feed_post_ids = {(_ := User()).read_likes_feed_post_ids(session, user_id)}')
+            print(f'user_id = {user_id} --[LIKES]---> feed_post_ids = {(_ := FeedPost()).read_likes_feed_post_ids(session, user_id)}')
         BLUE, END = '\033[36m', '\033[0m'
         print(f"{BLUE}Successfully completed.{END}")
 
