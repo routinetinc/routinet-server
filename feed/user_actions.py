@@ -5,10 +5,10 @@ class FeedPost(Node.FeedPost):
     class Relation(Edge.LikesFeedPost):
         pass
 
-class TaskFinish(Node.FeedPost):
+class TaskFinish(Node.TaskFinish):
     class Relation(Edge.LikesTaskFinish):
         pass
 
-class Routine(Node.FeedPost):
+class Routine(Node.Routine):
     class Relation(Edge.BookmarksRoutine):
         pass

@@ -2,7 +2,7 @@ import random
 from feed.user_actions import FeedPost
 from neo4j import Session, Transaction
 from feed.ff_related import User
-from feed.user_actions import FeedPost, TaskFinish
+from feed.user_actions import FeedPost, TaskFinish, Routine
 from django.core.management.base import BaseCommand
 from feed.utils.graph_db.connections import neo4j_session
 import cProfile
@@ -26,19 +26,59 @@ class _Neo4jTest:
         # ラベルごとにノードを削除
         for node_label in labels:
             session.execute_write(_tx_delete_nodes_with_label, node_label)
+    @staticmethod
+    def _duplicate_create(session: Session) -> None:
+        (_ := User()).create(session, 1)
+        (_ := FeedPost()).create(session, 1)
+        (_ := TaskFinish()).create(session, 1)
+        (_ := Routine()).create(session, 1)
+    @staticmethod
+    def _create_and_duplicate_delete_edge(session: Session) -> None:
+        """ 作ったエッジが消せるかどうか。重複して消すことがないか。 """
+        (_ := User.Relation()).create_follows_user(session, 1, 2)
+        (_ := User.Relation()).delete_follows_user(session, 1, 2)
+        (_ := User.Relation()).delete_follows_user(session, 1, 2)
+        (_ := User.Relation()).create_likes_feed_post(session, 1, 2)
+        (_ := User.Relation()).delete_likes_feed_post(session, 1, 2)
+        (_ := User.Relation()).delete_likes_feed_post(session, 1, 2)
+        (_ := User.Relation()).create_likes_task_finish(session, 1, 2)
+        (_ := User.Relation()).delete_likes_task_finish(session, 1, 2)
+        (_ := User.Relation()).delete_likes_task_finish(session, 1, 2)
+        (_ := User.Relation()).create_bookmarks_routine(session, 1, 2)
+        (_ := User.Relation()).delete_bookmarks_routine(session, 1, 2)
+        (_ := User.Relation()).delete_bookmarks_routine(session, 1, 2)
+        (_ := FeedPost.Relation()).create_likes_feed_post(session, 1, 2)
+        (_ := FeedPost.Relation()).delete_likes_feed_post(session, 1, 2)
+        (_ := FeedPost.Relation()).delete_likes_feed_post(session, 1, 2)
+        (_ := TaskFinish.Relation()).create_likes_task_finish(session, 1, 2)
+        (_ := TaskFinish.Relation()).delete_likes_task_finish(session, 1, 2)
+        (_ := TaskFinish.Relation()).delete_likes_task_finish(session, 1, 2)
+        (_ := Routine.Relation()).create_bookmarks_routine(session, 1, 2)
+        (_ := Routine.Relation()).delete_bookmarks_routine(session, 1, 2)
+        (_ := Routine.Relation()).delete_bookmarks_routine(session, 1, 2)
     @classmethod
-    def run_test(cls, session: Session):
+    def run_test(cls, session: Session) -> None:
         # コードを実行したい関数またはスクリプトを呼び出す
-        cls._delete_all(session)
+        # cls._delete_all(session)
         n = 10
-        for i in range(1, n + 1):
-            User.create(session, i)
-            FeedPost.create(session, i)
-        for i in range(1, n + 1):
-            FeedPost.Relation.create_likes_feed_post(session, *random.sample(range(1, 5), 2))
+        # for i in range(1, n + 1):
+        #     (_ := User()).create(session, i)
+        #     (_ := FeedPost()).create(session, i)
+        #     (_ := TaskFinish()).create(session, i)
+        #     (_ := Routine()).create(session, i)
+        # _Neo4jTest._duplicate_create(session)
+        # _Neo4jTest._create_and_duplicate_delete_edge(session)
+        # for i in range(1, n + 1):
+        #     (_ := User.Relation()).create_follows_user(session, *random.sample(range(1,  n - 5 if(n - 5 > 0) else 2), 2))
+        #     (_ := User.Relation()).create_likes_feed_post(session, *random.sample(range(1,  n - 5 if(n - 5 > 0) else 2), 2))
+        #     (_ := User.Relation()).create_likes_task_finish(session, *random.sample(range(1,  n - 5 if(n - 5 > 0) else 2), 2))
+        #     (_ := User.Relation()).create_bookmarks_routine(session, *random.sample(range(1,  n - 5 if(n - 5 > 0) else 2), 2))
+        #     (_ := FeedPost.Relation()).create_likes_feed_post(session, *random.sample(range(1,  n - 5 if(n - 5 > 0) else 2), 2))
+        #     (_ := TaskFinish.Relation()).create_likes_task_finish(session, *random.sample(range(1,  n - 5 if(n - 5 > 0) else 2), 2))
+        #     (_ := Routine.Relation()).create_bookmarks_routine(session, *random.sample(range(1,  n - 5 if(n - 5 > 0) else 2), 2))
         # 存在しないノードを対象に探索してもエラーは吐かないことを確認
         for user_id in range(1, n):
-            print(f'{user_id} -[LIKES]-> {FeedPost.read_likes_feed_post_ids(session, user_id)}')
+            print(f'user_id = {user_id} -[LIKES]-> feed_post_ids = {(_ := FeedPost()).read_liked_user_ids(session, user_id)}')
         BLUE, END = '\033[36m', '\033[0m'
         print(f"{BLUE}Successfully completed.{END}")
 

@@ -3,7 +3,7 @@ from django.contrib.postgres.fields import ArrayField
 import secret
 import boto3
 from django.contrib.postgres.fields import ArrayField
-from supplyAuth.models import User  # 2つ目のmodels.pyからインポート
+from supply_auth.models import User  # 2つ目のmodels.pyからインポート
 from routine.fields import CustomModels  # 1つ目のmodels.pyから仮にインポート（必要に応じて）
 from routine.models import Interest, TaskFinish  # 1つ目のmodels.pyからインポート
 

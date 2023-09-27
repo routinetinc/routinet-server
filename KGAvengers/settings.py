@@ -1,7 +1,5 @@
-import psycopg2
 from pathlib import Path
 import os
-# from KGAvengers import secret
 import secret
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -33,12 +31,12 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "routine.apps.RoutineConfig",
-    "supplyAuth.apps.SupplyauthConfig",
+    "supply_auth.apps.SupplyauthConfig",
     "feed.apps.FeedConfig",
     "run.apps.RunConfig",
 ]
 
-AUTH_USER_MODEL = "supplyAuth.User" # accountアプリのUserモデルをデフォルトで使用する認証ユーザーモデルとして設定する
+AUTH_USER_MODEL = "supply_auth.User"  # accountアプリのUserモデルをデフォルトで使用する認証ユーザーモデルとして設定する
 
 # APIにアクセス制限を適用する
 # 認証方式はアクセストークン
@@ -59,11 +57,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'KGAvengers.middleware_myself.MyCustomMiddleware',
-    'KGAvengers.middleware_myself.HandleError',
+    'kgavengers.middleware_myself.MyCustomMiddleware',
+    'kgavengers.middleware_myself.HandleError',
 ]
 
-ROOT_URLCONF = 'KGAvengers.urls'
+ROOT_URLCONF = 'kgavengers.urls'
 
 TEMPLATES = [
     {
@@ -81,12 +79,12 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'KGAvengers.wsgi.application'
+WSGI_APPLICATION = 'kgavengers.wsgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-DATABASES = secret.RemoteDB.DATABASES
+DATABASES = secret.LocalDB.DATABASES
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

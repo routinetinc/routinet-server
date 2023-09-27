@@ -1,6 +1,6 @@
 from django.db import models
 from routine.fields import CustomModels
-from supplyAuth.models import User
+from supply_auth.models import User
 from django.utils import timezone
 from django.contrib.postgres.fields import ArrayField
     
