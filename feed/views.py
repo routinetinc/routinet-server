@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import serializers
 
-from .user_actions import FeedPost
+from .user_actions import TaskFinish
 from .utils.graph_db.connections import neo4j_session
 
 
@@ -34,32 +34,10 @@ class Delete(APIView):
     
 
 
-class PostLikeSerializer(serializers.Serializer):
-    content_id = serializers.IntegerField()
+class TaskCompleteLikeSerializer(serializers.Serializer):
+    task_record_id = serializers.IntegerField()
 
-class PostLike(APIView):
-    def get(self, request):
-        content_id = request.GET.get('id')
-        if not content_id:
-            return Response({"status_code": 400, "error": "content_id is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Assuming a method `get_users_liking_post` exists in FeedPost or related model
-        users = FeedPost.get_users_liking_post(content_id)
-        
-        user_list = []
-        for user in users:
-            user_data = {
-                "user_id": user.id,
-                "profile_media_id": user.profile_media_id,
-                "name": user.name,
-                "self_introduction": user.self_introduction,
-                "hot_user": user.hot_user,
-                "tags": [{"id": tag.id, "name": tag.name} for tag in user.tags]
-            }
-            user_list.append(user_data)
-        
-        return Response({"status_code": 1, "data": {"user_list": user_list}}, status=status.HTTP_200_OK)
-
+class TaskCompleteLike(APIView):
     def post(self, request):
         serializer = None
         data = request.data.get('data')
@@ -68,7 +46,7 @@ class PostLike(APIView):
         if not data:
             return Response({"error": "Missing 'data' key in request", "status_code": 400}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = PostLikeSerializer(data=data)
+        serializer = TaskCompleteLikeSerializer(data=data)
         print("Serializer created:", serializer)
 
         if serializer.is_valid():
@@ -81,9 +59,9 @@ class PostLike(APIView):
         #     print("Serializer errors:", serializer.errors)
         #     return Response({"errors": serializer.errors, "status_code": 400}, status=status.HTTP_400_BAD_REQUEST)
 
-        content_id = serializer.validated_data.get("content_id")
-        if content_id is None:
-            return Response({"error": "content_id not present in validated data"}, status=status.HTTP_400_BAD_REQUEST)
+        task_record_id = serializer.validated_data.get("task_record_id")
+        if task_record_id is None:
+            return Response({"error": "task_record_id not present in validated data"}, status=status.HTTP_400_BAD_REQUEST)
 
 
         # Assuming a method to get the logged-in user's ID
@@ -94,9 +72,9 @@ class PostLike(APIView):
         try:
             with neo4j_session:
                 # Use the create_likes_feed_post method within the session context
-                FeedPost.Relation.create_likes_feed_post(neo4j_session, user_id, content_id)
+                TaskFinish.Relation.create_likes_task_finish(neo4j_session, user_id, task_record_id)
         except Exception as e:
             return Response({"error": f"Neo4j error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-        return Response({"status_code": 1, "data": {"content_id": content_id}}, status=status.HTTP_200_OK)
+        return Response({"status_code": 1, "data": {"task_record_id": task_record_id}}, status=status.HTTP_200_OK)
