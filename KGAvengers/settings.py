@@ -57,11 +57,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'kgavengers.middleware_myself.MyCustomMiddleware',
-    'kgavengers.middleware_myself.HandleError',
+    'KGAvengers.middleware_myself.MyCustomMiddleware',
+    'KGAvengers.middleware_myself.HandleError',
 ]
 
-ROOT_URLCONF = 'kgavengers.urls'
+ROOT_URLCONF = 'KGAvengers.urls'
 
 TEMPLATES = [
     {
@@ -79,7 +79,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'kgavengers.wsgi.application'
+WSGI_APPLICATION = 'KGAvengers.wsgi.application'
 
 
 # Database

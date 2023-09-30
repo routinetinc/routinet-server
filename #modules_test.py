@@ -1,7 +1,7 @@
 # django.setup() 依存先環境変数値の設定. 
 import os
-os.environ['DJANGO_SETTINGS_MODULE'] = 'kgavengers.settings'
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'kgavengers.settings')
+os.environ['DJANGO_SETTINGS_MODULE'] = 'KGAvengers.settings'
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'KGAvengers.settings')
 
 # Django アプリケーションを初期化しロード
 import django
