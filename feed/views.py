@@ -6,6 +6,7 @@ from rest_framework import serializers
 
 from .user_actions import TaskFinish
 from .utils.graph_db.connections import neo4j_session
+from routine.utils.handle_json import RequestInvalid, get_json, make_response
 
 
 class Hello(APIView):
@@ -40,35 +41,18 @@ class TaskCompleteLikeSerializer(serializers.Serializer):
 class TaskCompleteLike(APIView):
     def post(self, request):
         serializer = None
-        data = request.data.get('data')
-        print("Request data:", request.data)
+        try:
+            datas: dict = get_json(request, TaskCompleteLikeSerializer)
+        except RequestInvalid as e:
+            return make_response(status_code=400)
 
-        if not data:
-            return Response({"error": "Missing 'data' key in request", "status_code": 400}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = TaskCompleteLikeSerializer(data=datas)
 
-        serializer = TaskCompleteLikeSerializer(data=data)
-        print("Serializer created:", serializer)
+        task_record_id = datas["task_record_id"]
+        print(f"task_record_id:{task_record_id}")
 
-        if serializer.is_valid():
-            print("Validated data:", serializer.validated_data)
-        else:
-            print("Serializer errors:", serializer.errors)
-
-        # if not serializer.is_valid():
-        #     print(data)
-        #     print("Serializer errors:", serializer.errors)
-        #     return Response({"errors": serializer.errors, "status_code": 400}, status=status.HTTP_400_BAD_REQUEST)
-
-        task_record_id = serializer.validated_data.get("task_record_id")
-        if task_record_id is None:
-            return Response({"error": "task_record_id not present in validated data"}, status=status.HTTP_400_BAD_REQUEST)
-
-
-        # Assuming a method to get the logged-in user's ID
-        # This is just a placeholder and should be replaced by the actual method to get the user's ID
         user_id = 1
 
-        # Use the get_neo4j_session method to get a Neo4j session
         try:
             with neo4j_session:
                 # Use the create_likes_feed_post method within the session context
@@ -77,4 +61,4 @@ class TaskCompleteLike(APIView):
             return Response({"error": f"Neo4j error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-        return Response({"status_code": 1, "data": {"task_record_id": task_record_id}}, status=status.HTTP_200_OK)
+        return make_response(data=datas)
