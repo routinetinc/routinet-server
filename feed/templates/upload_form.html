@@ -1,0 +1,18 @@
+<!-- feed/templates/upload_form.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>画像アップロード</title>
+</head>
+<body>
+    <form id="image-upload-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="image" accept="image/*">
+        <button type="submit">アップロード</button>
+    </form>
+
+    <div id="image-display"></div>
+    {% load static %}
+    <script src="{% static 'js/upload.js' %}"></script>
+</body>
+</html>
