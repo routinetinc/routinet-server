@@ -5,7 +5,10 @@ import random
 import datetime
 from boto3.dynamodb.conditions import Key, Attr
 
-class NoSQLBase(models.Model):
+class InvalidValue(Exception):
+    pass
+
+class NoSQLBase():
     table_name = ''
         
     class Meta:
@@ -13,9 +16,37 @@ class NoSQLBase(models.Model):
 
     @classmethod
     def get_dynamodb_table(self):
-        session = secret.BOTO3_SESSION
+        session  = secret.BOTO3_SESSION
         dynamodb = session.resource('dynamodb')
         return dynamodb.Table(self.table_name)
+    
+    @classmethod
+    def get_dynamodb_client(self):
+        session = secret.BOTO3_SESSION
+        client  = session.client('dynamodb')
+        return client
+    
+    @classmethod
+    def make_keys(attribute:str, values:list)->list:
+        setthing_type = None
+        if type(values[0])==str:
+            setthing_type = 'S'
+        if type(values[0])==int:
+            setthing_type = 'N'
+            tmp = [str(value) for value in values]
+            values = tmp
+        if setthing_type==None:
+            raise InvalidValue
+        keys = []
+        for value in values:
+            keys.append(
+                {
+                    attribute: {
+                        setthing_type:value,
+                    }
+                }
+            )
+        return keys
     
     @classmethod
     def create(cls, Item):
@@ -30,6 +61,17 @@ class NoSQLBase(models.Model):
         if item:
             return item
         return None
+    
+    @classmethod
+    def batch_get(cls, key_attribute:str, key_values:list):
+        keys = cls.make_keys(key_attribute, key_values)
+        client = cls.get_dynamodb_client()
+        response =  client.batch_get_item(RequestItems={
+                    cls.table_name: {
+                        'Keys': keys
+                    }
+                })
+        return response
     
     @classmethod
     def delete(cls, key):
