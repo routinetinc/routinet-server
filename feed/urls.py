@@ -19,6 +19,6 @@ urlpatterns = [
     path('task/finish/', NoAvailableTask.as_view()),
     path('task/minicomment/', MiniComment.as_view()),
     path('routine_task/', ReadRoutineAndTask.as_view()),
-    path('upload/', views.upload_image, name='upload_image'),
+    path('upload_image/', views.UploadImageView.as_view(), name='upload_image'),
     path('display_image/<str:image_name>/', views.display_image, name='display_image'),
 ]

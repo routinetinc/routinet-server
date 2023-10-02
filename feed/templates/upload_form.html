@@ -1,17 +1,17 @@
-<!-- feed/templates/upload_form.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>画像アップロード</title>
+    <meta charset="UTF-8">
+    <title>Upload Image</title>
 </head>
 <body>
-    <form id="image-upload-form" enctype="multipart/form-data">
+    <form id="upload-form" enctype="multipart/form-data">
         {% csrf_token %}
-        <input type="file" name="image" accept="image/*">
-        <button type="submit">アップロード</button>
+        <input type="file" name="image" accept=".jpeg, .png">
+        <input type="submit" value="Upload">
     </form>
-
-    <div id="image-display"></div>
+    
+    <div id="result"></div>
     {% load static %}
     <script src="{% static 'js/upload.js' %}"></script>
 </body>

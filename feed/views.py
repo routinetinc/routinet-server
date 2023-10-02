@@ -39,23 +39,49 @@ from django.http import HttpResponse
 from django.conf import settings
 import os
 
-def upload_image(request):
-    if request.method == "POST" and request.FILES.get("image"):
-        uploaded_image = request.FILES["image"]
-        # 画像の拡張子を取得
-        file_extension = os.path.splitext(uploaded_image.name)[-1].lower()
-        # 保存先のパスを指定
-        save_path = os.path.join("media", uploaded_image.name)
+import os
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from django.http import JsonResponse
+from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from PIL import Image
+from io import BytesIO
+from django.shortcuts import render
 
-        with open(save_path, "wb") as destination:
-            for chunk in uploaded_image.chunks():
-                destination.write(chunk)
+from django.http import JsonResponse
+from django.views import View
+from PIL import Image
+import os
 
-        # 画像のURLをフロントエンドに返す
-        image_url = os.path.join("/media/", uploaded_image.name)
-        return JsonResponse({"image_url": image_url})
+class UploadImageView(View):
+    @csrf_exempt
+    def post(self, request):
+        if request.FILES.get('image'):
+            uploaded_image = request.FILES['image']
+            # Save the uploaded image to the backend server
+            fs = FileSystemStorage()
+            filename = fs.save(uploaded_image.name, uploaded_image)
+            # Determine the file extension
+            _, file_extension = os.path.splitext(filename)
+            # Check if encoding is needed (for example, convert to PNG)
+            encoded_image_url = ''
+            if file_extension.lower() not in ['.png', '.jpeg', '.jpg', '.gif']:
+                with Image.open(settings.MEDIA_ROOT + '/' + filename) as img:
+                    img = img.convert('RGB')
+                    encoded_image_buffer = BytesIO()
+                    img.save(encoded_image_buffer, format='PNG')
+                    encoded_image_name = fs.save(uploaded_image.name.split('.')[0] + '.png', encoded_image_buffer)
+                    encoded_image_url = fs.url(encoded_image_name)
+            else:
+                encoded_image_url = fs.url(filename)
+            return JsonResponse({'image_url': encoded_image_url})
 
-    return JsonResponse({"error": "Invalid request"})
+        return JsonResponse({'error': 'Image upload failed'})
+
+    def get(self, request):
+        return render(request, 'upload_form.html')
+
 
 
 def display_image(request, image_name):
