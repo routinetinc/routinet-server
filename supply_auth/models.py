@@ -53,8 +53,8 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    username          = models.CharField(max_length=150, unique=True)
-    email             = models.EmailField(primary_key=True)
+    username          = models.CharField(max_length=150)
+    email             = models.EmailField(unique=True)
     age               = models.IntegerField(null=True,blank=True)
     job               = models.CharField(null=True,max_length=150)
     profile_media_id  = models.IntegerField(null=True)
