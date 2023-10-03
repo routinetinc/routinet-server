@@ -46,7 +46,7 @@ def random_dt():
 
 #* インサート関数
 def insert_supply_auth_users(users: list[dict]):
-    instance = [User(username=user['username'], email=user['email']) for user in users]
+    instance = [User(username=user['username'], email=user['email'], tag_ids=[]) for user in users]
     User.objects.bulk_create(instance)  
     return
 def insert_routine_interests(interests: list[dict]):
