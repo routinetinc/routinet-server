@@ -8,16 +8,13 @@ END = '\033[0m'
 
 
 # リクエスト先 URL
-url = 'http://127.0.0.1:8000/routine/timetree/before/get/'
+url = 'http://127.0.0.1:8000/feed/sns/feed/post/like/'
 request_methods = {0: 'get', 1: 'post', 2: 'patch', 3: 'delete'} 
-request_method  = request_methods[1]
+request_method  = request_methods[0]
 
 # JSON 形式のデータ(リクエスト用). 変数 json_data の格納値にドキュメントの {'data': data_value } 全体をコピペする.
 json_data = {
-	"data": {
-		"day": "20230805T200000+0900",
-		"routine_id": "1"
-	}
+	
 }
 
 
@@ -39,6 +36,7 @@ print(f'{BLUE}headers     ={END} {response.request.headers}')
 print(f'{BLUE}body        ={END} {response.request.body}')
 print(f'{BLUE}method      ={END} {response.request.method}')
 res_data = response.json()
+print(res_data)
 print(f'{BLUE}status_code ={END} {res_data["status_code"]}')
 print(f'{BLUE}res_data    ={END} {res_data["data"]}')
 
