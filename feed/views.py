@@ -2,6 +2,7 @@ from feed.models import Cache
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from feed.structure import Data
+from routine.utils.handle_json import make_response
 
 class UserCreate(APIView):
     def get(self, request, format=None):
@@ -29,12 +30,12 @@ class UserDelete(APIView):
     
 class InteresstCATCreate(APIView):
     def get(self, request, format=None):
-        data = Data(0,0,0)
-        Cache.InterestCAT.create(data = data)
-        return Response('hello')
+        data = Data(0,250,2)
+        Cache.InterestCAT.query(data = data)
+        return make_response({'response':'hello'})
 
-class InterestCATUpdate(APIView):
+class InterestCATDelete(APIView):
     def get(self, request, format=None):
         data = Data(0,0,0)
-        Cache.InterestCAT.update(data = data)
+        Cache.InterestCAT.delete(data = data)
         return Response('hello')

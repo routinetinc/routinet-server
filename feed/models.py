@@ -44,7 +44,7 @@ class Cache():
         time = datetime.datetime.now().isoformat()
         @classmethod
         def create_meta(cls, data, format=None):
-            table_name = 'interest_metadata'
+            cls.table_name = 'priority_metadata'
             string = ''
             for i in range(200,400):
                 string = string + 'a' + str(i)
@@ -57,7 +57,7 @@ class Cache():
         
         @classmethod
         def create(cls, data, format=None):
-            table_name = 'interest_category'
+            cls.table_name = 'interest_category'
             if data.score <= 100: #数値は仮置き
                 string = 'a198'
 
@@ -74,18 +74,19 @@ class Cache():
                 'priority': string,
                 'time': cls.time,
                 'li_contentid': [data.contentid],
-                'data': {
+                'data': [
                     {
                         'contentid': data.contentid,
                         'priority': data.score
                     }
-                }
+                ]
             }
             table = cls.get_dynamodb_table()
             table.put_item(Item=Item)
         
         @classmethod
         def put(cls, data, format=None):
+            #　ソートキーの取得
             if data.score <= 100: #数値は仮置き
                 string = 'a198'
 
@@ -94,21 +95,24 @@ class Cache():
 
             else:
                 num = random.randint(200,400)
-                table_name = 'interest_metadata'
+                cls.table_name = 'priority_metadata'
                 table = cls.get_dynamodb_table()
                 sort = table.query(
                     KeyConditionExpression=Key('categoryid').eq(data.categoryid)
                 )
-                for e in sort['Item']['priority']:
+                string = ''
+                for e in sort['Items'][0]['priority']:
                     if str(num) in e:
                         string = e
                         break
+
+            #　データの追加
             options = {
                 'Key': {
                     'categoryid': data.categoryid,
                     'priority': string,
                 },
-                'UpdateExpression': 'set #data = list_append(data, :add), #li_contentid = list_append(li_contentid, :li_add), #time = :now',
+                'UpdateExpression': 'set #data = list_append(#data, :add), #li_contentid = list_append(li_contentid, :li_add), #time = :now',
                 'ExpressionAttributeNames': {'#data': 'data', '#li_contentid': 'li_contentid', '#time': 'time'},
                 'ExpressionAttributeValues': {
                     ':add': [
@@ -123,22 +127,24 @@ class Cache():
                     ':now': cls.time
                 }
             }
-            table_name = "interest_category"
+            cls.table_name = "interest_category"
             table = cls.get_dynamodb_table()
             table.update_item(**options)
             
 
         @classmethod
         def update(cls, data, format=None):
-            table_name = 'interest_category'
+            #ソートキーの取得
+            cls.table_name = 'interest_category'
             table = cls.get_dynamodb_table()
             sort = table.query(
                 KeyConditionExpression=Key('categoryid').eq(data.categoryid),
                 FilterExpression=Attr('li_contentid').contains(data.contentid)
             )
-            num = sort['Item']['li_contentid'].index(data.contentid)
-            string = sort['Item']['priority']
+            num = sort['Items'][0]['li_contentid'].index(data.contentid)
+            string = sort['Items'][0]['priority']
             if data.score > 100 and string == 'a198':
+                # 元データの削除
                 options = {
                     'Key': {
                         'categoryid': data.categoryid,
@@ -148,12 +154,14 @@ class Cache():
                     'ExpressionAttributeNames': {'#data': 'data'},
                 }
                 table.update_item(**options)
+
+                # 新データの追加
                 options = {
                     'Key': {
                         'categoryid': data.categoryid,
                         'priority': 'a199',
                     },
-                    'UpdateExpression': 'set #data = list_append(data, :add), #li_contentid = list_append(li_contentid, :li_add), #time = :now',
+                    'UpdateExpression': 'set #data = list_append(#data, :add), #li_contentid = list_append(li_contentid, :li_add), #time = :now',
                     'ExpressionAttributeNames': {'#data': 'data', '#li_contentid': 'li_contentid', '#time': 'time'},
                     'ExpressionAttributeValues': {
                         ':add': [
@@ -171,6 +179,7 @@ class Cache():
                 table.update_item(**options)
 
             if data.score > 200 and string == 'a199':
+                #　元データの削除
                 options = {
                     'Key': {
                         'categoryid': data.categoryid,
@@ -180,24 +189,26 @@ class Cache():
                     'ExpressionAttributeNames': {'#data': 'data','#li_contentid': 'li_contentid'},
                 }
                 table.update_item(**options)
+
+                #　新データの追加
                 num = random.randint(200,400)
-                table_name = 'interest_metadata'
+                cls.table_name = 'priority_metadata'
                 table = cls.get_dynamodb_table()
                 sort = table.query(
                     KeyConditionExpression=Key('categoryid').eq(data.categoryid)
                 )
-                for e in sort['Item']['priority']:
+                for e in sort['Items'][0]['priority']:
                     if str(num) in e:
                         string = e
                         break
-                table_name = 'interest_category'
+                cls.table_name = 'interest_category'
                 table = cls.get_dynamodb_table()
                 options = {
                     'Key': {
                         'categoryid': data.categoryid,
                         'priority': string,
                     },
-                    'UpdateExpression': 'set #data = list_append(data, :add), #li_contentid = list_append(li_contentid, :li_add), #time = :now',
+                    'UpdateExpression': 'set #data = list_append(#data, :add), #li_contentid = list_append(li_contentid, :li_add), #time = :now',
                     'ExpressionAttributeNames': {'#data': 'data', '#li_contentid': 'li_contentid', '#time': 'time'},
                     'ExpressionAttributeValues': {
                         ':add': [
@@ -215,21 +226,24 @@ class Cache():
                 table.update_item(**options)
 
             else:
+                #　元データの削除
                 options = {
                     'Key': {
                         'categoryid': data.categoryid,
                         'priority': string,
                     },
-                    'UpdateExpression': f'remove #data[{num}], #li_contentid[{num}])',
+                    'UpdateExpression': f'remove #data[{num}], #li_contentid[{num}]',
                     'ExpressionAttributeNames': {'#data': 'data','#li_contentid': 'li_contentid'}
                 }
                 table.update_item(**options)
+
+                #　新データの追加
                 options = {
                     'Key': {
                         'categoryid': data.categoryid,
                         'priority': string,
                     },
-                    'UpdateExpression': 'set #data = list_append(data, :add), #li_contentid = li_append(li_contentid, :li_add), #time = :now',
+                    'UpdateExpression': 'set #data = list_append(#data, :add), #li_contentid = list_append(li_contentid, :li_add), #time = :now',
                     'ExpressionAttributeNames': {'#data': 'data', '#li_contentid': 'li_contentid', '#time': 'time'},
                     'ExpressionAttributeValues': {
                         ':add': [
@@ -247,61 +261,73 @@ class Cache():
                 table = cls.get_dynamodb_table()
                 table.update_item(**options)
             
-            if string != 'a198' and string != 'a199' and len(sort['Item']['data']) >= 50: #値は仮置き
+            #　データ量が多ければ分割
+            if string != 'a198' and string != 'a199' and len(sort['Items'][0]['data']) >= 2: #値は仮置き
                 cls.divide(data=data, string=string)
 
         @classmethod
         def divide(cls, data, string, format=None):
-            table_name = 'interest_metadata'
+            #　メタデータの分割
+            cls.table_name = 'priority_metadata'
             table = cls.get_dynamodb_table()
             sort = table.query(
                 KeyConditionExpression=Key('categoryid').eq(data.categoryid)
             )
-            for e, i in enumerate(sort['Item']['priority']):
+            #　入っている順番の取得
+            num = 0
+            for i,e in enumerate(sort['Items'][0]['priority']):
                 if string == e:
                     num = i
 
-            if int(string[-1]) % 2 == 0:
-                half = len(string)/2
+            #　分割する境界の設定
+            if (int(string[-1]) + int(string[3])) % 2 == 0:
+                half = len(string)//2 - 2
             else:
-                half = len(string)/2 - 2
+                half = len(string)//2
+            #　元データの削除
             options = {
                 'Key': {
                     'categoryid': data.categoryid
                 },
-                'UpdateExpression': f'remove #priority[{num}])',
+                'UpdateExpression': f'remove #priority[{num}]',
                 'ExpressionAttributeNames': {'#priority': 'priority'}
             }
             table.update_item(**options)
+            #　ソートキーの分割
             former = string[:half]
             later = string[half:]
             options = {
                 'Key': {
                     'categoryid': data.categoryid
                 },
-                'UpdateExpression': 'set #priority = list_append(priority, :add)',
+                'UpdateExpression': 'set #priority = list_append(#priority, :add)',
                 'ExpressionAttributeNames': {'#priority': 'priority'},
                 'ExpressionAttributeValues': {
                     ':add': [former,later]
                 }
             }
+            table.update_item(**options)
 
-            table_name = 'interest_category'
+            #　レコードの分割
+            cls.table_name = 'interest_category'
             table = cls.get_dynamodb_table()
             sort = table.query(
-                KeyConditionExpression=Key('contentid').eq(data.categoryid) & Key('contentid').eq(data.contentid)
+                KeyConditionExpression=Key('categoryid').eq(data.categoryid) & Key('priority').eq(string)
             )
-            half = int(len(sort['Item']['data'])/2)
-            data1 = sort['Item']['data'][:half]
-            data2 = sort['Item']['data'][half:]
-            li1 = sort['Item']['li_contentid'][:half]
-            li2 = sort['Item']['li_contentid'][half:]
+            #　入っているデータの分割
+            half = int(len(sort['Items'][0]['data'])//2)
+            data1 = sort['Items'][0]['data'][:half]
+            data2 = sort['Items'][0]['data'][half:]
+            li1 = sort['Items'][0]['li_contentid'][:half]
+            li2 = sort['Items'][0]['li_contentid'][half:]
+            #　元レコードの削除
             table.delete_item(
                 Key = {
                     'categoryid': data.categoryid,
                     'priority': string
                 }
             )
+            #　新レコード（二つ）の追加
             Item = {
                 'categoryid': data.categoryid,
                 'priority': former,
@@ -321,20 +347,23 @@ class Cache():
 
         @classmethod
         def query(cls, data, format=None):
-            table_name = 'interest_metadata'
+            #　ソートキーの取得
+            cls.table_name = 'priority_metadata'
             table = cls.get_dynamodb_table()
             num = random.randint(198,400)
             sort = table.query(
                 KeyConditionExpression=Key('categoryid').eq(data.categoryid)
             )
-            for e in sort['Item']['priority']:
+            for e in sort['Items'][0]['priority']:
                 if str(num) in e:
                     string = e
-            table_name = 'interest_category'
+
+            #　データの取得
+            cls.table_name = 'interest_category'
             table = cls.get_dynamodb_table()
             response = table.query(
                 KeyConditionExpression=Key('categoryid').eq(data.categoryid) & Key('priority').eq(string)
             )
-            items = len(response['Item']['data'])
-            rand = random.randint(items)
-            return response['Item']['data'][rand]
+            items = len(response['Items'][0]['data'])
+            rand = random.randint(0,items-1)
+            print(response['Items'][0]['data'][rand])
