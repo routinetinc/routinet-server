@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import serializers
 
-from .user_actions import FeedPost as feedpost
+from feed.user_actions import TaskFinish as taskfinish
 from .utils.graph_db.connections import neo4j_session
 from routine.utils.handle_json import *
 from .models import *
@@ -13,7 +13,7 @@ from supply_auth.models import *
 
 class Hello(APIView):
     def get(self, request, format=None):
-        Item = {'user_id': 3, 'created': '2023-08-26','data':{'content_id':4}}
+        Item = {'user_id': 3, 'created': '2023-08-26','data':{'task_record_id':4}}
         Cache.User.create(Item = Item)
         return Response('hello')
     
@@ -37,18 +37,18 @@ class Delete(APIView):
     
 
 
-class PostLikeSerializer(serializers.Serializer):
-    content_id = serializers.IntegerField()
+class TaskFinishLikeSerializer(serializers.Serializer):
+    task_record_id = serializers.IntegerField()
 
-class PostLike(APIView):
+class TaskFinishLike(APIView):
     def get(self, request):
-        # Assume content_id
-        content_id = 2
+        # Assume task_record_id
+        task_record_id = 2
 
         try:
             with neo4j_session:
                 # Retrieve user IDs who liked the specific post
-                user_ids = (_ := feedpost()).read_liked_user_ids(neo4j_session, content_id)
+                user_ids = (_ := taskfinish()).read_liked_user_ids(neo4j_session, task_record_id)
         except Exception as e:
             return make_response(status_code=500, data={"error": str(e)})
         
@@ -57,8 +57,8 @@ class PostLike(APIView):
         # Fetch users from the relational database based on the IDs retrieved from Neo4j
         users_db = User.objects.filter(pk__in=user_ids)
 
-        users = User.objects.filter(pk__in=[3, 4, 1])
-        print(users)
+        # users = User.objects.filter(pk__in=[3, 4, 1])
+        # print(users)
 
         print(users_db)
 
@@ -85,21 +85,21 @@ class PostLike(APIView):
     def post(self, request):
         serializer = None
         try:
-            datas: dict = get_json(request, PostLikeSerializer)
+            datas: dict = get_json(request, TaskFinishLikeSerializer)
         except RequestInvalid as e:
             return make_response(status_code=400)
 
-        serializer = PostLikeSerializer(data=datas)
+        serializer = TaskFinishLikeSerializer(data=datas)
 
-        content_id = datas["content_id"]
-        print(f"content_id:{content_id}")
+        task_record_id = datas["task_record_id"]
+        print(f"task_record_id:{task_record_id}")
 
         user_id = 2
 
         try:
             with neo4j_session:
                 # Use the create_likes_feed_post method within the session context
-                FeedPost.Relation().create_likes_feed_post(neo4j_session, user_id, content_id)
+                FeedPost.Relation().create_likes_feed_post(neo4j_session, user_id, task_record_id)
         except Exception as e:
             return make_response(status_code = 500)
 
