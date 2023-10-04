@@ -27,8 +27,8 @@ def _timetree(request, acquisition_range):
     start_day: datetime = data['day'] + timedelta(days=delta_start_day)
     end_day:   datetime = start_day   + timedelta(days=delta_end_day)
 
-    subquery     = models.TaskRecord.objects.filter(task_id=OuterRef('task_id'), when__range=[end_day, start_day])
-    task_records = models.TaskRecord.objects.filter(task_id__in=tasks) \
+    subquery     = models.TaskFinish.objects.filter(task_id=OuterRef('task_id'), when__range=[end_day, start_day])
+    task_finishs = models.TaskFinish.objects.filter(task_id__in=tasks) \
                                             .annotate(matching_task=Exists(subquery)) \
                                             .filter(matching_task=True) \
                                             .order_by('-when')
@@ -37,14 +37,14 @@ def _timetree(request, acquisition_range):
         day = start_day - timedelta(days=i)
         day_str = day
         day_tasks = []
-        for task_record in task_records:
-            if task_record.when.date() == day.date():
-                task_comment = models.Minicomment.objects.filter(task_record_id=task_record.id).first()
+        for task_finish in task_finishs:
+            if task_finish.when.date() == day.date():
+                task_comment = models.Minicomment.objects.filter(task_finish_id=task_finish.id).first()
                 comment = task_comment.comment if task_comment else None
                 day_tasks.append({
-                    'task_recode_id': str(task_record.id),
-                    'finish_time': conv_datetime_iso(task_record.when),
-                    'done_time': task_record.done_time,
+                    'task_finish_id': str(task_finish.id),
+                    'finish_time': conv_datetime_iso(task_finish.when),
+                    'done_time': task_finish.done_time,
                     'comment': comment
                 })
         days.append({

@@ -1,0 +1,15 @@
+//* パッケージ 
+pygraphviz
+pydotplus
+django-extensions
+
+//* テスト
+// テスト駆動設計
+// 良いテストファイルのルール
+    ・モデルやビューごとに TestClass を分割する
+    ・テストしたい条件の集まりのそれぞれに対して、異なるテストメソッドを作る
+    ・テストメソッドの名前は、その機能を説明するようなものにする
+// さらなるテスト
+    ・selenium
+    ・continuous integration のために、コミット時自動テスト
+    ・cavarage.py -> 壊れやすいコードの発見にも

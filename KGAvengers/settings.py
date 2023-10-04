@@ -1,7 +1,5 @@
-import psycopg2
 from pathlib import Path
 import os
-# from KGAvengers import secret
 import secret
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -26,17 +24,19 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django_extensions',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "rest_framework",
     "rest_framework.authtoken",
     "routine.apps.RoutineConfig",
-    "supplyAuth.apps.SupplyauthConfig",
+    "supply_auth.apps.SupplyauthConfig",
     "feed.apps.FeedConfig",
+    "run.apps.RunConfig",
 ]
 
-AUTH_USER_MODEL = "supplyAuth.User" # accountアプリのUserモデルをデフォルトで使用する認証ユーザーモデルとして設定する
+AUTH_USER_MODEL = "supply_auth.User"  # accountアプリのUserモデルをデフォルトで使用する認証ユーザーモデルとして設定する
 
 # APIにアクセス制限を適用する
 # 認証方式はアクセストークン
@@ -84,7 +84,7 @@ WSGI_APPLICATION = 'KGAvengers.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-DATABASES = secret.RemoteDB.DATABASES
+DATABASES = secret.LocalDB.DATABASES
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
