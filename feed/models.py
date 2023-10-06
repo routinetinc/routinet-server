@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 import secret
 import boto3
+from django.utils import timezone
 from django.contrib.postgres.fields import ArrayField
 from supply_auth.models import User  # 2つ目のmodels.pyからインポート
 from routine.fields import CustomModels  # 1つ目のmodels.pyから仮にインポート（必要に応じて）
@@ -72,9 +73,13 @@ class FeedPostComment(models.Model):
     post_time = models.DateTimeField()
     media_id = models.IntegerField(null=True, blank=True)
     like_num = models.IntegerField(default=0)
+    comment = models.CharField(max_length=400)
 
     def __str__(self):
         return f"Comment by {self.feed_post.user} on {self.post_time}"
+    
+    def __str__(self):
+        return f'{self.feed_post_id}'
     
 
 class TaskFinishComment(models.Model):
@@ -82,6 +87,7 @@ class TaskFinishComment(models.Model):
     post_time = models.DateTimeField()
     media_id = models.IntegerField(null=True, blank=True)
     like_num = models.IntegerField(default=0)
+    comment = models.CharField(max_length=400)
 
     def __str__(self):
         return f"Comment on TaskFinish {self.task_finish_id} at {self.post_time}"
