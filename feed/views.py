@@ -30,7 +30,8 @@ class UserDelete(APIView):
     
 class InteresstCATCreate(APIView):
     def get(self, request, format=None):
-        data = Data(0,250,2)
+        data = Data(0,550,3)
+        Cache.InterestCAT.update(data = data)
         Cache.InterestCAT.query(data = data)
         return make_response({'response':'hello'})
 

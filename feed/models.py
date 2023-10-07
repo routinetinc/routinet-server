@@ -130,6 +130,10 @@ class Cache():
             cls.table_name = "interest_category"
             table = cls.get_dynamodb_table()
             table.update_item(**options)
+
+            #　データ量が多ければ分割
+            if string != 'a198' and string != 'a199' and len(sort['Items'][0]['data']) >= 10: #値は仮置き
+                cls.divide(data=data, string=string)
             
 
         @classmethod
@@ -262,7 +266,7 @@ class Cache():
                 table.update_item(**options)
             
             #　データ量が多ければ分割
-            if string != 'a198' and string != 'a199' and len(sort['Items'][0]['data']) >= 2: #値は仮置き
+            if string != 'a198' and string != 'a199' and len(sort['Items'][0]['data']) >= 10: #値は仮置き
                 cls.divide(data=data, string=string)
 
         @classmethod
