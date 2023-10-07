@@ -44,42 +44,51 @@ class FeedPostCommentSerializer(serializers.Serializer):
     post_id = serializers.IntegerField(max_value=None, min_value=None)
     comment = serializers.CharField(max_length=400)
 
+class CommentUserSerializer(serializers.Serializer):
+    comment_id = serializers.IntegerField(source='id')
+    user_id = serializers.IntegerField(source='feed_post_id.user.id')
+    profile_media_id = serializers.IntegerField(source='feed_post_id.user.profile_media_id')
+    username = serializers.CharField(source='feed_post_id.user.username')
+    comment = serializers.CharField()
+    content_media_id = serializers.IntegerField(allow_null=True, required=False, source='media_id')
+    post_time = serializers.DateTimeField()
+    like_num = serializers.IntegerField()
+
 
 class FeedPostComment(APIView):
-    def get(self, request, format=None):
-        pass
+    def get(self, request):
+        # Assume feed_post_id
+        feed_post_id = 1
+
+        # Retrieve FeedPostComment instances associated with the given feed_post_id
+        comments = feedpostcomment.objects.filter(feed_post_id=feed_post_id)
+
+        # Serialize the comments
+        serializer = CommentUserSerializer(comments, many=True)
+
+        return make_response(status_code=1, data={"comment_list": serializer.data})
     
     def post(self, request, format=None):
-        try:
-            data = get_json(request, FeedPostCommentSerializer)
+        data = get_json(request, FeedPostCommentSerializer)
 
-            # Debug print
-            print("Received data:", data)
+        # Debug print
+        print("Received data:", data)
 
-            feed_post = feedpost.objects.get(id=data['post_id'])            
+        feed_post = feedpost.objects.get(id=data['post_id'])            
 
-            # Debug print
-            print("Fetched feed_post:", feed_post)
+        # Debug print
+        print("Fetched feed_post:", feed_post)
 
-            # Save the comment
-            comment = feedpostcomment(
-                feed_post_id=feed_post, 
-                comment=data['comment'],
-                post_time=timezone.now()  # Set the post_time to the current time
-            )
-            comment.save()
+        # Save the comment
+        comment = feedpostcomment(
+            feed_post_id=feed_post, 
+            comment=data['comment'],
+            post_time=timezone.now()  # Set the post_time to the current time
+        )
+        comment.save()
 
-            # Debug print
-            print("Created comment:", comment)
+        # Debug print
+        print("Created comment:", comment)
 
-            # Return the comment ID in the response
-            return make_response(status_code=1, data={"post_id": comment.pk})
-
-        except feedpost.DoesNotExist:
-            # Debug print
-            print("Error: FeedPost does not exist.")
-            return make_response(status_code=400, data={"error": "FeedPost does not exist."})
-        except Exception as e:
-            # Debug print
-            print("Error:", str(e))
-            return make_response(status_code=500, data={"error": str(e)})
+        # Return the comment ID in the response
+        return make_response(status_code=1, data={"content_id": comment.pk})
