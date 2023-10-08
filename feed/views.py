@@ -45,7 +45,34 @@ class TaskCompleteCommentSerializer(serializers.Serializer):
     task_finish_id = serializers.IntegerField(max_value=None, min_value=None)
     comment = serializers.CharField(max_length=400)
 
-class TaskCompleteComment(APIView):  
+class CommentUserSerializer(serializers.Serializer):
+    comment_id = serializers.IntegerField(source='id')
+    user_id = serializers.IntegerField(source='task_finish_id.routine_id.user_id.id')
+    profile_media_id = serializers.IntegerField(source='task_finish_id.routine_id.user_id.profile_media_id')
+    username = serializers.CharField(source='task_finish_id.routine_id.user_id.username')
+    comment = serializers.CharField()
+    content_media_id = serializers.IntegerField(allow_null=True, required=False, source='media_id')
+    post_time = serializers.DateTimeField()
+    like_num = serializers.IntegerField()
+
+
+class TaskCompleteComment(APIView):
+    def get(self, request):
+        # Assume feed_post_id
+        task_finish_id = 1
+
+        # Retrieve FeedPostComment instances associated with the given feed_post_id
+        comments = taskfinishcomment.objects.filter(task_finish_id=task_finish_id)
+
+        print(comments)
+
+        # Serialize the comments
+        serializer = CommentUserSerializer(comments, many=True)
+
+        # print(serializer)
+
+        return make_response(status_code=1, data={"comment_list": serializer.data})
+
     def post(self, request, format=None):
         data = get_json(request, TaskCompleteCommentSerializer)
 
