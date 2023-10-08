@@ -38,15 +38,15 @@ class Delete(APIView):
         Cache.User.delete(key)
         return Response('hello')
 
-class FeedPostCommentLike(APIView):
+class TaskFinishCommentLike(APIView):
     def get(self, request):
         # Assume content_id
-        content_id = 1
+        task_finish_id = 1
 
         try:
             with neo4j_session:
                 # Retrieve user IDs who liked the specific post
-                user_ids = (_ := Feedpost()).read_liked_user_ids(neo4j_session, content_id)
+                user_ids = (_ := Feedpost()).read_liked_user_ids(neo4j_session, task_finish_id)
         except Exception as e:
             return make_response(status_code=500, data={"error": str(e)})
         
