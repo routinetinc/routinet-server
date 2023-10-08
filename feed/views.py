@@ -7,10 +7,10 @@ from django.http import HttpRequest
 import json
 from django.utils import timezone
 
-from feed.user_actions import TaskFinish as taskfinish
+from feed.user_actions import FeedPost as Feedpost
 from .utils.graph_db.connections import neo4j_session
 from routine.utils.handle_json import *
-from .models import FeedPostComment as feedpostcomment, FeedPost as feedpost
+from .models import FeedPostComment as feedpostcomment, FeedPost as feedpost, Tag
 from supply_auth.models import *
 
 
@@ -37,58 +37,39 @@ class Delete(APIView):
                'created':'2023-08-26'}
         Cache.User.delete(key)
         return Response('hello')
-    
 
-
-class FeedPostCommentSerializer(serializers.Serializer):
-    post_id = serializers.IntegerField(max_value=None, min_value=None)
-    comment = serializers.CharField(max_length=400)
-
-class CommentUserSerializer(serializers.Serializer):
-    comment_id = serializers.IntegerField(source='id')
-    user_id = serializers.IntegerField(source='feed_post_id.user.id')
-    profile_media_id = serializers.IntegerField(source='feed_post_id.user.profile_media_id')
-    username = serializers.CharField(source='feed_post_id.user.username')
-    comment = serializers.CharField()
-    content_media_id = serializers.IntegerField(allow_null=True, required=False, source='media_id')
-    post_time = serializers.DateTimeField()
-    like_num = serializers.IntegerField()
-
-
-class FeedPostComment(APIView):
+class FeedPostCommentLike(APIView):
     def get(self, request):
-        # Assume feed_post_id
-        feed_post_id = 1
+        # Assume content_id
+        content_id = 1
 
-        # Retrieve FeedPostComment instances associated with the given feed_post_id
-        comments = feedpostcomment.objects.filter(feed_post_id=feed_post_id)
+        try:
+            with neo4j_session:
+                # Retrieve user IDs who liked the specific post
+                user_ids = (_ := Feedpost()).read_liked_user_ids(neo4j_session, content_id)
+        except Exception as e:
+            return make_response(status_code=500, data={"error": str(e)})
+        
+        print(user_ids)
 
-        # Serialize the comments
-        serializer = CommentUserSerializer(comments, many=True)
+        # Fetch users from the relational database based on the IDs retrieved from Neo4j
+        users_db = User.objects.filter(pk__in=user_ids)
 
-        return make_response(status_code=1, data={"comment_list": serializer.data})
-    
-    def post(self, request, format=None):
-        data = get_json(request, FeedPostCommentSerializer)
+        print(users_db)
 
-        # Debug print
-        print("Received data:", data)
+        user_list = []
+        for user in users_db:
+            user_tags = Tag.objects.filter(id__in=user.tag_ids)
+            tag_list = [{"id": tag, "name": tag.name} for tag in user_tags]
 
-        feed_post = feedpost.objects.get(id=data['post_id'])            
+            user_data = {
+                "user_id": user.username,  # Adjust based on your data model
+                "profile_media_id": user.profile_media_id,
+                "name": user.username,
+                "self_introduction": user.self_introduction,
+                "hot_user": user.is_hot_user,
+                "tags": tag_list
+            }
+            user_list.append(user_data)
 
-        # Debug print
-        print("Fetched feed_post:", feed_post)
-
-        # Save the comment
-        comment = feedpostcomment(
-            feed_post_id=feed_post, 
-            comment=data['comment'],
-            post_time=timezone.now()  # Set the post_time to the current time
-        )
-        comment.save()
-
-        # Debug print
-        print("Created comment:", comment)
-
-        # Return the comment ID in the response
-        return make_response(status_code=1, data={"content_id": comment.pk})
+        return make_response(status_code=1, data={"user_list": user_list})
