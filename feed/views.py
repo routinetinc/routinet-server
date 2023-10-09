@@ -50,7 +50,7 @@ class ImageView(View):
         # 画像を処理（ここでは例として画像を開いてすぐ閉じる）
         (_ := models.Image(img=img)).save()
 
-        return HttpResponse('Image received and processed.')
+        return make_response(1)
 
     def get(self, request, *args, **kwargs):
         img_id = request.GET.get('media_id', None)
