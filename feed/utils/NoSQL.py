@@ -13,28 +13,33 @@ class UserTask():
     class Delete():
         def __init__(self, content_ids:list):
             self.content_ids = content_ids
-        def create_update_expression(self):
+        def create_update_expression(self, expression_attribute_names):
             update_expression = ""
-            for content_id in self.content_ids:
-                update_expression += f"data.{str(content_id)} "
+            for i in range(len(self.content_ids)):
+                update_expression += f"datas.#delete{str(i)}, "
+                expression_attribute_names[f"#delete{i}"] = str(self.content_ids[i])
             return update_expression
     class Add():
         def __init__(self, content_ids, priorities):
             self.content_ids = content_ids
             self.priorities = priorities
-        def create_update_expression(self):
+        def create_update_expression(self, expression_attribute_names, expression_attribute_values):
             update_expression = ""
             for i in range(len(self.content_ids)):
-                update_expression += f"data.{str(self.content_ids[i])} = {str(self.priorities[i])} "
+                update_expression += f"datas.#add{str(i)} = :add{str(i)}, "
+                expression_attribute_names[f"#add{i}"] = str(self.content_ids[i])
+                expression_attribute_values[f":add{str(i)}"] = str(self.priorities[i])
             return update_expression
     class Update():
         def __init__(self, content_ids, priorities):
             self.content_ids = content_ids
             self.priorities = priorities
-        def create_update_expression(self):
+        def create_update_expression(self, expression_attribute_names, expression_attribute_values):
             update_expression = ""
             for i in range(len(self.content_ids)):
-                update_expression += f"data.{str(self.content_ids[i])} = {str(self.priorities[i])} "
+                update_expression += f"datas.#update{str(i)} = :update{str(i)}, "
+                expression_attribute_names[f"#update{str(i)}"] = str(self.content_ids[i])
+                expression_attribute_values[f":update{str(i)}"] = str(self.priorities[i])
             return update_expression
 
 
@@ -57,7 +62,7 @@ class NoSQLBase():
         return client
     
     @classmethod
-    def make_keys(attribute:str, values:list)->list:
+    def make_keys(cls, attribute:str, values:list)->list:
         setthing_type = None
         if type(values[0])==str:
             setthing_type = 'S'
@@ -101,7 +106,7 @@ class NoSQLBase():
                         'Keys': keys
                     }
                 })
-        return response
+        return response["Responses"][f"{cls.table_name}"]
     
     """ @classmethod
     def batch_delete(cls, key_attribute:str, key_values:list):

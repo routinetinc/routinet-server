@@ -13,7 +13,7 @@ class Cache():
         class Task(UserTask):
             pass
         
-        def __create_complete_update_expression(tasks:list)->str:
+        def __create_complete_setting(tasks:list)->str:
             sets    = []
             deletes = []
             for task in tasks:
@@ -26,31 +26,55 @@ class Cache():
                 else: raise CustomError.UserTaskTypeError("User.Task.xxxのインスタンス以外のインスタンスは対応しません")
                 
             update_expression = ""
+            expression_attribute_names  = {}
+            expression_attribute_values = {}
             
             # SETコマンドでAddタスクとUpdateタスクを登録
-            update_expression += "SET "
-            for set in sets:
-                update_expression += set.create_update_expression()
+            if sets:
+                update_expression += "SET "
+                for set in sets:
+                    update_expression += set.create_update_expression(expression_attribute_names, expression_attribute_values)
+                update_expression = update_expression[:-2] + " "
+
                 
             # REMOVEコマンドでDeleteタスクを登録
-            update_expression += "REMOVE "
-            for set in sets:
-                update_expression += set.create_update_expression() 
+            if deletes:
+                update_expression += "REMOVE "
+                for delete in deletes:
+                    update_expression += delete.create_update_expression(expression_attribute_names)
+                update_expression = update_expression[:-2] + " "
             
-            return update_expression
+            print(update_expression)
+            print(expression_attribute_names)
+            print(expression_attribute_values)
+            return update_expression, expression_attribute_names, expression_attribute_values
         
-        def create_new_record(self):
-            pass
+        @classmethod
+        def create_new_record(cls, user_id):
+            Item = {'user_id': user_id, 'datas':{}}
+            cls.create(Item=Item)
         
         @classmethod
         def execute(cls, user_id:int, tasks:list):
             table = cls.get_dynamodb_table()
-            response = table.update_item(
-                Key={
-                    'user_id': user_id
-                },
-                UpdateExpression=cls.__create_complete_update_expression(tasks),
-            )
+            settings = cls.__create_complete_setting(tasks)
+            if settings[2]:
+                response = table.update_item(
+                    Key={
+                        'user_id': user_id
+                    },
+                    UpdateExpression          = settings[0],
+                    ExpressionAttributeNames  = settings[1],
+                    ExpressionAttributeValues = settings[2]
+                )
+            else:
+                response = table.update_item(
+                    Key={
+                        'user_id': user_id
+                    },
+                    UpdateExpression          = settings[0],
+                    ExpressionAttributeNames  = settings[1],
+                )
     
     class InterestCAT(NoSQLBase):
         time = datetime.datetime.now().isoformat()
