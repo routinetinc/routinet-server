@@ -3,84 +3,54 @@ import secret
 import boto3
 import random
 import datetime
-from boto3.dynamodb.conditions import Key, Attr
+from boto3.dynamodb.conditions import Key, Attr     
+from feed.utils.NoSQL import NoSQLBase, UserTask, CustomError
 
-class InvalidValue(Exception):
-    pass
-
-class NoSQLBase():
-    table_name = ''
-        
-    class Meta:
-        abstract = True
-
-    @classmethod
-    def get_dynamodb_table(self):
-        session  = secret.BOTO3_SESSION
-        dynamodb = session.resource('dynamodb')
-        return dynamodb.Table(self.table_name)
-    
-    @classmethod
-    def get_dynamodb_client(self):
-        session = secret.BOTO3_SESSION
-        client  = session.client('dynamodb')
-        return client
-    
-    @classmethod
-    def make_keys(attribute:str, values:list)->list:
-        setthing_type = None
-        if type(values[0])==str:
-            setthing_type = 'S'
-        if type(values[0])==int:
-            setthing_type = 'N'
-            tmp = [str(value) for value in values]
-            values = tmp
-        if setthing_type==None:
-            raise InvalidValue
-        keys = []
-        for value in values:
-            keys.append(
-                {
-                    attribute: {
-                        setthing_type:value,
-                    }
-                }
-            )
-        return keys
-    
-    @classmethod
-    def create(cls, Item):
-        table = cls.get_dynamodb_table()
-        table.put_item(Item = Item)
-    
-    @classmethod
-    def get(cls, key):
-        table = cls.get_dynamodb_table()
-        response = table.get_item(Key=key)
-        item = response.get('Item')
-        if item:
-            return item
-        return None
-    
-    @classmethod
-    def batch_get(cls, key_attribute:str, key_values:list):
-        keys = cls.make_keys(key_attribute, key_values)
-        client = cls.get_dynamodb_client()
-        response =  client.batch_get_item(RequestItems={
-                    cls.table_name: {
-                        'Keys': keys
-                    }
-                })
-        return response
-    
-    @classmethod
-    def delete(cls, key):
-        table = cls.get_dynamodb_table()
-        table.delete_item(Key=key)
-        
 class Cache():
     class User(NoSQLBase):
         table_name = 'usercache'
+        
+        class Task(UserTask):
+            pass
+        
+        def __create_complete_update_expression(tasks:list)->str:
+            sets    = []
+            deletes = []
+            for task in tasks:
+                if type(task) == UserTask.Add:
+                    sets.append(task)
+                elif type(task) == UserTask.Update:
+                    sets.append(task)
+                elif type(task) == UserTask.Delete:
+                    deletes.append(task)
+                else: raise CustomError.UserTaskTypeError("User.Task.xxxのインスタンス以外のインスタンスは対応しません")
+                
+            update_expression = ""
+            
+            # SETコマンドでAddタスクとUpdateタスクを登録
+            update_expression += "SET "
+            for set in sets:
+                update_expression += set.create_update_expression()
+                
+            # REMOVEコマンドでDeleteタスクを登録
+            update_expression += "REMOVE "
+            for set in sets:
+                update_expression += set.create_update_expression() 
+            
+            return update_expression
+        
+        def create_new_record(self):
+            pass
+        
+        @classmethod
+        def execute(cls, user_id:int, tasks:list):
+            table = cls.get_dynamodb_table()
+            response = table.update_item(
+                Key={
+                    'user_id': user_id
+                },
+                UpdateExpression=cls.__create_complete_update_expression(tasks),
+            )
     
     class InterestCAT(NoSQLBase):
         time = datetime.datetime.now().isoformat()
