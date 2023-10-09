@@ -45,20 +45,22 @@ class ImageView(View):
             data = get_json(request, serializers.Image)
         except RequestInvalid:
             return make_response(status_code=400)
-        image = data['image']
+        img = data['image']
 
         # 画像を処理（ここでは例として画像を開いてすぐ閉じる）
-        (_ := models.Image(image=image)).save()
+        (_ := models.Image(img=img)).save()
 
         return HttpResponse('Image received and processed.')
 
     def get(self, request, *args, **kwargs):
-        # ここでは例として黒い10x10ピクセルの画像を作成します
-        img = Image.new('RGB', (10, 10))
+        img_id = request.GET.get('media_id', None)
+        if img_id is None:
+            return make_response(400)
+        img = models.Image.objects.get(id=img_id)
 
         # Base64 エンコード (∵ バイナリデータの変換後のサイズは base85 と大きく差異がないが変換速度やセキュリティ要件は base64 が勝るため) 
         buffered = io.BytesIO()                                     # バイトデータをメモリ内のバッファに書き込むための一時的なストリームを作成
         img.save(buffered, format='JPEG')                           # JPEG 形式でエンコードし img を JPEG 形式で保存し buffered に書き込み
         img_str = base64.b64encode(buffered.getvalue()).decode()    # Base64 エンコードし、エンコード後のバイト文字列を通常の文字列に変換 (.decode())
 
-        return render(request, 'image.html', {'image': img_str})
+        return make_response(1, data={'img_by_base64': img_str})

@@ -1,5 +1,7 @@
+import os
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from KGAvengers import settings
 import secret
 import boto3
 from django.contrib.postgres.fields import ArrayField
@@ -85,6 +87,32 @@ class TaskFinishComment(models.Model):
 
     def __str__(self):
         return f"Comment on TaskFinish {self.task_finish_id} at {self.post_time}"
-    
+
+def delete_previous_file(function):
+    """ 不要となる古いファイルを削除する為のデコレータ """
+    def wrapper(*args, **kwargs):
+        self = args[0]
+        # 保存前のファイル名を取得
+        result = Image.objects.filter(pk=self.pk)
+        previous = result[0] if len(result) else None
+        super(Image, self).save()
+        # 関数実行
+        result = function(*args, **kwargs)
+        # 保存前のファイルがあったら削除
+        if previous:
+            os.remove(settings.MEDIA_ROOT + '/' + previous.image.name)
+        return result
+    return wrapper
+
+
 class Image(models.Model):
-    image = models.ImageField(upload_to='')
+    @delete_previous_file
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        super(Image, self).save()
+    @delete_previous_file
+    def delete(self, using=None, keep_parents=False):
+        super(Image, self).delete()
+
+    # user_id = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)  # 多 or 0 対 1
+    img = models.ImageField(upload_to='')
+
