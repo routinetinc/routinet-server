@@ -56,7 +56,11 @@ class ImageView(View):
         img_id = request.GET.get('media_id', None)
         if img_id is None:
             return make_response(400)
-        img = models.Image.objects.get(id=img_id)
+        
+        try:
+            img = models.Image.objects.get(id=img_id)
+        except models.Image.DoesNotExist as e:
+            return make_response(400, data={'err_msg': f'{e}'})
 
         # Base64 エンコード (∵ バイナリデータの変換後のサイズは base85 と大きく差異がないが変換速度やセキュリティ要件は base64 が勝るため) 
         buffered = io.BytesIO()                                     # バイトデータをメモリ内のバッファに書き込むための一時的なストリームを作成
