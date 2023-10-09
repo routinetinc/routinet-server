@@ -8,7 +8,7 @@ from routine.views_package.mini_comment import MiniComment
 from routine.views_package.timetree import TimeTreeAfter, TimeTreeAfterToBefore, TimeTreeBefore
 
 urlpatterns = [
-    path('routine/', include('rest_framework.urls', namespace='routine'))
+    path('sns/', include('rest_framework.urls', namespace='routine'))
 ]
 
 urlpatterns += [
@@ -23,5 +23,5 @@ urlpatterns += [
     path('task/finish/', NoAvailableTask.as_view()),
     path('task/minicomment/', MiniComment.as_view()),
     path('routine_task/', ReadRoutineAndTask.as_view()),
-    path('image/', views.ImageView.as_view()),
+    path('media/', views.ImageView.as_view()),
 ]
