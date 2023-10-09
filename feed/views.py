@@ -47,7 +47,7 @@ class ImageView(View):
             return make_response(status_code=400)
         img = data['image']
 
-        # 画像を処理（ここでは例として画像を開いてすぐ閉じる）
+        # 画像を保存
         (_ := models.Image(img=img)).save()
 
         return make_response(1)
