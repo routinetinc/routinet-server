@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth.models import (BaseUserManager,
                                         AbstractBaseUser,
                                         PermissionsMixin)
@@ -52,42 +53,20 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-
-    username = models.CharField(
-        verbose_name=_('username'),
-        unique=True,
-        max_length=150
-    )
-    email = models.EmailField(
-        verbose_name=_('Email Address'),
-        unique=True
-    )
-    age = models.IntegerField(
-        verbose_name=_('age'),
-        null=True,
-        blank=True
-    )
-    is_superuser = models.BooleanField(
-        verbose_name=_('is_superuer'),
-        default=False
-    )
-    is_staff = models.BooleanField(
-        _('staff status'),
-        default=False,
-    )
-    is_active = models.BooleanField(
-        _('active'),
-        default=True,
-    )
+    username          = models.CharField(max_length=150)
+    email             = models.EmailField(unique=True)
+    age               = models.IntegerField(null=True,blank=True)
+    job               = models.CharField(null=True,max_length=150)
+    profile_media_id  = models.IntegerField(null=True)
+    self_introduction = models.CharField(null=True,max_length=400)
+    is_hot_user       = models.BooleanField(default=True)
+    is_active         = models.BooleanField(default=True)
+    tag_ids           = ArrayField(models.IntegerField(null=True))
 
     objects = UserManager()
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
-
-
-    following = models.IntegerField(default=0)
-    follower = models.IntegerField(default=0)
-    
+        
     def __str__(self):
         return self.username
