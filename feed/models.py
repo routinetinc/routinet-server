@@ -85,3 +85,6 @@ class TaskFinishComment(models.Model):
 
     def __str__(self):
         return f"Comment on TaskFinish {self.task_finish_id} at {self.post_time}"
+    
+class Image(models.Model):
+    image = models.ImageField(upload_to='')

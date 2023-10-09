@@ -1,7 +1,16 @@
+from django.shortcuts import render
 from feed.models import Cache
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.views import View
+from django.http import HttpResponse
+import base64
+import io
+from PIL import Image
+from feed import models, serializers
+from routine.utils.handle_json import RequestInvalid, get_json, make_response
+
 
 class Hello(APIView):
     def get(self, request, format=None):
@@ -30,70 +39,26 @@ class Delete(APIView):
 
 #* ---------------------------------------------------
 
-# feed/views.py
-from django.shortcuts import render
-from django.http import JsonResponse
-import os
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.conf import settings
-import os
+class ImageView(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            data = get_json(request, serializers.Image)
+        except RequestInvalid:
+            return make_response(status_code=400)
+        image = data['image']
 
-import os
-from django.conf import settings
-from django.core.files.storage import FileSystemStorage
-from django.http import JsonResponse
-from django.views import View
-from django.views.decorators.csrf import csrf_exempt
-from PIL import Image
-from io import BytesIO
-from django.shortcuts import render
+        # 画像を処理（ここでは例として画像を開いてすぐ閉じる）
+        (_ := models.Image(image=image)).save()
 
-from django.http import JsonResponse
-from django.views import View
-from PIL import Image
-import os
+        return HttpResponse('Image received and processed.')
 
-class UploadImageView(View):
-    @csrf_exempt
-    def post(self, request):
-        if request.FILES.get('image'):
-            uploaded_image = request.FILES['image']
-            # Save the uploaded image to the backend server
-            fs = FileSystemStorage()
-            filename = fs.save(uploaded_image.name, uploaded_image)
-            # Determine the file extension
-            _, file_extension = os.path.splitext(filename)
-            # Check if encoding is needed (for example, convert to PNG)
-            encoded_image_url = ''
-            if file_extension.lower() not in ['.png', '.jpeg', '.jpg', '.gif']:
-                with Image.open(settings.MEDIA_ROOT + '/' + filename) as img:
-                    img = img.convert('RGB')
-                    encoded_image_buffer = BytesIO()
-                    img.save(encoded_image_buffer, format='PNG')
-                    encoded_image_name = fs.save(uploaded_image.name.split('.')[0] + '.png', encoded_image_buffer)
-                    encoded_image_url = fs.url(encoded_image_name)
-            else:
-                encoded_image_url = fs.url(filename)
-            return JsonResponse({'image_url': encoded_image_url})
+    def get(self, request, *args, **kwargs):
+        # ここでは例として黒い10x10ピクセルの画像を作成します
+        img = Image.new('RGB', (10, 10))
 
-        return JsonResponse({'error': 'Image upload failed'})
+        # Base64 エンコード (∵ バイナリデータの変換後のサイズは base85 と大きく差異がないが変換速度やセキュリティ要件は base64 が勝るため) 
+        buffered = io.BytesIO()                                     # バイトデータをメモリ内のバッファに書き込むための一時的なストリームを作成
+        img.save(buffered, format='JPEG')                           # JPEG 形式でエンコードし img を JPEG 形式で保存し buffered に書き込み
+        img_str = base64.b64encode(buffered.getvalue()).decode()    # Base64 エンコードし、エンコード後のバイト文字列を通常の文字列に変換 (.decode())
 
-    def get(self, request):
-        return render(request, 'upload_form.html')
-
-
-
-def display_image(request, image_name):
-    # 画像のフルパスを取得
-    image_path = os.path.join(settings.MEDIA_ROOT, image_name)
-
-    # 画像が存在するか確認
-    if os.path.exists(image_path):
-        with open(image_path, 'rb') as image_file:
-            response = HttpResponse(image_file.read(), content_type="image/jpeg")  # 画像のMIMEタイプに合わせて調整
-        return response
-    else:
-        return HttpResponse("Image not found", status=404)
-
-
+        return render(request, 'image.html', {'image': img_str})

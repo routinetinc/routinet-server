@@ -5,7 +5,6 @@ from feed.ff_related import User
 from feed.user_actions import FeedPost, TaskFinish, Routine
 from django.core.management.base import BaseCommand
 from feed.utils.graph_db.connections import neo4j_session
-import cProfile
 
 # Neo4jで使用する関数を持つクラス
 class _Neo4jTest:
@@ -59,9 +58,8 @@ class _Neo4jTest:
     @classmethod
     def run_test(cls, session: Session) -> None:
         # コードを実行したい関数またはスクリプトを呼び出す
+        n, m = 10, 5
         cls._delete_all(session)
-        n = 10
-        m = 5
         for i in range(1, n + 1):
             (_ := User()).create(session, i)
             (_ := FeedPost()).create(session, i)
@@ -76,7 +74,7 @@ class _Neo4jTest:
             (_ := User.Relation()).create_bookmarks_routine(session, *random.sample(range(1,  m), 2))
             (_ := FeedPost.Relation()).create_likes_feed_post(session, *random.sample(range(1,  m), 2))
             (_ := TaskFinish.Relation()).create_likes_task_finish(session, *random.sample(range(1,  m), 2))
-            (_ := Routine.Relation()).create_bookmarks_routine(session, *random.sample(range(1,  n - 5 if(n - 5 > 0) else 2), 2))
+            (_ := Routine.Relation()).create_bookmarks_routine(session, *random.sample(range(1,  m), 2))
         # 存在しないノードを対象に探索してもエラーは吐かないことを確認
         for user_id in range(1, m):
             print(f'user_id = {user_id} --[FOLLOWS]-> user_ids      = {(_ := User()).read_follows_user_ids(session, user_id)}')
@@ -91,5 +89,6 @@ class Command(BaseCommand):
     help = 'Description of your command'
 
     def handle(self, *args, **kwargs):
+        # コードを実行したい関数またはスクリプトを呼び出す
         with neo4j_session:
             _Neo4jTest.run_test(neo4j_session)

@@ -1,0 +1,10 @@
+<br>
+<img src="data:image/jpeg;base64,{{ image }}">
+<br>
+<br>
+<br>
+<form action="/image/" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <input type="file" name="image" accept="image/jpeg">
+  <input type="submit" value="Upload">
+</form>
