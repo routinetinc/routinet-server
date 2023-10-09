@@ -1,5 +1,5 @@
 import secret
-
+import datetime
 
 class CustomError():
     class KeyInvalidValue(Exception):
@@ -25,10 +25,11 @@ class UserTask():
             self.priorities = priorities
         def create_update_expression(self, expression_attribute_names, expression_attribute_values):
             update_expression = ""
+            today = datetime.date.today().isoformat()
             for i in range(len(self.content_ids)):
                 update_expression += f"datas.#add{str(i)} = :add{str(i)}, "
                 expression_attribute_names[f"#add{i}"] = str(self.content_ids[i])
-                expression_attribute_values[f":add{str(i)}"] = str(self.priorities[i])
+                expression_attribute_values[f":add{str(i)}"] = {"priority":self.priorities[i], "created":today}
             return update_expression
     class Update():
         def __init__(self, content_ids, priorities):
@@ -36,10 +37,11 @@ class UserTask():
             self.priorities = priorities
         def create_update_expression(self, expression_attribute_names, expression_attribute_values):
             update_expression = ""
+            today = datetime.date.today().isoformat()
             for i in range(len(self.content_ids)):
                 update_expression += f"datas.#update{str(i)} = :update{str(i)}, "
                 expression_attribute_names[f"#update{str(i)}"] = str(self.content_ids[i])
-                expression_attribute_values[f":update{str(i)}"] = str(self.priorities[i])
+                expression_attribute_values[f":update{str(i)}"] = {"priority":self.priorities[i], "created":today}
             return update_expression
 
 
