@@ -7,7 +7,7 @@ from django.http import HttpRequest
 import json
 from django.utils import timezone
 
-from feed.user_actions import FeedPost as Feedpost
+from feed.user_actions import TaskFinishComment, FeedPost
 from .utils.graph_db.connections import neo4j_session
 from routine.utils.handle_json import *
 from .models import FeedPostComment as feedpostcomment, FeedPost as feedpost, Tag
@@ -37,6 +37,9 @@ class Delete(APIView):
                'created':'2023-08-26'}
         Cache.User.delete(key)
         return Response('hello')
+    
+class TaskCompleteCommentLikeSerializer(serializers.Serializer):
+    task_finish_comment_id = serializers.IntegerField()
 
 class TaskFinishCommentLike(APIView):
     def get(self, request):
@@ -46,7 +49,7 @@ class TaskFinishCommentLike(APIView):
         try:
             with neo4j_session:
                 # Retrieve user IDs who liked the specific post
-                user_ids = (_ := Feedpost()).read_liked_user_ids(neo4j_session, task_finish_id)
+                user_ids = (_ := TaskFinishComment()).read_liked_user_ids(neo4j_session, task_finish_id)
         except Exception as e:
             return make_response(status_code=500, data={"error": str(e)})
         
@@ -73,3 +76,28 @@ class TaskFinishCommentLike(APIView):
             user_list.append(user_data)
 
         return make_response(status_code=1, data={"user_list": user_list})
+    
+    def post(self, request):
+        serializer = None
+        try:
+            datas: dict = get_json(request, TaskCompleteCommentLikeSerializer)
+        except RequestInvalid as e:
+            return make_response(status_code=400)
+
+        serializer = TaskCompleteCommentLikeSerializer(data=datas)
+
+        task_finish_comment_id = datas["task_finish_comment_id"]
+        print(f"task_finish_comment_id:{task_finish_comment_id}")
+
+        user_id = 1
+
+        try:
+            with neo4j_session:
+                # Use the create_likes_feed_post method within the session context
+                TaskFinishComment.Relation().create_likes_task_finish_comment(neo4j_session, user_id, task_finish_comment_id)
+        except Exception as e:
+            return Response({"error": f"Neo4j error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+        return make_response(data=datas)        
+

@@ -105,10 +105,10 @@ def insert_feed_feed_posts() -> None:
 #* インサートするインスタンスのパラメータを設定
 users = [{'username': chr(i), 'email': chr(i)} for i in range(ord('a'), ord('z') + 1)]
 interests = [{'name': 'NULL'}]
-routines = [{'dow': random_dow(), 'title': f'{i}'} for i in range(50)]
-tasks = [{'routine_id': random.randint(1, len(routines)), 'title': f'{i + 100}'} for i in range(100)]
-task_finishes = [{'task_id': random.randint(1, len(tasks)), 'when': random_dt()} for _ in range(150)]
-tasK_comments = [{'task_finish_id': random.randint(1, len(task_finishes))} for _ in range(100)]
+routines = [{'dow': random_dow(), 'title': f'{i}'} for i in range(5)]
+tasks = [{'routine_id': random.randint(1, len(routines)), 'title': f'{i + 100}'} for i in range(20)]
+task_finishes = [{'task_id': random.randint(1, len(tasks)), 'when': random_dt()} for _ in range(60)]
+tasK_comments = [{'task_finish_id': random.randint(1, len(task_finishes))} for _ in range(30)]
 
 #* 実行
 if __name__ == '__main__':

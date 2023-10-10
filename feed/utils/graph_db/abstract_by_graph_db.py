@@ -1,6 +1,6 @@
 from neo4j import Session, Transaction
 from supply_auth.models import User as UserModel
-from feed.models import FeedPost as FeedPostModel
+from feed.models import FeedPost as FeedPostModel, FeedPostComment as FeedPostCommentModel, TaskFinishComment as TaskFinishCommentModel
 from routine.models import TaskFinish as TaskFinishModel
 from routine.models import Routine as RoutineModel
 from typing import Final
@@ -8,49 +8,43 @@ from typing import Final
 
 class Option:
     class NodeLabel():
-        User: Final        = 'User'
-        FeedPost: Final    = 'FeedPost'
-        TaskFinish: Final  = 'TaskFinish'
-        Routine: Final     = 'Routine'
+        User: Final              = 'User'
+        Routine: Final           = 'Routine'
+        TaskFinish: Final        = 'TaskFinish'
+        TaskFinishComment: Final = 'TaskFinishComment'
+        FeedPost: Final          = 'FeedPost'
+        FeedPostComment: Final   = 'FeedPostComment'
     class EdgeLabel():
         FOLLOWS: Final   = 'FOLLOWS'
         LIKES: Final     = 'LIKES'
         BOOKMARKS: Final = 'BOOKMARKS' 
     class RDBTable():
-        User: Final        = UserModel
-        FeedPost: Final    = FeedPostModel
-        TaskFinish: Final  = TaskFinishModel
-        Routine: Final     = RoutineModel
+        User: Final              = UserModel
+        Routine: Final           = RoutineModel
+        TaskFinish: Final        = TaskFinishModel
+        TaskFinishComment: Final = TaskFinishCommentModel
+        FeedPost: Final          = FeedPostModel
+        FeedPostComment: Final   = FeedPostCommentModel
     class PgRunSetsForEdge:
         """ RDB 操作用関数群 """
         def __init__(self) -> None:
-            self.table: UserModel | FeedPostModel | TaskFinishModel | RoutineModel = None
+            self.table: UserModel | RoutineModel | TaskFinishModel | TaskFinishCommentModel | FeedPostModel | FeedPostCommentModel = None
         def create_follows(self, *rdb_id: tuple[int]) -> None:
             """ フォロー・フォロワー数を加算 (rdb_id[0] = from_user_id, rdb_id[1] = to_user_id) """
-            from_u: UserModel = UserModel.objects.get(id=rdb_id[0])
-            to_u:   UserModel = UserModel.objects.get(id=rdb_id[1])
+            from_u = self.table.objects.get(id=rdb_id[0])
+            to_u  = self.table.objects.get(id=rdb_id[1])
             from_u.following += 1 
-            to_u.follower    += 1 
+            to_u.follower += 1 
             from_u.save()
             to_u.save()
         def delete_follows(self, *rdb_id: tuple[int]) -> None:
             """ フォロー・フォロワー数を減算 (rdb_id[0] = from_user_id, rdb_id[1] = to_user_id) """
-            from_u: UserModel = self.table.objects.get(id=rdb_id[0])
-            to_u:   UserModel = self.table.objects.get(id=rdb_id[1])
+            from_u = self.table.objects.get(id=rdb_id[0])
+            to_u  = self.table.objects.get(id=rdb_id[1])
             from_u.following -= 1 
-            to_u.follower    -= 1 
+            to_u.follower -= 1 
             from_u.save()
             to_u.save()
-        def create_likes(self, *rdb_id: tuple[int]) -> None:
-            """ いいね数を加算 """
-            p: FeedPostModel | TaskFinishModel = self.table.objects.get(id=rdb_id[0])
-            p.like_num += 1 
-            p.save()
-        def delete_likes(self, *rdb_id: tuple[int]) -> None:
-            """ いいね数を減算 """
-            p: FeedPostModel | TaskFinishModel = self.table.objects.get(id=rdb_id[0])
-            p.like_num -= 1 
-            p.save()
         def create_bookmarks(self, *rdb_id: tuple[int]) -> None:
             """ ブックマーク数を加算 """
             p: RoutineModel = self.table.objects.get(id=rdb_id[0])
@@ -61,6 +55,16 @@ class Option:
             p: RoutineModel = self.table.objects.get(id=rdb_id[0])
             p.bookmark_num -= 1
             p.save
+        def create_likes(self, *rdb_id: tuple[int]) -> None:
+            """ いいね数を加算 """
+            p = self.table.objects.get(id=rdb_id[0])
+            p.like_num += 1 
+            p.save()
+        def delete_likes(self, *rdb_id: tuple[int]) -> None:
+            """ いいね数を減算 """
+            p = self.table.objects.get(id=rdb_id[0])
+            p.like_num -= 1 
+            p.save()
         
 class AbstractNode:
     """ ノードを用いた汎用的な操作を行うための関数群を持った抽象クラス
