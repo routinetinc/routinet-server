@@ -14,8 +14,8 @@ class Routine(models.Model):
     interest_ids = ArrayField(models.IntegerField(null=True, blank=True))
     goal_id      = models.IntegerField(blank=True, default=0)               # goal_id はバックエンドで取得      # 仮の数字を代入して対処
     dow          = CustomModels.DOWField()                                  # 型は仮置き  # day_of_week (曜日のこと)
-    start_time   = CustomModels.TimeStringField()
-    end_time     = CustomModels.TimeStringField()                           # 時間未設定タスクを含んだ幅を持たせる
+    start_time   = CustomModels.TimeStringField(max_length=15)
+    end_time     = CustomModels.TimeStringField(max_length=15)                           # 時間未設定タスクを含んだ幅を持たせる
     title        = models.CharField(max_length=15)                          # 10 文字に余裕を持たせて 15 文字
     subtitle     = models.CharField(max_length=40, blank=True)              # 簡易的な補足説明
     icon         = models.CharField(max_length=1, blank=True)

@@ -6,6 +6,7 @@ from routine.views_package.task import Task
 from routine.views_package.no_available_task import NoAvailableTask 
 from routine.views_package.mini_comment import MiniComment
 from routine.views_package.timetree import TimeTreeAfter, TimeTreeAfterToBefore, TimeTreeBefore
+from feed.views import TaskFinishCommentLike
 
 urlpatterns = [
     path('hello/', views.Hello.as_view()),
@@ -19,4 +20,5 @@ urlpatterns = [
     path('task/finish/', NoAvailableTask.as_view()),
     path('task/minicomment/', MiniComment.as_view()),
     path('routine_task/', ReadRoutineAndTask.as_view()),
+    path('sns/feed/task/comment/like/', TaskFinishCommentLike.as_view()),
 ]

@@ -103,7 +103,7 @@ def insert_feed_feed_posts() -> None:
     return
 
 #* インサートするインスタンスのパラメータを設定
-users = [{'username': chr(i), 'email': chr(i)} for i in range(ord('a'), ord('z') + 1)]
+users = [{'username': chr(i), 'email': chr(i), 'tags':[]} for i in range(ord('a'), ord('z') + 1)]
 interests = [{'name': 'NULL'}]
 routines = [{'dow': random_dow(), 'title': f'{i}'} for i in range(5)]
 tasks = [{'routine_id': random.randint(1, len(routines)), 'title': f'{i + 100}'} for i in range(20)]
