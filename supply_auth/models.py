@@ -55,15 +55,15 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     username          = models.CharField(max_length=150, unique=True)
     email             = models.EmailField(unique=True)
-    age               = models.IntegerField(null=True,blank=True)
+    age               = models.IntegerField(null=True, blank=True)
     job               = models.CharField(null=True,max_length=150)
     profile_media_id  = models.IntegerField(null=True)
     self_introduction = models.CharField(null=True,max_length=400)
     is_hot_user       = models.BooleanField(default=True)
     is_active         = models.BooleanField(default=True)
     tag_ids           = ArrayField(models.IntegerField(null=True))
-    following         = models.IntegerField()
-    follower          = models.IntegerField()
+    following         = models.IntegerField(default=0)
+    follower          = models.IntegerField(default=0)
 
     objects = UserManager()
 

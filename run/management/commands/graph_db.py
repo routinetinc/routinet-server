@@ -65,7 +65,7 @@ class _Neo4jTest:
     @classmethod
     def run_test(cls, session: Session) -> None:
         # コードを実行したい関数またはスクリプトを呼び出す
-        n, m = 10, 5
+        n, m = 1, 10
         cls._delete_all(session)
         for i in range(1, n + 1):
             (_ := User()).create(session, i)
@@ -76,16 +76,17 @@ class _Neo4jTest:
             (_ := FeedPostComment()).create(session, i)
         _Neo4jTest._duplicate_create(session)
         _Neo4jTest._create_and_duplicate_delete_edge(session)
-        for i in range(1, n + 1):
+        for _ in range(1, n + 1):
             (_ := User.Relation()).create_follows_user(session, *random.sample(range(1,  m), 2))
             (_ := User.Relation()).create_likes_feed_post(session, *random.sample(range(1,  m), 2))
             (_ := User.Relation()).create_likes_task_finish(session, *random.sample(range(1,  m), 2))
             (_ := User.Relation()).create_bookmarks_routine(session, *random.sample(range(1,  m), 2))
+            print(f'\033[30m ここまで実行できた。 \033[0m')  #WARNING: routine.models.Routine.DoesNotExist: Routine matching query does not exist.
             (_ := Routine.Relation()).create_bookmarks_routine(session, *random.sample(range(1,  m), 2))
             (_ := TaskFinish.Relation()).create_likes_task_finish(session, *random.sample(range(1,  m), 2))
-            (_ := TaskFinishComment.Relation()).create_likes_task_finish(session, *random.sample(range(1,  m), 2))
+            (_ := TaskFinishComment.Relation()).create_likes_task_finish_comment(session, *random.sample(range(1,  m), 2))
             (_ := FeedPost.Relation()).create_likes_feed_post(session, *random.sample(range(1,  m), 2))
-            (_ := FeedPostComment.Relation()).create_likes_feed_post(session, *random.sample(range(1,  m), 2))
+            (_ := FeedPostComment.Relation()).create_likes_feed_post_comment(session, *random.sample(range(1,  m), 2))
         # 存在しないノードを対象に探索してもエラーは吐かないことを確認
         for user_id in range(1, m):
             print(f'user_id = {user_id} --[FOLLOWS]-> user_ids      = {(_ := User()).read_follows_user_ids(session, user_id)}')

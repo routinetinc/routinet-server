@@ -7,6 +7,8 @@ from django.contrib.postgres.fields import ArrayField
 from supply_auth.models import User  # 2つ目のmodels.pyからインポート
 from routine.fields import CustomModels  # 1つ目のmodels.pyから仮にインポート（必要に応じて）
 from routine.models import Interest, TaskFinish  # 1つ目のmodels.pyからインポート
+from django.utils import timezone
+
 
 class NoSQLBase(models.Model):
     table_name = ''
@@ -56,7 +58,7 @@ class FeedPost(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     sentence = models.CharField(max_length=400, blank=True)
     media_id = models.IntegerField(null=True, blank=True)
-    post_time = models.DateTimeField()
+    post_time = models.DateTimeField(default=timezone.now())
     like_num = models.IntegerField(default=0)
     interest_ids = ArrayField(models.IntegerField(null=True, blank=True))
     challenge_id = models.ForeignKey(Challenge, on_delete=models.SET_NULL, null=True, blank=True)
@@ -70,13 +72,13 @@ class FeedPost(models.Model):
 
 class FeedPostComment(models.Model):
     feed_post_id = models.ForeignKey(FeedPost, on_delete=models.CASCADE)
-    post_time = models.DateTimeField()
+    post_time = models.DateTimeField(default=timezone.now())
     media_id = models.IntegerField(null=True, blank=True)
     like_num = models.IntegerField(default=0)
     comment = models.CharField(max_length=400)
 
-    def __str__(self):
-        return f"Comment by {self.feed_post.user} on {self.post_time}"
+    # def __str__(self):
+        # return f"Comment by {self.feed_post.user} on {self.post_time}"
     
     def __str__(self):
         return f'{self.feed_post_id}'
@@ -84,7 +86,7 @@ class FeedPostComment(models.Model):
 
 class TaskFinishComment(models.Model):
     task_finish_id = models.ForeignKey(TaskFinish, on_delete=models.CASCADE)
-    post_time = models.DateTimeField()
+    post_time = models.DateTimeField(default=timezone.now())
     media_id = models.IntegerField(null=True, blank=True)
     like_num = models.IntegerField(default=0)
     comment = models.CharField(max_length=400)

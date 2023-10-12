@@ -91,6 +91,11 @@ def insert_routine_task_finishes(task_records: list[dict]):
                 for tr in task_records]
     TaskFinish.objects.bulk_create(instance)
     return
+def insert_feed_task_finish_comments():
+    task_finish = TaskFinish.objects.all()[0]
+    instance = [TaskFinishComment(task_finish_id=task_finish) for _ in range(10)]
+    TaskFinishComment.objects.bulk_create(instance)
+    return
 def insert_routine_task_comments(task_comments: list[dict]):
     instance = [Minicomment(task_finish_id=TaskFinish.objects.get(id=tc['task_finish_id']),
                             comment='a')
@@ -101,6 +106,11 @@ def insert_feed_feed_posts() -> None:
     instance = [FeedPost(like_num=1, post_time="2023-09-24", interest_ids=[1], user_id=1) for _ in range(10)]
     FeedPost.objects.bulk_create(instance)
     return
+def insert_feed_feed_post_comments():
+    feed_post = FeedPost.objects.all()[0]
+    instance = [FeedPostComment(feed_post_id=feed_post) for _ in range(10)]
+    FeedPostComment.objects.bulk_create(instance)
+    return
 
 #* インサートするインスタンスのパラメータを設定
 users = [{'username': chr(i), 'email': chr(i)} for i in range(ord('a'), ord('z') + 1)]
@@ -108,7 +118,7 @@ interests = [{'name': 'NULL'}]
 routines = [{'dow': random_dow(), 'title': f'{i}'} for i in range(5)]
 tasks = [{'routine_id': random.randint(1, len(routines)), 'title': f'{i + 100}'} for i in range(20)]
 task_finishes = [{'task_id': random.randint(1, len(tasks)), 'when': random_dt()} for _ in range(60)]
-tasK_comments = [{'task_finish_id': random.randint(1, len(task_finishes))} for _ in range(30)]
+task_comments = [{'task_finish_id': random.randint(1, len(task_finishes))} for _ in range(30)]
 
 #* 実行
 if __name__ == '__main__':
@@ -119,6 +129,8 @@ if __name__ == '__main__':
     insert_routine_routines(routines)
     insert_routine_tasks(tasks)
     insert_routine_task_finishes(task_finishes)
-    insert_routine_task_comments(tasK_comments)
+    insert_routine_task_comments(task_comments)
+    insert_feed_task_finish_comments()
     insert_feed_feed_posts()
+    insert_feed_feed_post_comments()
     print(f"{BLUE}Successfully completed.{END}")
