@@ -83,9 +83,9 @@ class _Neo4jTest:
             (_ := User.Relation()).create_bookmarks_routine(session, *random.sample(range(1,  m + 1), 2))
             (_ := Routine.Relation()).create_bookmarks_routine(session, *random.sample(range(1,  m + 1), 2))
             (_ := TaskFinish.Relation()).create_likes_task_finish(session, *random.sample(range(1,  m + 1), 2))
-            (_ := TaskFinishComment.Relation()).create_likes_task_finish(session, *random.sample(range(1,  m), 2))
+            (_ := TaskFinishComment.Relation()).create_likes_task_finish_comment(session, *random.sample(range(1,  m), 2))
             (_ := FeedPost.Relation()).create_likes_feed_post(session, *random.sample(range(1,  m), 2))
-            (_ := FeedPostComment.Relation()).create_likes_feed_post(session, *random.sample(range(1,  m), 2))
+            (_ := FeedPostComment.Relation()).create_likes_feed_post_comment(session, *random.sample(range(1,  m), 2))
         # 存在しないノードを対象に探索してもエラーは吐かないことを確認
         for user_id in range(1, m + 1):
             print(f'user_id = {user_id} --[FOLLOWS]-> user_ids      = {(_ := User()).read_follows_user_ids(session, user_id)}')
