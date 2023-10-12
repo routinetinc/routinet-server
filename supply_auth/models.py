@@ -62,6 +62,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_hot_user       = models.BooleanField(default=True)
     is_active         = models.BooleanField(default=True)
     tag_ids           = ArrayField(models.IntegerField(null=True))
+    following         = models.IntegerField()
+    follower          = models.IntegerField()
 
     objects = UserManager()
 
