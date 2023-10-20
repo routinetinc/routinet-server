@@ -13,17 +13,17 @@ class UserTask():
     class Delete():
         def __init__(self, content_ids:list):
             self.content_ids = content_ids
-        def create_update_expression(self, expression_attribute_names):
+        def create_update_expression(self, expression_attribute_names:dict)->str:
             update_expression = ""
             for i in range(len(self.content_ids)):
                 update_expression += f"datas.#delete{str(i)}, "
                 expression_attribute_names[f"#delete{i}"] = str(self.content_ids[i])
             return update_expression
     class Add():
-        def __init__(self, content_ids, priorities):
+        def __init__(self, content_ids:list, priorities:int):
             self.content_ids = content_ids
             self.priorities = priorities
-        def create_update_expression(self, expression_attribute_names, expression_attribute_values):
+        def create_update_expression(self, expression_attribute_names:dict, expression_attribute_values:dict)->str:
             update_expression = ""
             today = datetime.date.today().isoformat()
             for i in range(len(self.content_ids)):
@@ -32,10 +32,10 @@ class UserTask():
                 expression_attribute_values[f":add{str(i)}"] = {"priority":self.priorities[i], "created":today}
             return update_expression
     class Update():
-        def __init__(self, content_ids, priorities):
+        def __init__(self, content_ids:list, priorities:int):
             self.content_ids = content_ids
             self.priorities = priorities
-        def create_update_expression(self, expression_attribute_names, expression_attribute_values):
+        def create_update_expression(self, expression_attribute_names:dict, expression_attribute_values:dict)->str:
             update_expression = ""
             today = datetime.date.today().isoformat()
             for i in range(len(self.content_ids)):

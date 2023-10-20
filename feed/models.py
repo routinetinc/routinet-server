@@ -5,6 +5,7 @@ import random
 import datetime
 from boto3.dynamodb.conditions import Key, Attr     
 from feed.utils.NoSQL import NoSQLBase, UserTask, CustomError
+from feed.structure import Data
 
 class Cache():
     class User(NoSQLBase):
@@ -50,7 +51,7 @@ class Cache():
             return update_expression, expression_attribute_names, expression_attribute_values
         
         @classmethod
-        def create_new_record(cls, user_id):
+        def create_new_record(cls, user_id:int):
             Item = {'user_id': user_id, 'datas':{}}
             cls.create(Item=Item)
         
@@ -92,7 +93,7 @@ class Cache():
             table.put_item(Item=Item)
         
         @classmethod
-        def create(cls, data, format=None):
+        def create(cls, data:Data, format=None):
             cls.table_name = 'interest_category'
             if data.score <= 100: #数値は仮置き
                 string = 'a198'
@@ -121,7 +122,7 @@ class Cache():
             table.put_item(Item=Item)
         
         @classmethod
-        def put(cls, data, format=None):
+        def put(cls, data:Data, format=None):
             #　ソートキーの取得
             if data.score <= 100: #数値は仮置き
                 string = 'a198'
@@ -173,7 +174,7 @@ class Cache():
             
 
         @classmethod
-        def update(cls, data, format=None):
+        def update(cls, data:Data, format=None):
             #ソートキーの取得
             cls.table_name = 'interest_category'
             table = cls.get_dynamodb_table()
