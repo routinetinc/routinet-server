@@ -3,42 +3,78 @@ import secret
 import boto3
 import random
 import datetime
-from boto3.dynamodb.conditions import Key, Attr
+from boto3.dynamodb.conditions import Key, Attr     
+from feed.utils.NoSQL import NoSQLBase, UserTask, CustomError
 
-class NoSQLBase(models.Model):
-    table_name = ''
-        
-    class Meta:
-        abstract = True
-
-    @classmethod
-    def get_dynamodb_table(self):
-        session = secret.BOTO3_SESSION
-        dynamodb = session.resource('dynamodb')
-        return dynamodb.Table(self.table_name)
-    
-    @classmethod
-    def create(cls, Item):
-        table = cls.get_dynamodb_table()
-        table.put_item(Item = Item)
-    
-    @classmethod
-    def get(cls, key):
-        table = cls.get_dynamodb_table()
-        response = table.get_item(Key=key)
-        item = response.get('Item')
-        if item:
-            return item
-        return None
-    
-    @classmethod
-    def delete(cls, key):
-        table = cls.get_dynamodb_table()
-        table.delete_item(Key=key)
-        
 class Cache():
     class User(NoSQLBase):
         table_name = 'usercache'
+        
+        class Task(UserTask):
+            pass
+        
+        def __create_complete_setting(tasks:list)->str:
+            sets    = []
+            deletes = []
+            for task in tasks:
+                if type(task) == UserTask.Add:
+                    sets.append(task)
+                elif type(task) == UserTask.Update:
+                    sets.append(task)
+                elif type(task) == UserTask.Delete:
+                    deletes.append(task)
+                else: raise CustomError.UserTaskTypeError("User.Task.xxxのインスタンス以外のインスタンスは対応しません")
+                
+            update_expression = ""
+            expression_attribute_names  = {}
+            expression_attribute_values = {}
+            
+            # SETコマンドでAddタスクとUpdateタスクを登録
+            if sets:
+                update_expression += "SET "
+                for set in sets:
+                    update_expression += set.create_update_expression(expression_attribute_names, expression_attribute_values)
+                update_expression = update_expression[:-2] + " "
+
+                
+            # REMOVEコマンドでDeleteタスクを登録
+            if deletes:
+                update_expression += "REMOVE "
+                for delete in deletes:
+                    update_expression += delete.create_update_expression(expression_attribute_names)
+                update_expression = update_expression[:-2] + " "
+            
+            print(update_expression)
+            print(expression_attribute_names)
+            print(expression_attribute_values)
+            return update_expression, expression_attribute_names, expression_attribute_values
+        
+        @classmethod
+        def create_new_record(cls, user_id):
+            Item = {'user_id': user_id, 'datas':{}}
+            cls.create(Item=Item)
+        
+        @classmethod
+        def execute(cls, user_id:int, tasks:list):
+            table = cls.get_dynamodb_table()
+            settings = cls.__create_complete_setting(tasks)
+            if settings[2]:
+                response = table.update_item(
+                    Key={
+                        'user_id': user_id
+                    },
+                    UpdateExpression          = settings[0],
+                    ExpressionAttributeNames  = settings[1],
+                    ExpressionAttributeValues = settings[2]
+                )
+            else:
+                response = table.update_item(
+                    Key={
+                        'user_id': user_id
+                    },
+                    UpdateExpression          = settings[0],
+                    ExpressionAttributeNames  = settings[1],
+                )
     
     class InterestCAT(NoSQLBase):
         time = datetime.datetime.now().isoformat()
