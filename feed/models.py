@@ -1,6 +1,3 @@
-from django.db import models
-import secret
-import boto3
 import random
 import datetime
 from boto3.dynamodb.conditions import Key, Attr     
