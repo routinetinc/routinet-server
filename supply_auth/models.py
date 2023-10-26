@@ -53,7 +53,7 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    username          = models.CharField(max_length=150)
+    username          = models.CharField(max_length=150, unique=True)
     email             = models.EmailField(unique=True)
     age               = models.IntegerField(null=True,blank=True)
     job               = models.CharField(null=True,max_length=150)
@@ -61,7 +61,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     self_introduction = models.CharField(null=True,max_length=400)
     is_hot_user       = models.BooleanField(default=True)
     is_active         = models.BooleanField(default=True)
-    tag_ids           = ArrayField(models.IntegerField(null=True))
+    tag_ids           = ArrayField(models.IntegerField(), null=True, blank=True)
 
     objects = UserManager()
 
