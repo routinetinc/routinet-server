@@ -229,16 +229,16 @@ class Cache():
                 table.update_item(**options)
 
                 #　新データの追加
-                num = random.randint(200,400)
                 cls.table_name = 'priority_metadata'
                 table = cls.get_dynamodb_table()
                 sort = table.query(
                     KeyConditionExpression=Key('categoryid').eq(data.categoryid)
                 )
-                for e in sort['Items'][0]['priority']:
-                    if str(num) in e:
-                        string = e
-                        break
+                # データを追加するレコードをランダムに選択
+                num_kind_priority = len(sort['Items'][0]['priority'])
+                index = random.randint(num_kind_priority)
+                string = sort['Items'][0]['priority'][index]
+                
                 cls.table_name = 'interest_category'
                 table = cls.get_dynamodb_table()
                 options = {
@@ -251,7 +251,7 @@ class Cache():
                     'ExpressionAttributeValues': {
                         ':add': [
                             {
-                                data.content_id,
+                                data.contentid,
                                 data.score
                             }
                         ],
