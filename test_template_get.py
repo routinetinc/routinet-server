@@ -15,6 +15,38 @@ from random import randint, choice
 from routine.models import *
 from datetime import timedelta
 
+# django.setup() 依存先環境変数値の設定. 
+import os
+os.environ['DJANGO_SETTINGS_MODULE'] = 'KGAvengers.settings'
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'KGAvengers.settings')
+# Django アプリケーションを初期化しロード
+import django
+django.setup()
+
+
+#* ------------------------------------------------------------------- *#
+
+from django.core.management import call_command
+from django.db import connection
+from supply_auth.models import User
+from routine.models import *
+from feed.models import *
+import random
+from datetime import timedelta
+from django.utils import timezone
+BLUE = '\033[36m'
+END = '\033[0m'
+
+def drop_all_tables():
+    ''' 全テーブルを削除 '''
+    with connection.cursor() as cursor:
+        cursor.execute('DROP SCHEMA public CASCADE')
+        cursor.execute('CREATE SCHEMA public')
+def create_all_tables():
+    ''' 全テーブルを作成 '''
+    call_command('makemigrations')
+    call_command('migrate')
+
 
 def random_dow():
     original_list = [f'{i}' for i in range(6)]
@@ -39,7 +71,10 @@ def random_dt():
     random_timedelta = random.uniform(0, (current_datetime - n_week_ago).total_seconds())
     random_datetime = n_week_ago + timedelta(seconds=random_timedelta)
     return random_datetime
-
+def insert_supply_auth_users(users: list[dict]):
+    instance = [User(username=user['username'], email=user['email']) for user in users]
+    User.objects.bulk_create(instance)  
+    return
 def insert_routine_routines(routines: list[dict]):
     user = User.objects.get(id=1)
     routine_list = []
@@ -109,6 +144,11 @@ def insert_routine_task_records(task_records: list[dict]):
 class APITestCase(unittest.TestCase):
 
     def setUp(self):
+        # Set up the test database environment
+        drop_all_tables()
+        create_all_tables()
+        users = [{'username': f'user{i}', 'email': f'user{i}@example.com'} for i in range(10)]
+        insert_supply_auth_users(users)  # Assuming 'users' is defined somewhere
         self.maxDiff = None
         # Initialize an empty expected_routines dictionary
         self.expected_routines = {
@@ -172,9 +212,9 @@ class APITestCase(unittest.TestCase):
                 'is_notified': task['is_notified'],
                 'is_achieved': is_achieved  # Add this line
             }
-            # print(type(self.expected_routines['routines'][routine_id]['tasks']))
+
             self.expected_routines['routines'][routine_id]['tasks'].append(task_data)
-        
+
     def test_read_routine_task(self):
         # 2. API call
         url = 'http://127.0.0.1:8000/routine/routine_task/'
