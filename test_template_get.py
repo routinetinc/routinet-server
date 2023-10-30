@@ -139,9 +139,9 @@ def insert_routine_task_records(task_records: list[dict]):
     TaskFinish.objects.bulk_create(instance)
     return
 
+from django.test import TestCase
 
-
-class APITestCase(unittest.TestCase):
+class APITestCase(TestCase):
 
     def setUp(self):
         # Set up the test database environment
@@ -238,10 +238,6 @@ class APITestCase(unittest.TestCase):
 
         # Verify the detailed routines
         self.assertEqual(res_data['data']['routines'], self.expected_routines['routines'])
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
 
 
 #get

@@ -90,6 +90,7 @@ class TestRoutineUpdate(TestCase):
     #     users = [{'username': f'user{i}', 'email': f'user{i}@example.com'} for i in range(10)]
     #     insert_supply_auth_users(users)  # Assuming 'users' is defined somewhere
 
+
     # def test_routine_creation(self):
     #     # Data to be sent to the API
     #     routine_data = {
