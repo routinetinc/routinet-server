@@ -5,23 +5,6 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'KGAvengers.settings')
 # Django アプリケーションを初期化しロード
 import django
 django.setup()
-import unittest
-
-import requests
-import json
-import random
-from random import randint, choice
-# from drop_and_create_db import random_dow, random_dt, insert_routine_routines, insert_routine_tasks, insert_routine_task_records, insert_routine_task_comments
-from routine.models import *
-from datetime import timedelta
-
-# django.setup() 依存先環境変数値の設定. 
-import os
-os.environ['DJANGO_SETTINGS_MODULE'] = 'KGAvengers.settings'
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'KGAvengers.settings')
-# Django アプリケーションを初期化しロード
-import django
-django.setup()
 
 
 #* ------------------------------------------------------------------- *#
@@ -34,19 +17,12 @@ from feed.models import *
 import random
 from datetime import timedelta
 from django.utils import timezone
+import random
+from random import randint, choice
+from routine.models import *
+from datetime import timedelta
 BLUE = '\033[36m'
 END = '\033[0m'
-
-def drop_all_tables():
-    ''' 全テーブルを削除 '''
-    with connection.cursor() as cursor:
-        cursor.execute('DROP SCHEMA public CASCADE')
-        cursor.execute('CREATE SCHEMA public')
-def create_all_tables():
-    ''' 全テーブルを作成 '''
-    call_command('makemigrations')
-    call_command('migrate')
-
 
 def random_dow():
     original_list = [f'{i}' for i in range(6)]
@@ -145,9 +121,6 @@ class APITestCase(TestCase):
 
     def setUp(self):
         self.client = Client()  # Create a test client instance
-        # Set up the test database environment
-        drop_all_tables()
-        create_all_tables()
         users = [{'username': f'user{i}', 'email': f'user{i}@example.com'} for i in range(10)]
         insert_supply_auth_users(users)  # Assuming 'users' is defined somewhere
         self.maxDiff = None
