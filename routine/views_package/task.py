@@ -23,7 +23,6 @@ class Task(APIView):
                 detail = datas['detail'],  
                 icon = datas['icon'],  
                 required_time = datas['required_time'],  
-                is_notified = datas['is_notified']
             )
         t.save()
         datas = {'task_id': t.id}
@@ -41,7 +40,6 @@ class Task(APIView):
             t.detail = datas.get('detail', t.detail)
             t.icon = datas.get('icon', t.icon)
             t.required_time = datas.get('required_time', t.required_time)
-            t.is_notified = datas.get('notification', t.is_notified)
             t.save()
         except models.Task.DoesNotExist:
             return make_response(status_code=404, data={'message': 'Task not found'})

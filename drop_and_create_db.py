@@ -76,8 +76,7 @@ def insert_routine_tasks(tasks: list[dict]):
                      title=task['title'],
                      detail='a',
                      icon='🥹',
-                     required_time=random.randint(0, 100),
-                     is_notified=True)
+                     required_time=random.randint(0, 100))
                 for task in tasks]
     Task.objects.bulk_create(instance)
     return

@@ -32,7 +32,6 @@ class Task(models.Model):
     detail        = models.CharField(max_length=60, blank=True) # 60 文字に仮置き  # あまり情報を詰め込みすぎないことが目標
     icon          = models.CharField(max_length=1, blank=True)
     required_time = models.IntegerField()
-    is_notified   = models.BooleanField(help_text='通知設定', default=False)
     def __str__(self):
         return self.title
 
