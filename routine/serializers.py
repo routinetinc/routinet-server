@@ -62,3 +62,9 @@ class MiniComment_update(serializers.Serializer): # /routine/task/minicomment/(P
 class TimeTree(serializers.Serializer):
     day           = CustomSerializers.ISOTimeField()
     routine_id    = serializers.IntegerField(max_value=None, min_value=1)
+
+
+class RoutineFinishSerializer(serializers.Serializer):
+    routine_id = serializers.IntegerField()
+    icon = serializers.CharField(max_length=10)
+    memo = serializers.CharField(max_length=255)

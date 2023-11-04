@@ -25,6 +25,24 @@ class Routine(models.Model):
     def __str__(self):
         return self.title
 
+    def calculate_consecutive_days(self):
+        # Get all the RoutineFinish records for this routine, ordered by 'when' descending
+        all_records = self.routinefinish_set.all().order_by('-when')
+
+        if not all_records:
+            return 0  # If no records found, return 0
+
+        consecutive_days = 0  # Start the count
+
+        # Iterate over the records
+        for record in all_records:
+            if record.is_achieved:
+                consecutive_days += 1  # Increment if the task was achieved
+            else:
+                break  # Stop counting when a non-achieved record is encountered
+
+        return consecutive_days
+
 class Task(models.Model):
     table_name    = 'task'
     routine_id    = models.ForeignKey(Routine, on_delete=models.CASCADE)
@@ -58,3 +76,20 @@ class Minicomment(models.Model):
     comment        = models.CharField(max_length=120)
     def __str__(self):
         return f'{self.task_finish_id}'
+
+
+class RoutineFinish(models.Model):
+    routine_id = models.ForeignKey(Routine, on_delete=models.PROTECT)
+    is_achieved = models.BooleanField(default=True, help_text='完了したか')
+    icon = models.CharField(max_length=4, help_text='アイコン')  # 4 chars to accommodate any UTF-8mb4 character
+    memo = models.TextField(blank=True, null=True, help_text='メモ')  # Use TextField if memos can be long
+    done_time = models.IntegerField(help_text='実行時間（分）')
+    when = models.DateTimeField(help_text='完了日時')  
+    like_num = models.IntegerField(default=0, help_text='いいねの数')
+
+    def save(self, *args, **kwargs):
+        self.when = timezone.now()  
+        super(RoutineFinish, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return str(self.routine_id)  

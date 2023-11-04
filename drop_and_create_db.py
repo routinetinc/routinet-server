@@ -46,7 +46,8 @@ def random_dt():
 
 #* インサート関数
 def insert_supply_auth_users(users: list[dict]):
-    instance = [User(username=user['username'], email=user['email']) for user in users]
+    default_tags_value = []  # This could be an empty list, a list of tag ids, or another appropriate default value
+    instance = [User(username=user['username'], email=user['email'], tag_ids=user.get('tag_ids', default_tags_value)) for user in users]
     User.objects.bulk_create(instance)  
     return
 def insert_routine_interests(interests: list[dict]):
@@ -102,6 +103,22 @@ def insert_feed_feed_posts() -> None:
     FeedPost.objects.bulk_create(instance)
     return
 
+# Function to insert RoutineFinish instances
+def insert_routine_finishes(routine_finishes: list[dict]):
+    instances = [
+        RoutineFinish(
+            routine_id=Routine.objects.get(id=rf['routine_id']),
+            is_achieved=rf.get('is_achieved', True),
+            icon=rf.get('icon', '🏆'),
+            memo=rf.get('memo', ''),
+            done_time=rf.get('done_time', 0),
+            when=rf.get('when', timezone.now()),
+            like_num=rf.get('like_num', 0)
+        )
+        for rf in routine_finishes
+    ]
+    RoutineFinish.objects.bulk_create(instances)
+
 #* インサートするインスタンスのパラメータを設定
 users = [{'username': chr(i), 'email': chr(i)} for i in range(ord('a'), ord('z') + 1)]
 interests = [{'name': 'NULL'}]
@@ -109,6 +126,18 @@ routines = [{'dow': random_dow(), 'title': f'{i}'} for i in range(5)]
 tasks = [{'routine_id': random.randint(1, len(routines)), 'title': f'{i + 100}'} for i in range(20)]
 task_finishes = [{'task_id': random.randint(1, len(tasks)), 'when': random_dt()} for _ in range(60)]
 tasK_comments = [{'task_finish_id': random.randint(1, len(task_finishes))} for _ in range(30)]
+
+# Parameters for RoutineFinish
+routine_finishes = [{
+    'routine_id': random.randint(1, len(routines)),  # Assuming the routines list is still in scope
+    'is_achieved': random.choice([True, False]),
+    'icon': random.choice(['🏆', '🥇', '🥈', '🥉']),  # Example icons
+    'memo': f'Memo {i}',
+    'done_time': random.randint(0, 120),  # Random time in seconds
+    'when': random_dt(),  # Random datetime within the past two weeks
+    'like_num': random.randint(0, 100)  # Random number of likes
+} for i in range(30)]  # Assuming you want 50 RoutineFinish instances
+
 
 #* 実行
 if __name__ == '__main__':
@@ -121,4 +150,5 @@ if __name__ == '__main__':
     insert_routine_task_finishes(task_finishes)
     insert_routine_task_comments(tasK_comments)
     insert_feed_feed_posts()
+    insert_routine_finishes(routine_finishes)  # New insertion function
     print(f"{BLUE}Successfully completed.{END}")
