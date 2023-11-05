@@ -22,4 +22,5 @@ urlpatterns += [
     path('task/minicomment/', MiniComment.as_view()),
     path('routine_task/', ReadRoutineAndTask.as_view()),
     path('routine/finish/done1/', RoutineFinishCreate.as_view()),
+    path('routine/finish/done2/', RoutineFinishCreate.as_view()),
 ]

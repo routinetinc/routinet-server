@@ -1,7 +1,7 @@
 # views.py
 from rest_framework.views import APIView
 from routine.models import Routine, RoutineFinish, Task, TaskFinish
-from routine.serializers import RoutineFinishSerializer
+from routine.serializers import RoutineFinishSerializer, ShareRegister
 from routine.utils.handle_json import RequestInvalid, get_json, make_response
 from django.utils import timezone
 from django.db.models import Sum
@@ -57,3 +57,20 @@ class RoutineFinishCreate(APIView):
             return make_response(status_code=400, data={'message': str(e)})
         except Exception as e:
             return make_response(status_code=500, data={'message': str(e)})
+        
+    def patch(self, request, format=None):
+        try:
+            datas: dict = get_json(request, ShareRegister)
+        except RequestInvalid as e:
+            return make_response(status_code=400)
+        try: 
+            # データベースから Routine オブジェクトを取得
+            r = RoutineFinish.objects.get(id=datas['routine_finish_id'])
+            # update
+            r.share = datas.get('share', r.share)
+            
+            r.save()
+        except RoutineFinish.DoesNotExist:
+            return make_response(status_code=404, data={'message': 'RoutineFinish not found'})
+        datas = {'routine_finish_id': r.id}
+        return make_response(data = datas)

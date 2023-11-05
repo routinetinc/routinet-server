@@ -68,3 +68,7 @@ class RoutineFinishSerializer(serializers.Serializer):
     routine_id = serializers.IntegerField()
     icon = serializers.CharField(max_length=10)
     memo = serializers.CharField(max_length=255)
+
+class ShareRegister(serializers.Serializer):
+    routine_finish_id = serializers.IntegerField()
+    share   = serializers.BooleanField()
