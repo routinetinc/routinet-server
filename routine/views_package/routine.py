@@ -4,11 +4,75 @@ from routine import models, serializers
 from routine.utils.handle_json import RequestInvalid, get_json, make_response
 from routine import serializers
 from supply_auth.models import User as UserModel
+from django.http import JsonResponse, HttpRequest
+
 
 class Routine(APIView):
-    def get(self, request, format=None):
-        pass
-    
+    def get(self, request: HttpRequest, format=None):
+        try:
+            routine_id = request.query_params.get('routine_id')
+            # print(f"Routine ID received: {routine_id}")
+
+            if routine_id is not None:
+                try:
+                    routine = models.Routine.objects.get(id=routine_id)
+                    # print(f"Routine found: {routine}")
+                    # print("type of routine = ", type(routine))
+
+                    # Check if the calculate_consecutive_days method exists and call it
+                    consecutive_days = routine.calculate_consecutive_days() 
+                    print(f"Consecutive days calculated: {consecutive_days}")
+
+                except models.Routine.DoesNotExist:
+                    print(f"No routine found with ID: {routine_id}")
+                    return make_response(status_code=404, data={'message': 'Routine not found'})
+            else:
+                print(f"No routine ID provided in the request")
+                return make_response(status_code=400, data={'message': 'No routine ID provided'})
+
+            tasks = models.Task.objects.filter(routine_id=routine).order_by('id')
+            # print(f"Tasks found: {tasks.count()}")
+
+            tasks_data = []
+            for task in tasks:
+                # print("task = ", task)
+                latest_task_finish = models.TaskFinish.objects.filter(task_id=task).order_by('-when').first()
+                is_achieved = latest_task_finish.is_achieved if latest_task_finish else False
+                task_data = {
+                    "task_id": task.id,
+                    "title": task.title,
+                    "detail": task.detail,
+                    "required_time": task.required_time,
+                    "is_achieved": is_achieved,
+                }
+                tasks_data.append(task_data)
+                # print(f"Task data added: {task_data}")
+
+            routine_data = {
+                "routine_id": routine.id,
+                "start_time": routine.start_time,  
+                "end_time": routine.end_time,
+                "title": routine.title,
+                "tag_name": "foo",
+                "real_time": True,
+                "consecutive_days": consecutive_days,
+                "dow": routine.dow,
+                "tasks": tasks_data
+            }
+            print(f"Final routine data to be sent: {routine_data}")
+
+            return make_response(status_code=1, data=routine_data)
+        
+        except Routine.DoesNotExist:
+            print("Routine does not exist for the given ID.")
+            return make_response(status_code=404, data={'message': 'Routine not found'})
+        except RequestInvalid as e:
+            print(f"Request is invalid: {e}")
+            return make_response(status_code=400, data={'message': str(e)})
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            return make_response(status_code=500, data={'message': str(e)})
+
     def post(self, request, format=None):
         user_id = 1 if(request.user.id is None) else request.user.id
         user = UserModel.objects.get(id=user_id)

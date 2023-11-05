@@ -26,16 +26,17 @@ class Routine(models.Model):
         return self.title
 
     def calculate_consecutive_days(self):
-        # Get all the RoutineFinish records for this routine, ordered by 'when' descending
-        all_records = self.routinefinish_set.all().order_by('-when')
+        # Filter RoutineFinish records by routine_id, ordered by 'when' descending
+        all_records = RoutineFinish.objects.filter(routine_id=self.id).order_by('-when')
 
         if not all_records:
+            print("No records found for routine.")
             return 0  # If no records found, return 0
 
-        consecutive_days = 0  # Start the count
+        consecutive_days = 1  # Start the count from the most recent record if it's achieved
 
-        # Iterate over the records
         for record in all_records:
+            print(record.is_achieved)
             if record.is_achieved:
                 consecutive_days += 1  # Increment if the task was achieved
             else:
@@ -86,6 +87,7 @@ class RoutineFinish(models.Model):
     done_time = models.IntegerField(help_text='実行時間（分）')
     when = models.DateTimeField(help_text='完了日時')  
     like_num = models.IntegerField(default=0, help_text='いいねの数')
+    share = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
         self.when = timezone.now()  

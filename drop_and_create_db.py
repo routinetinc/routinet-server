@@ -113,7 +113,8 @@ def insert_routine_finishes(routine_finishes: list[dict]):
             memo=rf.get('memo', ''),
             done_time=rf.get('done_time', 0),
             when=rf.get('when', timezone.now()),
-            like_num=rf.get('like_num', 0)
+            like_num=rf.get('like_num', 0),
+            share=rf.get('share', True)
         )
         for rf in routine_finishes
     ]
@@ -135,7 +136,8 @@ routine_finishes = [{
     'memo': f'Memo {i}',
     'done_time': random.randint(0, 120),  # Random time in seconds
     'when': random_dt(),  # Random datetime within the past two weeks
-    'like_num': random.randint(0, 100)  # Random number of likes
+    'like_num': random.randint(0, 100),  # Random number of likes
+    'share': random.choice([True, False]),
 } for i in range(30)]  # Assuming you want 50 RoutineFinish instances
 
 
