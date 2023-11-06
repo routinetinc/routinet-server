@@ -54,7 +54,7 @@ def insert_routine_interests(interests: list[dict]):
     Interest.objects.bulk_create(instance)
     return
 def insert_routine_routines(routines: list[dict]):
-    user = User.objects.get(id=1)
+    user = User.objects.get(email='1')
     instance = [
         Routine(
             user_id=user,
@@ -72,7 +72,7 @@ def insert_routine_routines(routines: list[dict]):
     Routine.objects.bulk_create(instance)
     return
 def insert_routine_tasks(tasks: list[dict]):
-    instance = [Task(routine_id=Routine.objects.get(id=task["routine_id"]),
+    instance = [Task(routine_id=Routine.objects.get(title='筋トレ'),
                      title=task['title'],
                      detail='a',
                      icon='🥹',
