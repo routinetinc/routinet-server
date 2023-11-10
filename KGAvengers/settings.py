@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "supply_auth.apps.SupplyauthConfig",
     "feed.apps.FeedConfig",
     "run.apps.RunConfig",
+    'drf_yasg',
 ]
 
 AUTH_USER_MODEL = "supply_auth.User"  # accountアプリのUserモデルをデフォルトで使用する認証ユーザーモデルとして設定する
@@ -62,6 +63,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'KGAvengers.urls'
+STATIC_URL = '/static/'
 
 TEMPLATES = [
     {

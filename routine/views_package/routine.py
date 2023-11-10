@@ -4,11 +4,18 @@ from routine import models, serializers
 from routine.utils.handle_json import RequestInvalid, get_json, make_response
 from routine import serializers
 from supply_auth.models import User as UserModel
+from drf_yasg.utils import swagger_auto_schema
 
 class Routine(APIView):
     def get(self, request, format=None):
         pass
     
+    @swagger_auto_schema(
+        operation_summary="新規ルーティンを作成する",  # オペレーションの要約
+        operation_description="ルーティン情報を受け取り、新規ルーティンをDBに登録する。ルーティン登録が完了するとそのＩＤを返す。",  # オペレーションの説明
+        responses={200:serializers.Routine_create(many = True)},  # レスポンスの詳細
+        request_body=serializers.Routine_create,  # リクエストの詳細
+    )
     def post(self, request, format=None):
         user_id = 1 if(request.user.id is None) else request.user.id
         user = UserModel.objects.get(id=user_id)
