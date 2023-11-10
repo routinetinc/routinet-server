@@ -39,10 +39,21 @@ class RoutineFinishCreate(APIView):
 
             consecutive_days = routine.calculate_consecutive_days()
 
+
+            # Current date filter
+            today = timezone.now().date()
+
             # Get the tasks data including done_time for each task
             tasks_data = [
-                {"task_name": task_finish.task_id.title, "done_time": task_finish.done_time}
-                for task_finish in TaskFinish.objects.filter(routine_id=routine, is_achieved=True)
+                {
+                    "task_name": task_finish.task_id.title, 
+                    "done_time": task_finish.done_time
+                }
+                for task_finish in TaskFinish.objects.filter(
+                    routine_id=routine_id, 
+                    when__date=today, 
+                    is_achieved=True
+                )
             ]
 
             response_data = {
@@ -51,7 +62,7 @@ class RoutineFinishCreate(APIView):
                 "tasks": tasks_data
             }
             
-            return make_response(status_code=200, data=response_data)
+            return make_response(status_code=1, data=response_data)
             
         except RequestInvalid as e:
             return make_response(status_code=400, data={'message': str(e)})

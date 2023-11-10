@@ -134,7 +134,7 @@ routine_finishes = [{
     'icon': random.choice(['🏆', '🥇', '🥈', '🥉']),  # Example icons
     'memo': f'Memo {i}',
     'done_time': random.randint(0, 120),  # Random time in seconds
-    'when': random_dt(),  # Random datetime within the past two weeks
+    'when': timezone.now().date(),  # Random datetime within the past two weeks
     'like_num': random.randint(0, 100)  # Random number of likes
 } for i in range(30)]  # Assuming you want 50 RoutineFinish instances
 
