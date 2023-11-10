@@ -83,7 +83,7 @@ def insert_routine_tasks(tasks: list[dict]):
     return
 def insert_routine_task_finishes(task_records: list[dict]):
     routine = Routine.objects.all()[0]
-    instance = [TaskFinish(task_id=Task.objects.get(id=tr['task_id']),
+    instance = [TaskFinish(task_id=Task.objects.get(title=tr['title']),
                           is_achieved=random.choice([True, False]),
                           done_time=random.randint(0, 100),
                           when=tr['when'],

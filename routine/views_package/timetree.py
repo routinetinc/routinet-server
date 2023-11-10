@@ -38,6 +38,7 @@ def _timetree(request, acquisition_range):
         day_str = day
         day_tasks = []
         for task_finish in task_finishs:
+            print(task_finish.when)
             if task_finish.when.date() == day.date():
                 task_comment = models.Minicomment.objects.filter(task_finish_id=task_finish.id).first()
                 comment = task_comment.comment if task_comment else None

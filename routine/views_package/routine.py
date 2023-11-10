@@ -16,6 +16,7 @@ class Routine(APIView):
             datas: dict = get_json(request, serializers.Routine_create)
         except RequestInvalid as e:
             return make_response(status_code=400)
+        print(datas)
         r = models.Routine(
                 user_id = user,
                 dow = datas['dow'],
