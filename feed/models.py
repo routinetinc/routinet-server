@@ -5,7 +5,7 @@ import boto3
 from django.contrib.postgres.fields import ArrayField
 from supply_auth.models import User  # 2つ目のmodels.pyからインポート
 from routine.fields import CustomModels  # 1つ目のmodels.pyから仮にインポート（必要に応じて）
-from routine.models import RoutineFinish  # 1つ目のmodels.pyからインポート
+from routine.models import RoutineFinish, Tag  # 1つ目のmodels.pyからインポート
 from django.utils import timezone
 
 class NoSQLBase(models.Model):
@@ -45,23 +45,6 @@ class Cache():
     
     class InterestCAT(NoSQLBase):
         table_name = 'usercache'
-
-
-class Interest(models.Model): # 外部キーのため依存解消のために仮置き
-    table_name  = 'interest'
-    name        = models.CharField(max_length=20) 
-    detail      = models.CharField(max_length=50) 
-    
-    def __str__(self):
-        return f"Interest name is 「{self.name}」"
-    
-class Tag(models.Model):
-    table_name  = 'tag'
-    name        = models.CharField(max_length=20) 
-    detail      = models.CharField(max_length=50) 
-
-    def __str__(self):
-        return f"Tag name is 「{self.name}」"
 
 class FeedPost(models.Model):
     table_name   = "feed_post"
