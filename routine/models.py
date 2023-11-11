@@ -3,13 +3,28 @@ from routine.fields import CustomModels
 from supply_auth.models import User
 from django.utils import timezone
 from django.contrib.postgres.fields import ArrayField
-from feed.models import Tag, Interest
+    
+class Interest(models.Model): # 外部キーのため依存解消のために仮置き
+    table_name  = 'interest'
+    name        = models.CharField(max_length=20) 
+    detail      = models.CharField(max_length=50) 
+    
+    def __str__(self):
+        return f"Interest name is 「{self.name}」"   
+    
+class Tag(models.Model):
+    table_name  = 'tag'
+    name        = models.CharField(max_length=20) 
+    detail      = models.CharField(max_length=50) 
+
+    def __str__(self):
+        return f"Tag name is 「{self.name}」" 
     
 class Routine(models.Model):
     table_name   = 'routine'
     user_id      = models.ForeignKey(User, on_delete=models.CASCADE)        # user_id はバックエンドで取得      # 仮の数字を代入して対処
-    interest_ids = ArrayField(models.ForeignKey(Interest, on_delete=models.SET_NULL),null=True)
-    tag_id       = models.ForeignKey(Tag, on_delete=models.SET_NULL)
+    interest_ids = ArrayField(models.IntegerField(),null=True)
+    tag_id       = models.ForeignKey(Tag, on_delete=models.DO_NOTHING)
     goal_id      = models.IntegerField(blank=True, default=0)               # goal_id はバックエンドで取得      # 仮の数字を代入して対処
     dow          = CustomModels.DOWField()                                  # 型は仮置き  # day_of_week (曜日のこと)
     start_time   = CustomModels.TimeStringField()
