@@ -3,15 +3,13 @@ from routine.fields import CustomModels
 from supply_auth.models import User
 from django.utils import timezone
 from django.contrib.postgres.fields import ArrayField
+from feed.models import Tag, Interest
     
-class Interest(models.Model): # 外部キーのため依存解消のために仮置き
-    table_name  = 'interest'
-    name        = models.CharField(max_length=20) 
-
 class Routine(models.Model):
     table_name   = 'routine'
     user_id      = models.ForeignKey(User, on_delete=models.CASCADE)        # user_id はバックエンドで取得      # 仮の数字を代入して対処
-    interest_ids = ArrayField(models.IntegerField(null=True, blank=True))
+    interest_ids = ArrayField(models.ForeignKey(Interest, on_delete=models.SET_NULL),null=True)
+    tag_id       = models.ForeignKey(Tag, on_delete=models.SET_NULL)
     goal_id      = models.IntegerField(blank=True, default=0)               # goal_id はバックエンドで取得      # 仮の数字を代入して対処
     dow          = CustomModels.DOWField()                                  # 型は仮置き  # day_of_week (曜日のこと)
     start_time   = CustomModels.TimeStringField()
@@ -22,8 +20,9 @@ class Routine(models.Model):
     is_published = models.BooleanField(help_text='公開設定', default=False)
     is_notified  = models.BooleanField(help_text='通知設定', default=False)
     bookmark_num = models.IntegerField(default=0)
+    is_real_time    = models.BooleanField(help_text='リアルタイムタスク', default=False)
     def __str__(self):
-        return self.title
+        return f"Routine title is 「{self.title}」"
 
     def calculate_consecutive_days(self):
         # Filter RoutineFinish records by routine_id, ordered by 'when' descending
@@ -53,31 +52,7 @@ class Task(models.Model):
     required_time = models.IntegerField()
     is_notified   = models.BooleanField(help_text='通知設定', default=False)
     def __str__(self):
-        return self.title
-
-class TaskFinish(models.Model):
-    table_name  = 'task_finish'
-    task_id     = models.ForeignKey(Task, on_delete=models.PROTECT)
-    routine_id    = models.ForeignKey(Routine, on_delete=models.CASCADE)
-    is_achieved = models.BooleanField(help_text='完了したか', default=True) 
-    done_time   = models.IntegerField()
-    when        = models.DateTimeField(help_text='完了日時')
-    like_num = models.IntegerField(default=0)
-    
-    def save(self, *args, **kwargs):
-        self.when = timezone.now()  # 保存されるたびに更新
-        return super(TaskFinish, self).save(*args, **kwargs)
-    
-    def __str__(self):
-        return f'{self.task_id}'
-    
-class Minicomment(models.Model):
-    table_name     = 'minicomment'
-    task_finish_id = models.ForeignKey(TaskFinish, on_delete=models.PROTECT)
-    comment        = models.CharField(max_length=120)
-    def __str__(self):
-        return f'{self.task_finish_id}'
-
+        return f"Task title is 「{self.title}」"
 
 class RoutineFinish(models.Model):
     routine_id = models.ForeignKey(Routine, on_delete=models.PROTECT)
@@ -95,3 +70,27 @@ class RoutineFinish(models.Model):
 
     def __str__(self):
         return str(self.routine_id)  
+    
+class TaskFinish(models.Model):
+    table_name         = 'task_finish'
+    task_id            = models.ForeignKey(Task, on_delete=models.PROTECT)
+    routine_finish_id  = models.ForeignKey(RoutineFinish, on_delete=models.CASCADE,null=True)
+    is_achieved        = models.BooleanField(help_text='完了したか', default=True) 
+    done_time          = models.IntegerField()
+    when               = models.DateTimeField(help_text='完了日時')
+    
+    def save(self, *args, **kwargs):
+        self.when = timezone.now()  # 保存されるたびに更新
+        return super(TaskFinish, self).save(*args, **kwargs)
+    
+    def __str__(self):
+        return f'TaskFinish of Task {self.task_id} at {self.when}'
+    
+class Diary(models.Model):
+    table_name    = 'daiary'
+    when          = models.DateTimeField(help_text='作成日時')
+    user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment       = models.CharField(max_length=500)
+    icon          = models.CharField(max_length=1, blank=True)
+    def __str__(self):
+        return f"Dairy at {self.when} by user_id:{self.user_id}"
