@@ -155,8 +155,8 @@ if __name__ == '__main__':
     insert_routine_interests(interests)
     insert_routine_routines(routines)
     insert_routine_tasks(tasks)
-    insert_routine_task_finishes(task_finishes)
+    # insert_routine_task_finishes(task_finishes)
     # insert_routine_task_comments(tasK_comments)
     # insert_feed_feed_posts()
-    insert_routine_finishes(routine_finishes)  # New insertion function
+    # insert_routine_finishes(routine_finishes)  # New insertion function
     print(f"{BLUE}Successfully completed.{END}")
