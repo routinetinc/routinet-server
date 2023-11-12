@@ -24,7 +24,7 @@ class Routine(models.Model):
     table_name   = 'routine'
     user_id      = models.ForeignKey(User, on_delete=models.CASCADE)        # user_id はバックエンドで取得      # 仮の数字を代入して対処
     interest_ids = ArrayField(models.IntegerField(),null=True)
-    tag_id       = models.ForeignKey(Tag, on_delete=models.DO_NOTHING)
+    tag_id       = models.ForeignKey(Tag, on_delete=models.DO_NOTHING,null=True)
     goal_id      = models.IntegerField(blank=True, default=0)               # goal_id はバックエンドで取得      # 仮の数字を代入して対処
     dow          = CustomModels.DOWField()                                  # 型は仮置き  # day_of_week (曜日のこと)
     start_time   = CustomModels.TimeStringField()

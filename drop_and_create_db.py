@@ -83,21 +83,29 @@ def insert_routine_tasks(tasks: list[dict]):
     Task.objects.bulk_create(instance)
     return
 def insert_routine_task_finishes(task_records: list[dict]):
-    routine = Routine.objects.all()[0]
-    instance = [TaskFinish(task_id=Task.objects.get(id=tr['task_id']),
-                          is_achieved=random.choice([True, False]),
-                          done_time=random.randint(0, 100),
-                          when=tr['when'],
-                          routine_id=routine)
-                for tr in task_records]
-    TaskFinish.objects.bulk_create(instance)
+    routine_qs = RoutineFinish.objects.all()
+    if not routine_qs.exists():
+        print("No RoutineFinish instances available.")
+        return
+
+    routine_instance = routine_qs[0]  # Or some other logic to select the right instance
+
+    instances = [TaskFinish(
+                     task_id=Task.objects.get(id=tr['task_id']),
+                     is_achieved=True,
+                     done_time=random.randint(0, 100),
+                     when=tr['when'],
+                     routine_finish_id=routine_instance
+                 ) for tr in task_records]
+    
+    TaskFinish.objects.bulk_create(instances)
     return
-def insert_routine_task_comments(task_comments: list[dict]):
-    instance = [Minicomment(task_finish_id=TaskFinish.objects.get(id=tc['task_finish_id']),
-                            comment='a')
-                for tc in task_comments]
-    Minicomment.objects.bulk_create(instance)
-    return
+# def insert_routine_task_comments(task_comments: list[dict]):
+#     instance = [Minicomment(task_finish_id=TaskFinish.objects.get(id=tc['task_finish_id']),
+#                             comment='a')
+#                 for tc in task_comments]
+#     Minicomment.objects.bulk_create(instance)
+#     return
 def insert_feed_feed_posts() -> None:
     instance = [FeedPost(like_num=1, post_time="2023-09-24", interest_ids=[1], user_id=1) for _ in range(10)]
     FeedPost.objects.bulk_create(instance)
@@ -148,7 +156,7 @@ if __name__ == '__main__':
     insert_routine_routines(routines)
     insert_routine_tasks(tasks)
     insert_routine_task_finishes(task_finishes)
-    insert_routine_task_comments(tasK_comments)
-    insert_feed_feed_posts()
+    # insert_routine_task_comments(tasK_comments)
+    # insert_feed_feed_posts()
     insert_routine_finishes(routine_finishes)  # New insertion function
     print(f"{BLUE}Successfully completed.{END}")
