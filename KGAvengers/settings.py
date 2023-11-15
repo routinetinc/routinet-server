@@ -62,6 +62,10 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'KGAvengers.urls'
+STATIC_URL = '/static/'
+# Image storage destination
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 
 TEMPLATES = [
     {
@@ -158,8 +162,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Image storage destination
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = '/media/'
 
