@@ -6,6 +6,7 @@ worker_secret.py
 *.psql_cnf
 bin/
 tempCodeRunnerFile.*
+worker/
 
 # Original dir and files for shogo07xx.
 \#Note/

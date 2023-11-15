@@ -2,7 +2,7 @@ import random
 from feed.user_actions import FeedPost
 from neo4j import Session, Transaction
 from feed.ff_related import User
-from feed.user_actions import FeedPost, TaskFinish, Routine
+from feed.user_actions import FeedPost, TaskFinish, Routine, FeedPostComment, TaskFinishComment
 from django.core.management.base import BaseCommand
 from feed.utils.graph_db.connections import neo4j_session
 import cProfile
@@ -29,9 +29,9 @@ class _Neo4jTest:
     @staticmethod
     def _duplicate_create(session: Session) -> None:
         (_ := User()).create(session, 1)
-        (_ := FeedPost()).create(session, 1)
-        (_ := TaskFinish()).create(session, 1)
         (_ := Routine()).create(session, 1)
+        (_ := TaskFinish()).create(session, 1)
+        (_ := FeedPost()).create(session, 1)
     @staticmethod
     def _create_and_duplicate_delete_edge(session: Session) -> None:
         """ 作ったエッジが消せるかどうか。重複して消すことがないか。 """
@@ -47,38 +47,47 @@ class _Neo4jTest:
         (_ := User.Relation()).create_bookmarks_routine(session, 1, 2)
         (_ := User.Relation()).delete_bookmarks_routine(session, 1, 2)
         (_ := User.Relation()).delete_bookmarks_routine(session, 1, 2)
-        (_ := FeedPost.Relation()).create_likes_feed_post(session, 1, 2)
-        (_ := FeedPost.Relation()).delete_likes_feed_post(session, 1, 2)
-        (_ := FeedPost.Relation()).delete_likes_feed_post(session, 1, 2)
-        (_ := TaskFinish.Relation()).create_likes_task_finish(session, 1, 2)
-        (_ := TaskFinish.Relation()).delete_likes_task_finish(session, 1, 2)
-        (_ := TaskFinish.Relation()).delete_likes_task_finish(session, 1, 2)
         (_ := Routine.Relation()).create_bookmarks_routine(session, 1, 2)
         (_ := Routine.Relation()).delete_bookmarks_routine(session, 1, 2)
         (_ := Routine.Relation()).delete_bookmarks_routine(session, 1, 2)
+        (_ := TaskFinish.Relation()).create_likes_task_finish(session, 1, 2)
+        (_ := TaskFinish.Relation()).delete_likes_task_finish(session, 1, 2)
+        (_ := TaskFinish.Relation()).delete_likes_task_finish(session, 1, 2)
+        (_ := TaskFinishComment.Relation()).create_likes_task_finish_comment(session, 1, 2)
+        (_ := TaskFinishComment.Relation()).delete_likes_task_finish_comment(session, 1, 2)
+        (_ := TaskFinishComment.Relation()).delete_likes_task_finish_comment(session, 1, 2)
+        (_ := FeedPost.Relation()).create_likes_feed_post(session, 1, 2)
+        (_ := FeedPost.Relation()).delete_likes_feed_post(session, 1, 2)
+        (_ := FeedPost.Relation()).delete_likes_feed_post(session, 1, 2)
+        (_ := FeedPostComment.Relation()).create_likes_feed_post_comment(session, 1, 2)
+        (_ := FeedPostComment.Relation()).delete_likes_feed_post_comment(session, 1, 2)
+        (_ := FeedPostComment.Relation()).delete_likes_feed_post_comment(session, 1, 2)
     @classmethod
     def run_test(cls, session: Session) -> None:
         # コードを実行したい関数またはスクリプトを呼び出す
+        create_n_nodes, create_n_edges, m = 5, 3, 4
         cls._delete_all(session)
-        n = 10
-        m = 5
-        for i in range(1, n + 1):
+        for i in range(1, create_n_nodes + 1):
             (_ := User()).create(session, i)
-            (_ := FeedPost()).create(session, i)
-            (_ := TaskFinish()).create(session, i)
             (_ := Routine()).create(session, i)
+            (_ := TaskFinish()).create(session, i)
+            (_ := TaskFinishComment()).create(session, i)
+            (_ := FeedPost()).create(session, i)
+            (_ := FeedPostComment()).create(session, i)
         _Neo4jTest._duplicate_create(session)
         _Neo4jTest._create_and_duplicate_delete_edge(session)
-        for i in range(1, n + 1):
-            (_ := User.Relation()).create_follows_user(session, *random.sample(range(1,  m), 2))
-            (_ := User.Relation()).create_likes_feed_post(session, *random.sample(range(1,  m), 2))
-            (_ := User.Relation()).create_likes_task_finish(session, *random.sample(range(1,  m), 2))
-            (_ := User.Relation()).create_bookmarks_routine(session, *random.sample(range(1,  m), 2))
+        for i in range(1, create_n_edges + 1):
+            (_ := User.Relation()).create_follows_user(session, *random.sample(range(1,  m + 1), 2))
+            (_ := User.Relation()).create_likes_feed_post(session, *random.sample(range(1,  m + 1), 2))
+            (_ := User.Relation()).create_likes_task_finish(session, *random.sample(range(1,  m + 1), 2))
+            (_ := User.Relation()).create_bookmarks_routine(session, *random.sample(range(1,  m + 1), 2))
+            (_ := Routine.Relation()).create_bookmarks_routine(session, *random.sample(range(1,  m + 1), 2))
+            (_ := TaskFinish.Relation()).create_likes_task_finish(session, *random.sample(range(1,  m + 1), 2))
+            (_ := TaskFinishComment.Relation()).create_likes_task_finish_comment(session, *random.sample(range(1,  m), 2))
             (_ := FeedPost.Relation()).create_likes_feed_post(session, *random.sample(range(1,  m), 2))
-            (_ := TaskFinish.Relation()).create_likes_task_finish(session, *random.sample(range(1,  m), 2))
-            (_ := Routine.Relation()).create_bookmarks_routine(session, *random.sample(range(1,  n - 5 if(n - 5 > 0) else 2), 2))
+            (_ := FeedPostComment.Relation()).create_likes_feed_post_comment(session, *random.sample(range(1,  m), 2))
         # 存在しないノードを対象に探索してもエラーは吐かないことを確認
-        for user_id in range(1, m):
+        for user_id in range(1, m + 1):
             print(f'user_id = {user_id} --[FOLLOWS]-> user_ids      = {(_ := User()).read_follows_user_ids(session, user_id)}')
             print(f'user_id = {user_id} <-[FOLLOWS]-- user_ids      = {(_ := User()).read_followed_user_ids(session, user_id)}')
             print(f'user_id = {user_id} --[LIKES]---> feed_post_ids = {(_ := User()).read_likes_feed_post_ids(session, user_id)}')
