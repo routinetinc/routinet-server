@@ -7,6 +7,17 @@ import django
 django.setup()
 import unittest
 
+from django.core.management import call_command
+from django.db import connection
+from supply_auth.models import User
+from routine.models import *
+from feed.models import *
+import random
+from datetime import timedelta
+from django.utils import timezone
+BLUE = '\033[36m'
+END = '\033[0m'
+
 import requests
 import json
 import random
@@ -15,6 +26,15 @@ from random import randint, choice
 from routine.models import *
 from datetime import timedelta
 
+def drop_all_tables():
+    ''' 全テーブルを削除 '''
+    with connection.cursor() as cursor:
+        cursor.execute('DROP SCHEMA public CASCADE')
+        cursor.execute('CREATE SCHEMA public')
+def create_all_tables():
+    ''' 全テーブルを作成 '''
+    call_command('makemigrations')
+    call_command('migrate')
 
 def random_dow():
     original_list = [f'{i}' for i in range(6)]
@@ -39,7 +59,11 @@ def random_dt():
     random_timedelta = random.uniform(0, (current_datetime - n_week_ago).total_seconds())
     random_datetime = n_week_ago + timedelta(seconds=random_timedelta)
     return random_datetime
-
+def insert_supply_auth_users(users: list[dict]):
+    default_tags_value = []  # This could be an empty list, a list of tag ids, or another appropriate default value
+    instance = [User(username=user['username'], email=user['email'], tag_ids=user.get('tag_ids', default_tags_value)) for user in users]
+    User.objects.bulk_create(instance)  
+    return
 def insert_routine_routines(routines: list[dict]):
     user = User.objects.get(id=1)
     routine_list = []
@@ -56,6 +80,9 @@ def insert_routine_routines(routines: list[dict]):
             is_notified=choice([True, False]),
             interest_ids=[randint(0, 5)]
         )
+
+        consecutive_days = instance.calculate_consecutive_days()
+
         
         # Include the ID and additional keys in the returned dictionary
         routine_with_id = routine.copy()
@@ -65,6 +92,9 @@ def insert_routine_routines(routines: list[dict]):
         routine_with_id['subtitle'] = instance.subtitle
         routine_with_id['is_published'] = instance.is_published
         routine_with_id['is_notified'] = instance.is_notified
+        routine_with_id['is_real_time'] = instance.is_real_time
+        routine_with_id['consecutive_days'] = consecutive_days
+        
 
         routine_list.append(routine_with_id)
 
@@ -116,6 +146,10 @@ class APITestCase(unittest.TestCase):
 
     def setUp(self):
         self.maxDiff = None
+        users = [{'username': chr(i), 'email': chr(i)} for i in range(ord('a'), ord('z') + 1)]
+        drop_all_tables()                   #! 取扱注意
+        create_all_tables()
+        insert_supply_auth_users(users)
         # Initialize an empty expected_routines dictionary
         self.expected_routines = {
             'mon': [],
@@ -149,9 +183,10 @@ class APITestCase(unittest.TestCase):
                 'start_time': routine['start_time'],
                 'end_time': routine['end_time'],
                 'title': routine['title'],
-                'subtitle': routine['subtitle'],
-                'is_published': routine['is_published'],
-                'is_notified': routine['is_notified'],
+                'tag_id': None,  # Add this line 
+                'tag_name' : '',
+                'real_time' : routine['is_real_time'],
+                'consecutive_days' : routine['consecutive_days'],
                 'tasks': []  # Initialize tasks list for each routine
             }
             # print("Routines in expected_routines:", self.expected_routines['routines'])
@@ -179,8 +214,7 @@ class APITestCase(unittest.TestCase):
                 'title': task['title'],
                 'detail': task['detail'],
                 'required_time': task['required_time'],
-                'is_notified': task['is_notified'],
-                'is_achieved': is_achieved  # Add this line
+                'is_achieved': is_achieved,  # Add this line              
             }
             # print(type(self.expected_routines['routines'][routine_id]['tasks']))
             if routine_id in self.expected_routines['routines']:

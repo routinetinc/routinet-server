@@ -162,17 +162,16 @@ class ReadRoutineAndTask(APIView):
                             "detail": task.detail,
                             "required_time": task.required_time,
                             "is_achieved": is_achieved,
-                            "tag_id": routine.tag_id.id if routine.tag_id else None,  # Assuming `tag_id` is a foreign key to another model
-                            "real_time": routine.is_real_time,  # Assuming `is_real_time` corresponds to `real_time`
-                            "tag_name": routine.tag_id.name if routine.tag_id else '',  # Replace with actual field name for the tag's name
-                            "consecutive_days": routine.calculate_consecutive_days(),  # Call the method on the routine instance
                                 })
                     routines_data[str(routine.id)] = {
                         "start_time": routine.start_time,
                         "end_time": routine.end_time,
                         "title": routine.title,
                         "tag_id": routine.tag_id.id if routine.tag_id else None,
-                        "tasks": task_data
+                        "tag_name": routine.tag_id.name if routine.tag_id else '',  # Replace with actual field name for the tag's name
+                        "real_time": routine.is_real_time,  # Assuming `is_real_time` corresponds to `real_time`
+                        "consecutive_days": routine.calculate_consecutive_days(),  # Call the method on the routine instance
+                        "tasks": task_data,
                     }
                 routines_by_day[day_name].append(str(routine.id))
         print("1")
