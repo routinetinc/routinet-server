@@ -5,6 +5,7 @@ from rest_framework import serializers
 class CustomModels:
     class TimeStringField(models.CharField):
         def __init__(self, *args, **kwargs):
+            kwargs['max_length'] = kwargs.get('max_length', 111)  # Set a default max_length if not provided
             kwargs['default'] = '000000+0000'
             super().__init__(*args, **kwargs)
         def from_db_value(self, value: datetime, expression=None, connection=None):
