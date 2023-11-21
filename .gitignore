@@ -2,6 +2,7 @@
 secret.py
 worker_secret.py
 .vscode
+.idea
 *.pgpass
 *.psql_cnf
 bin/
