@@ -42,12 +42,13 @@ class TaskFinish(models.Model):
     routine_id    = models.ForeignKey(Routine, on_delete=models.CASCADE)
     is_achieved = models.BooleanField(help_text='完了したか', default=True) 
     done_time   = models.IntegerField()
-    when        = models.DateTimeField(help_text='完了日時')
+    when        = models.DateTimeField(auto_now=True)
     like_num = models.IntegerField(default=0)
     
-    def save(self, *args, **kwargs):
-        self.when = timezone.now()  # 保存されるたびに更新
-        return super(TaskFinish, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     self.when = timezone.now()  # 保存されるたびに更新
+    #     print(self.when)
+    #     return super(TaskFinish, self).save(*args, **kwargs)
     
     def __str__(self):
         return f'{self.task_id}'

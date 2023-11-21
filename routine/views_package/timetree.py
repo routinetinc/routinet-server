@@ -23,14 +23,14 @@ def _timetree(request, acquisition_range):
 
     routine_id = data['routine_id']
     tasks = models.Task.objects.filter(routine_id=routine_id).order_by('-id')
-
+    
     start_day: datetime = data['day'] + timedelta(days=delta_start_day)
     end_day:   datetime = start_day   + timedelta(days=delta_end_day)
 
-    subquery     = models.TaskFinish.objects.filter(task_id=OuterRef('task_id'), when__range=[end_day, start_day])
+    subquery     = models.TaskFinish.objects.filter(task_id=OuterRef('task_id'), when__range=[start_day, end_day])
     task_finishs = models.TaskFinish.objects.filter(task_id__in=tasks) \
                                             .annotate(matching_task=Exists(subquery)) \
-                                            .filter(matching_task=True) \
+                                            .filter(matching_task=False) \
                                             .order_by('-when')
     days = []
     for i in range(loop_end):
@@ -38,7 +38,7 @@ def _timetree(request, acquisition_range):
         day_str = day
         day_tasks = []
         for task_finish in task_finishs:
-            print(task_finish.when)
+
             if task_finish.when.date() == day.date():
                 task_comment = models.Minicomment.objects.filter(task_finish_id=task_finish.id).first()
                 comment = task_comment.comment if task_comment else None

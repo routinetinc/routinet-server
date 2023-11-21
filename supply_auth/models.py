@@ -61,7 +61,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     self_introduction = models.CharField(null=True,max_length=400)
     is_hot_user       = models.BooleanField(default=True)
     is_active         = models.BooleanField(default=True)
-    tag_ids           = ArrayField(models.IntegerField(null=True))
+    tag_ids           = ArrayField(models.IntegerField(null=False))
 
     objects = UserManager()
 

@@ -46,7 +46,7 @@ def random_dt():
 
 #* インサート関数
 def insert_supply_auth_users(users: list[dict]):
-    instance = [User(username=user['username'], email=user['email']) for user in users]
+    instance = [User(username=user['username'], email=user['email'],tag_ids=[]) for user in users]
     User.objects.bulk_create(instance)  
     return
 def insert_routine_interests(interests: list[dict]):
@@ -54,7 +54,7 @@ def insert_routine_interests(interests: list[dict]):
     Interest.objects.bulk_create(instance)
     return
 def insert_routine_routines(routines: list[dict]):
-    user = User.objects.get(email='1')
+    user = User.objects.get(email='b')
     instance = [
         Routine(
             user_id=user,
@@ -72,7 +72,7 @@ def insert_routine_routines(routines: list[dict]):
     Routine.objects.bulk_create(instance)
     return
 def insert_routine_tasks(tasks: list[dict]):
-    instance = [Task(routine_id=Routine.objects.get(title='筋トレ'),
+    instance = [Task(routine_id=Routine.objects.get(id=task['routine_id']),
                      title=task['title'],
                      detail='a',
                      icon='🥹',
@@ -83,7 +83,7 @@ def insert_routine_tasks(tasks: list[dict]):
     return
 def insert_routine_task_finishes(task_records: list[dict]):
     routine = Routine.objects.all()[0]
-    instance = [TaskFinish(task_id=Task.objects.get(title=tr['title']),
+    instance = [TaskFinish(task_id=Task.objects.get(id=tr['task_id']),
                           is_achieved=random.choice([True, False]),
                           done_time=random.randint(0, 100),
                           when=tr['when'],

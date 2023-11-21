@@ -15,7 +15,7 @@ request_method  = request_methods[1]
 # JSON 形式のデータ(リクエスト用). 変数 json_data の格納値にドキュメントの {'data': data_value } 全体をコピペする.
 json_data = {
 	"data": {
-		"day": "20230805T200000+0900",
+		"day": "20231111T101010+0900",
 		"routine_id": "1"
 	}
 }
@@ -39,6 +39,8 @@ print(f'{BLUE}headers     ={END} {response.request.headers}')
 print(f'{BLUE}body        ={END} {response.request.body}')
 print(f'{BLUE}method      ={END} {response.request.method}')
 res_data = response.json()
-print(f'{BLUE}status_code ={END} {res_data["status_code"]}')
-print(f'{BLUE}res_data    ={END} {res_data["data"]}')
+# print(f'{BLUE}status_code ={END} {res_data["status_code"]}')
+print(f'{BLUE}res_data    ={END} {res_data}')
 
+
+#print(f'{BLUE}days ={END} {res_data["status_code"]}')
