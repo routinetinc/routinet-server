@@ -29,14 +29,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "rest_framework",
-    "rest_framework.authtoken",
+    "auths.apps.AuthsConfig",
     "routine.apps.RoutineConfig",
-    "supply_auth.apps.SupplyauthConfig",
     "feed.apps.FeedConfig",
     "run.apps.RunConfig",
 ]
-
-AUTH_USER_MODEL = "supply_auth.User"  # accountアプリのUserモデルをデフォルトで使用する認証ユーザーモデルとして設定する
 
 # APIにアクセス制限を適用する
 # 認証方式はアクセストークン
@@ -88,7 +85,7 @@ WSGI_APPLICATION = 'KGAvengers.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-DATABASES = secret.RemoteDB.DATABASES
+DATABASES = secret.LocalDB.DATABASES
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

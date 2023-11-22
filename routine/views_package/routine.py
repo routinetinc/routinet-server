@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from routine import models, serializers
 from routine.utils.handle_json import RequestInvalid, get_json, make_response
 from routine import serializers
-from supply_auth.models import User as UserModel
+from auths.models import User as UserModel
 
 class Routine(APIView):
     def get(self, request, format=None):
