@@ -24,7 +24,7 @@ class Routine(models.Model):
     table_name   = 'routine'
     user_id      = models.ForeignKey(User, on_delete=models.CASCADE)        # user_id はバックエンドで取得      # 仮の数字を代入して対処
     interest_ids = ArrayField(models.IntegerField(),null=True)
-    tag_id       = models.ForeignKey(Tag, on_delete=models.DO_NOTHING)
+    tag_id       = models.ForeignKey(Tag, on_delete=models.DO_NOTHING,null=True)
     goal_id      = models.IntegerField(blank=True, default=0)               # goal_id はバックエンドで取得      # 仮の数字を代入して対処
     dow          = CustomModels.DOWField()                                  # 型は仮置き  # day_of_week (曜日のこと)
     start_time   = CustomModels.TimeStringField()
@@ -38,6 +38,25 @@ class Routine(models.Model):
     is_real_time    = models.BooleanField(help_text='リアルタイムタスク', default=False)
     def __str__(self):
         return f"Routine title is 「{self.title}」"
+    
+    def calculate_consecutive_days(self):
+        # Filter RoutineFinish records by routine_id, ordered by 'when' descending
+        all_records = RoutineFinish.objects.filter(routine_id=self.id).order_by('-when')
+
+        if not all_records:
+            print("No records found for routine.")
+            return 0  # If no records found, return 0
+
+        consecutive_days = 1  # Start the count from the most recent record if it's achieved
+
+        for record in all_records:
+            print(record.is_achieved)
+            if record.is_achieved:
+                consecutive_days += 1  # Increment if the task was achieved
+            else:
+                break  # Stop counting when a non-achieved record is encountered
+
+        return consecutive_days
 
 class Task(models.Model):
     table_name    = 'task'
