@@ -27,10 +27,10 @@ def _timetree(request, acquisition_range):
     start_day: datetime = data['day'] + timedelta(days=delta_start_day)
     end_day:   datetime = start_day   + timedelta(days=delta_end_day)
 
-    subquery     = models.TaskFinish.objects.filter(task_id=OuterRef('task_id'), when__range=[start_day, end_day])
+    subquery     = models.TaskFinish.objects.filter(task_id=OuterRef('task_id'), when__range=[end_day, start_day])
     task_finishs = models.TaskFinish.objects.filter(task_id__in=tasks) \
                                             .annotate(matching_task=Exists(subquery)) \
-                                            .filter(matching_task=False) \
+                                            .filter(matching_task=True) \
                                             .order_by('-when')
     days = []
     for i in range(loop_end):
