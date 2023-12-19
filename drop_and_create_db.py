@@ -15,6 +15,7 @@ from supply_auth.models import User
 from routine.models import *
 from feed.models import *
 import random
+import string
 from datetime import timedelta
 from django.utils import timezone
 BLUE = '\033[36m'
@@ -46,15 +47,27 @@ def random_dt():
 
 #* インサート関数
 def insert_supply_auth_users(users: list[dict]):
-    instance = [User(username=user['username'], email=user['email']) for user in users]
+    instance = [User(username=user['username'], email=user['email'], tag_ids=user.get('tag_ids', [0])) for user in users]
     User.objects.bulk_create(instance)  
     return
 def insert_routine_interests(interests: list[dict]):
     instance = [Interest(name=interest['name']) for interest in interests]
     Interest.objects.bulk_create(instance)
     return
+
+def insert_routine_tags(tags: list[dict]):
+    instances = [
+        Tag(
+            name=tag.get('name', None),  # Inserts NULL if 'name' is not provided
+            detail=tag.get('detail', None)  # Inserts NULL if 'detail' is not provided
+        )
+        for tag in tags
+    ]
+    Tag.objects.bulk_create(instances)
+    return
 def insert_routine_routines(routines: list[dict]):
     user = User.objects.get(id=1)
+    default_tag = Tag.objects.first()  
     instance = [
         Routine(
             user_id=user,
@@ -66,7 +79,9 @@ def insert_routine_routines(routines: list[dict]):
             icon='🥺',
             is_published=random.choice([True, False]),
             is_notified=random.choice([True, False]),
-            interest_ids = [random.randint(0,5)]
+            interest_ids = [random.randint(0,5)],
+            tag_id=default_tag 
+
         )
     for routine in routines]
     Routine.objects.bulk_create(instance)
@@ -81,34 +96,73 @@ def insert_routine_tasks(tasks: list[dict]):
                 for task in tasks]
     Task.objects.bulk_create(instance)
     return
+def insert_routine_finishes(routine_finishes: list[dict]):
+    instances = [
+        RoutineFinish(
+            routine_id=Routine.objects.get(id=rf['routine_id']),
+            is_achieved=rf.get('is_achieved', True),
+            icon=rf.get('icon', ''),
+            memo=rf.get('memo', ''),
+            done_time=rf.get('done_time', 0),
+            when=rf.get('when', timezone.now()),
+            like_num=rf.get('like_num', 0)
+        )
+        for rf in routine_finishes
+    ]
+    RoutineFinish.objects.bulk_create(instances)
 def insert_routine_task_finishes(task_records: list[dict]):
-    routine = Routine.objects.all()[0]
-    instance = [TaskFinish(task_id=Task.objects.get(id=tr['task_id']),
-                          is_achieved=random.choice([True, False]),
-                          done_time=random.randint(0, 100),
-                          when=tr['when'],
-                          routine_id=routine)
-                for tr in task_records]
-    TaskFinish.objects.bulk_create(instance)
+    default_routine_finish = RoutineFinish.objects.first()
+
+    instances = [
+        TaskFinish(
+            task_id=Task.objects.get(id=tr['task_id']),
+            routine_finish_id=default_routine_finish,
+            is_achieved=random.choice([True, False]),
+            done_time=random.randint(0, 100),
+            when=tr['when']
+        ) for tr in task_records
+    ]
+
+    TaskFinish.objects.bulk_create(instances)
     return
-def insert_routine_task_comments(task_comments: list[dict]):
-    instance = [Minicomment(task_finish_id=TaskFinish.objects.get(id=tc['task_finish_id']),
-                            comment='a')
-                for tc in task_comments]
-    Minicomment.objects.bulk_create(instance)
+def insert_diaries(diaries: list[dict]):
+    instances = [
+        Diary(
+            when=diary['when'],
+            user_id=User.objects.get(id=diary['user_id']),
+            comment=diary.get('comment', ''),
+            icon=diary.get('icon', '')
+        )
+        for diary in diaries
+    ]
+    Diary.objects.bulk_create(instances)
     return
+def insert_routine_finish_comments(routine_finish_comments: list[dict]):
+    instances = [
+        RoutineFinishComment(
+            routine_finish_id=RoutineFinish.objects.get(id=comment['routine_finish_id']),
+            post_time=timezone.now(),
+            like_num=random.randint(0, 100),
+            comment=f'Sample comment {i}'
+        ) for i, comment in enumerate(routine_finish_comments)
+    ]
+    RoutineFinishComment.objects.bulk_create(instances)
 def insert_feed_feed_posts() -> None:
-    instance = [FeedPost(like_num=1, post_time="2023-09-24", interest_ids=[1], user_id=1) for _ in range(10)]
+    user = User.objects.get(id=1)  
+    instance = [FeedPost(like_num=1, post_time="2023-09-24", interest_ids=[1], user_id=user) for _ in range(10)]
     FeedPost.objects.bulk_create(instance)
     return
 
 #* インサートするインスタンスのパラメータを設定
 users = [{'username': chr(i), 'email': chr(i)} for i in range(ord('a'), ord('z') + 1)]
 interests = [{'name': 'NULL'}]
+tags = [{'name' : 'NULL', 'detail': 'NULL'}]
 routines = [{'dow': random_dow(), 'title': f'{i}'} for i in range(5)]
 tasks = [{'routine_id': random.randint(1, len(routines)), 'title': f'{i + 100}'} for i in range(20)]
+routine_finishes = [{'routine_id': random.randint(1, len(routines))} for _ in range(50)]
 task_finishes = [{'task_id': random.randint(1, len(tasks)), 'when': random_dt()} for _ in range(60)]
-tasK_comments = [{'task_finish_id': random.randint(1, len(task_finishes))} for _ in range(30)]
+diaries_data = [{'user_id': random.randint(1, len(users)), 'when': random_dt(),'comment': f'Sample diary entry {i}'} for i in range(10)] 
+routine_finish_comments = [{'routine_finish_id': random.randint(1, len(routine_finishes))} for _ in range(20)]  
 
 #* 実行
 if __name__ == '__main__':
@@ -116,9 +170,12 @@ if __name__ == '__main__':
     create_all_tables()
     insert_supply_auth_users(users)
     insert_routine_interests(interests)
+    insert_routine_tags(tags)
     insert_routine_routines(routines)
     insert_routine_tasks(tasks)
+    insert_routine_finishes(routine_finishes)
     insert_routine_task_finishes(task_finishes)
-    insert_routine_task_comments(tasK_comments)
+    insert_diaries(diaries_data)
+    insert_routine_finish_comments(routine_finish_comments)
     insert_feed_feed_posts()
     print(f"{BLUE}Successfully completed.{END}")
