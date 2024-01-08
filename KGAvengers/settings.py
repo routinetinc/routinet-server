@@ -64,6 +64,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'KGAvengers.urls'
 STATIC_URL = '/static/'
+# Image storage destination
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 
 TEMPLATES = [
     {
@@ -86,7 +89,7 @@ WSGI_APPLICATION = 'KGAvengers.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-DATABASES = secret.RemoteDB.DATABASES
+DATABASES = secret.LocalDB.DATABASES
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -160,8 +163,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Image storage destination
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = '/media/'
 
