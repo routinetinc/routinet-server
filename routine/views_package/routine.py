@@ -17,6 +17,7 @@ from django.utils import timezone
 from django.db.models import Sum
 
 class Routine(APIView):
+    @decorators.routine_get_schema
     def get(self, request: HttpRequest, format=None):
         try:
             routine_id = request.query_params.get('routine_id')
@@ -254,6 +255,7 @@ class ReadRoutineAndTask(APIView):
         return make_response(status_code=1, data=data)
     
 class RoutineFinishCreate(APIView):
+    @decorators.routine_finish_create_post_schema
     def post(self, request, format=None):
         try:
             data = get_json(request, RoutineFinishSerializer)
@@ -300,6 +302,7 @@ class RoutineFinishCreate(APIView):
         except Exception as e:
             return make_response(status_code=500, data={'message': str(e)})
         
+    @decorators.routine_finish_create_patch_schema
     def patch(self, request, format=None):
         try:
             datas: dict = get_json(request, ShareRegister)

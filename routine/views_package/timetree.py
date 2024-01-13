@@ -5,6 +5,8 @@ from routine.utils.handle_json import RequestInvalid, get_json, make_response
 from routine.utils.conv_time_fmt import conv_datetime_iso
 from routine import serializers
 from django.db.models import Exists, OuterRef
+from routine.api_document import decorators
+
 
 def _timetree(request, acquisition_range):
     ''' one week before ~ specified date: -1, one week before ~ one week after: 0, specified date ~ one week after: 1 '''
@@ -64,14 +66,17 @@ def _timetree(request, acquisition_range):
     
 
 class TimeTreeBefore(APIView):
+    @decorators.timetree_before_post_schema
     def post(self, request, format=None):
         return _timetree(request, -1)
 
 class TimeTreeAfterToBefore(APIView):
+    @decorators.timetree_aftertobefore_post_schema
     def post(self, request, format=None):
         return _timetree(request, 0)
     
 class TimeTreeAfter(APIView):
+    @decorators.timetree_after_post_schema
     def post(self, request, format=None):
         return _timetree(request, 1)
     

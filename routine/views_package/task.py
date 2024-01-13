@@ -3,11 +3,13 @@ from routine import models, serializers
 from routine.utils.handle_json import RequestInvalid, get_json, make_response
 from routine import serializers
 from django.utils import timezone
+from routine.api_document import decorators
 
 class Task(APIView):
     def get(self, request, format=None):
         pass
     
+    @decorators.task_post_schema
     def post(self, request, format=None):
         try:
             datas: dict = get_json(request, serializers.Task_create)
@@ -30,6 +32,7 @@ class Task(APIView):
         datas = {'task_id': t.id}
         return make_response(data = datas)
     
+    @decorators.task_patch_schema
     def patch(self, request, format=None):
         try:
             datas: dict = get_json(request, serializers.Task_update)
@@ -49,6 +52,7 @@ class Task(APIView):
         datas = {'task_id': t.id}
         return make_response(data = datas)
 
+    @decorators.task_delete_schema
     def delete(self, request, format=None):
         try:
             datas = get_json(request, serializers.Task_delete)
@@ -62,6 +66,7 @@ class Task(APIView):
         return make_response(status_code=200, data={'message': 'Task deleted successfully'})
     
 class NoAvailableTask(APIView):
+    @decorators.no_available_task_post_schema
     def get(self, request, format=None):
         pass
 
